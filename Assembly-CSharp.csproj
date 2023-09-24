@@ -1667,8 +1667,8 @@
      <Compile Include="Assets\FrameWork\Singleton\Dome\SingletonDomeClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\Dome\SingletonDomeMono.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
-     <Compile Include="Assets\FrameWork\Singleton\SingletonAsEditorWindows.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
+     <Compile Include="Assets\FrameWork\cs\cs.cs" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link_android_subset.xml" />
      <None Include="Assets\FrameWork\FlexReader\readme.txt" />
@@ -2239,6 +2239,12 @@
  <Reference Include="System.Xml.Serialization">
  <HintPath>D:/Unity/Engine/2019.4.40f1c1/Editor/Data/NetStandard/compat/2.0.0/shims/netfx/System.Xml.Serialization.dll</HintPath>
  </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Unity.AssetBundleBrowser.Editor.csproj">
+      <Project>{8833f4d4-28ad-49df-930e-35ff129df7db}</Project>
+      <Name>Unity.AssetBundleBrowser.Editor</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
