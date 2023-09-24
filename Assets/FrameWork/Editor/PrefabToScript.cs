@@ -14,9 +14,9 @@ namespace FrameWork.Editor
         {
             
             
-            if (!Directory.Exists(GlobalVariables.PrefabPath))
+            if (!Directory.Exists(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name))
             {
-                Directory.CreateDirectory(GlobalVariables.PrefabPath);
+                Directory.CreateDirectory(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name);
             }
 
             Transform trans = Selection.activeGameObject.transform;
@@ -24,11 +24,11 @@ namespace FrameWork.Editor
             
             
             
-            using (StreamWriter swMode=new StreamWriter(GlobalVariables.PrefabPath+"//"+Selection.activeGameObject.name+".Mode.cs",false))
+            using (StreamWriter swMode=new StreamWriter(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name+"//"+Selection.activeGameObject.name+".Mode.cs",false))
             {
-                using (StreamWriter swView=new StreamWriter(GlobalVariables.PrefabPath+"//"+Selection.activeGameObject.name+".View.cs",false))
+                using (StreamWriter swView=new StreamWriter(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name+"//"+Selection.activeGameObject.name+".View.cs",false))
                 {
-                    using (StreamWriter sw = new StreamWriter( GlobalVariables.PrefabPath + "//" + Selection.activeGameObject.name + ".cs", false))
+                    using (StreamWriter sw = new StreamWriter( GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name + "//" + Selection.activeGameObject.name + ".cs", false))
                     {
                         sw.WriteLine("using UnityEngine;");
                         sw.WriteLine("\tpublic partial class "+Selection.activeGameObject.name+" : MonoBehaviour");
@@ -37,7 +37,7 @@ namespace FrameWork.Editor
                     }
                     
                     
-                    using (StreamWriter swSystem = new StreamWriter( GlobalVariables.PrefabPath + "//" + Selection.activeGameObject.name + ".System.cs", false))
+                    using (StreamWriter swSystem = new StreamWriter( GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name + "//" + Selection.activeGameObject.name + ".System.cs", false))
                     {
                         swSystem.WriteLine("using UnityEngine;");
                         swSystem.WriteLine("\tpublic partial class "+Selection.activeGameObject.name+" : MonoBehaviour");

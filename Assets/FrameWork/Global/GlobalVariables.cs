@@ -4,6 +4,6 @@ namespace FrameWork.Global
 {
     public static class GlobalVariables
     {
-        public static string PrefabPath=Application.dataPath+"/Script/PrefabScript";
+        public static string PrefabPath=Application.dataPath+"/FrameWork/PrefabScript";
     }
 }

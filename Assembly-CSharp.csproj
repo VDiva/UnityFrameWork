@@ -1669,10 +1669,6 @@
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsEditorWindows.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
-     <Compile Include="Assets\Script\PrefabScript\Cube.Mode.cs" />
-     <Compile Include="Assets\Script\PrefabScript\Cube.System.cs" />
-     <Compile Include="Assets\Script\PrefabScript\Cube.View.cs" />
-     <Compile Include="Assets\Script\PrefabScript\Cube.cs" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link_android_subset.xml" />
      <None Include="Assets\FrameWork\FlexReader\readme.txt" />
