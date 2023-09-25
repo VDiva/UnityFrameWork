@@ -1,5 +1,7 @@
 using System;
+using FrameWork.AssetBundles;
 using FrameWork.Global;
+using FrameWork.ObjectPool;
 using UnityEngine;
 
 namespace FrameWork.cs
@@ -8,11 +10,19 @@ namespace FrameWork.cs
     {
         private void Start()
         {
-            var assetBundle=AssetBundle.LoadFromFile(GlobalVariables.ABAsWindows+"/cs.info");
-            var go = assetBundle.LoadAsset<GameObject>("Cube");
-            Debug.Log(go.name);
-            assetBundle.Unload(true);
-            Debug.Log(go.name);
+            
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.ABName, "Cube", (go =>
+                {
+                    
+                    Debug.Log(go.name);
+                }));
+            }
         }
     }
 }

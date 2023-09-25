@@ -1,17 +1,18 @@
 using System.IO;
 using FrameWork.Global;
 using UnityEditor;
+using UnityEngine;
 
 namespace FrameWork.Editor
 {
     public class AssetBundle: UnityEditor.Editor
     {
+        
+        
+        
         [MenuItem("FrameWork/AB/CreatAssetBundle for Android")]
-  
-        static void CreatAssetBundleAsAndroid()
+        public static void CreatAssetBundleAsAndroid()
         {
-
-            
             if (!Directory.Exists(GlobalVariables.ABAsAndroid))
             {
                 Directory.CreateDirectory(GlobalVariables.ABAsAndroid);
@@ -22,7 +23,7 @@ namespace FrameWork.Editor
         }
 
         [MenuItem("FrameWork/AB/CreatAssetBundle for IOS")]
-        static void BuildAllAssetBundlesAsIOS()
+        public static void BuildAllAssetBundlesAsIOS()
         {
            
             if (!Directory.Exists(GlobalVariables.ABAsIos))
@@ -37,7 +38,7 @@ namespace FrameWork.Editor
 
 
         [MenuItem("FrameWork/AB/CreatAssetBundle for Win")]
-        static void CreatPCAssetBundleAsWindows()
+        public static void CreatPCAssetBundleAsWindows()
         {
             
             if (!Directory.Exists(GlobalVariables.ABAsWindows))

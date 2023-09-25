@@ -12,57 +12,71 @@ namespace FrameWork.Editor
         [MenuItem("Assets/FrameWork/Prefab/CreateScript")]
         public static void Init()
         {
-            
-            
-            if (!Directory.Exists(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name))
-            {
-                Directory.CreateDirectory(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name);
-            }
 
+
+            
+            
+            
+            string path = GlobalVariables.PrefabPath;
+            string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;
+
             
             
+            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+            ai.assetBundleName = GlobalVariables.ABName;
+            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
             
-            using (StreamWriter swMode=new StreamWriter(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name+"//"+Selection.activeGameObject.name+".Mode.cs",false))
+            if (!Directory.Exists(path+"/"+name))
             {
-                using (StreamWriter swView=new StreamWriter(GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name+"//"+Selection.activeGameObject.name+".View.cs",false))
+                Directory.CreateDirectory(path+"/"+name);
+            }
+
+            
+            
+            
+            
+            using (StreamWriter swMode=new StreamWriter(path+"/"+name+"//"+name+".H.cs",false))
+            {
+                using (StreamWriter swView=new StreamWriter(path+"/"+name+"//"+name+".Awake.cs",false))
                 {
-                    using (StreamWriter sw = new StreamWriter( GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name + "//" + Selection.activeGameObject.name + ".cs", false))
+                    using (StreamWriter sw = new StreamWriter( path+"/"+name + "//" + name + ".cs", false))
                     {
                         sw.WriteLine("using UnityEngine;");
-                        sw.WriteLine("\tpublic partial class "+Selection.activeGameObject.name+" : MonoBehaviour");
-                        sw.WriteLine("\t{");
-                        sw.WriteLine("\t}");
+                        sw.WriteLine("public partial class "+name+" : MonoBehaviour");
+                        sw.WriteLine("{");
+                        sw.WriteLine("}");
                     }
                     
                     
-                    using (StreamWriter swSystem = new StreamWriter( GlobalVariables.PrefabPath+"/"+Selection.activeGameObject.name + "//" + Selection.activeGameObject.name + ".System.cs", false))
-                    {
-                        swSystem.WriteLine("using UnityEngine;");
-                        swSystem.WriteLine("\tpublic partial class "+Selection.activeGameObject.name+" : MonoBehaviour");
-                        swSystem.WriteLine("\t{");
-                        swSystem.WriteLine("\t}");
-                    }
+                    // using (StreamWriter swSystem = new StreamWriter( path+"/"+name + "//" + name + ".System.cs", false))
+                    // {
+                    //     swSystem.WriteLine("using UnityEngine;");
+                    //     swSystem.WriteLine("public partial class "+name+" : MonoBehaviour");
+                    //     swSystem.WriteLine("{");
+                    //     swSystem.WriteLine("}");
+                    // }
 
                     swMode.WriteLine("using UnityEngine;");
-                    swMode.WriteLine("\tpublic partial class "+Selection.activeGameObject.name+" : MonoBehaviour");
-                    swMode.WriteLine("\t{");
+                    swMode.WriteLine("public partial class "+name+" : MonoBehaviour");
+                    swMode.WriteLine("{");
                     
                     swView.WriteLine("using UnityEngine;");
-                    swView.WriteLine("\tpublic partial class "+Selection.activeGameObject.name+" : MonoBehaviour");
-                    swView.WriteLine("\t{");
-                    swView.WriteLine("\t\tprivate void Awake()\n\t\t{");
+                    swView.WriteLine("public partial class "+name+" : MonoBehaviour");
+                    swView.WriteLine("{");
+                    swView.WriteLine("\tprivate void Awake()\n\t{");
                     
                     Writer(swMode,swView,"",trans,true);
                     
-                    swMode.WriteLine("\t}");
-                    swView.WriteLine("\t\t}");
+                    swMode.WriteLine("}");
                     swView.WriteLine("\t}");
+                    swView.WriteLine("}");
                 }
                 
             }
             
+            AssetBundle.CreatPCAssetBundleAsWindows();
             
             
             AssetDatabase.Refresh();
@@ -73,15 +87,15 @@ namespace FrameWork.Editor
         {
             foreach (var item in trans.GetComponents<Component>())
             {
-                swMode.WriteLine("\t\tprivate "+item.GetType().Name+" "+item.GetType().Name+item.gameObject.name+";");
+                swMode.WriteLine("\tprivate "+item.GetType().Name+" "+item.GetType().Name+item.gameObject.name+";");
 
                 if (isRoot)
                 {
-                    swView.WriteLine("\t\t\t"+item.GetType().Name+item.gameObject.name+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t"+item.GetType().Name+item.gameObject.name+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
                 }
                 else
                 {
-                    swView.WriteLine("\t\t\t"+item.GetType().Name+item.gameObject.name+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t"+item.GetType().Name+item.gameObject.name+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
                 }
             }
 

@@ -7,17 +7,17 @@ namespace FrameWork.ObjectPool.Dome
 {
     public class ObjectPoolDome : MonoBehaviour
     {
-        private ObjectPoolAsGameObject<AudioSource> _asGameObject;
+        private ObjectPoolAsComponent<AudioSource> _asComponent;
         private void Start()
         {
-            _asGameObject = new ObjectPoolAsGameObject<AudioSource>();
+            _asComponent = new ObjectPoolAsComponent<AudioSource>();
         }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.A))
             {
-                Debug.Log(_asGameObject.DeQueue().name);
+                Debug.Log(_asComponent.DeQueue().name);
             }
         }
     }

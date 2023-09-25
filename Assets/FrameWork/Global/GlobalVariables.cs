@@ -8,5 +8,8 @@ namespace FrameWork.Global
         public static string ABAsAndroid = Application.streamingAssetsPath;
         public static string ABAsWindows = Application.streamingAssetsPath;
         public static string ABAsIos = Application.dataPath+"/AssetBundles/IOS";
+
+        public static string ABName = "assets";
+        public static string ABNameEnd = "info";
     }
 }

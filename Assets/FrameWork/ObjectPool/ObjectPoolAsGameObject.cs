@@ -1,46 +1,48 @@
-using System;
 using System.Collections.Concurrent;
 using UnityEngine;
 
 namespace FrameWork.ObjectPool
 {
-    public class ObjectPoolAsGameObject<T> where T: Component
+    public class ObjectPoolAsGameObject
     {
-        private Type _type;
+       
         private int _num;
         private int _currentNum;
-        private ConcurrentQueue<T> _objectPool;
+        private GameObject _go;
+        private ConcurrentQueue<GameObject> _objectPool;
         
-        public ObjectPoolAsGameObject(int num=-1)
+        public ObjectPoolAsGameObject(GameObject go,int num=-1)
         {
-            _objectPool = new ConcurrentQueue<T>();
-            _type = typeof(T);
+            _objectPool = new ConcurrentQueue<GameObject>();
+            _go = go;
             _currentNum = 0;
             _num = num;
         }
 
 
 
-        public void EnQueue(T t)
+        public void EnQueue(GameObject go)
         {
-            _objectPool.Enqueue(t);
+            go.SetActive(false);
+            _objectPool.Enqueue(go);
         }
 
 
-        public T DeQueue()
+        public GameObject DeQueue()
         {
             
-            if (_objectPool.TryDequeue(out T t))
+            if (_objectPool.TryDequeue(out GameObject go))
             {
-                return t;
+                go.SetActive(true);
+                return go;
             }
             else
             {
                 if (_num==-1)
                 {
-                    GameObject obj = new GameObject(_type.Name);
-                    T t2=obj.AddComponent(_type) as T;
-                    return t2;
+                    GameObject obj = GameObject.Instantiate(_go);
+                    obj.SetActive(true);
+                    return obj;
                 }
                 else
                 {
@@ -50,9 +52,9 @@ namespace FrameWork.ObjectPool
                     }
                     else
                     {
-                        GameObject obj = new GameObject(_type.Name);
-                        T t2=obj.AddComponent(_type) as T;
-                        return t2;
+                        GameObject obj = GameObject.Instantiate(_go);
+                        obj.SetActive(true);
+                        return go;
                     }
                 }
             }
