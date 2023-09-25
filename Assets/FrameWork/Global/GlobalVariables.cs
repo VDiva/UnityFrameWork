@@ -11,5 +11,10 @@ namespace FrameWork.Global
 
         public static string ABName = "assets";
         public static string ABNameEnd = "info";
+
+        public static string ABWindowsAndAnidroidPath = Application.streamingAssetsPath + "/" + ABName + "." + ABNameEnd;
+        public static string ABIosPath = Application.dataPath+"/AssetBundles/IOS" + "/" + ABName + "." + ABNameEnd;
+
+        public static string ABConfigPath = Application.dataPath + "/FrameWork/ABConfig";
     }
 }

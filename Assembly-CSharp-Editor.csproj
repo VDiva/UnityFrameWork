@@ -50,6 +50,7 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Assets\FrameWork\Editor\ABConfig.cs" />
      <Compile Include="Assets\FrameWork\Editor\AssetBundle.cs" />
      <Compile Include="Assets\FrameWork\Editor\PrefabToScript.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\Editor\SpawnScriptWindows.cs" />

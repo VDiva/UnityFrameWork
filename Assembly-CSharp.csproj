@@ -1624,7 +1624,6 @@
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\Examples\SocketIO\SocketIOChatSample.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\Examples\SocketIO\SocketIOWePlaySample.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\Examples\Websocket\WebSocketSample.cs" />
-     <Compile Include="Assets\FrameWork\ExtendFunctions\Dome\ExtendFunctionsDome.cs" />
      <Compile Include="Assets\FrameWork\ExtendFunctions\ExtendClass.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\CSV\Document.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\Converter\CustomConverter.cs" />
@@ -1661,16 +1660,12 @@
      <Compile Include="Assets\FrameWork\FlexReader\Mapping\TableMapper.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\Mapping\TableMapperBase.cs" />
      <Compile Include="Assets\FrameWork\Global\GlobalVariables.cs" />
-     <Compile Include="Assets\FrameWork\ObjectPool\Dome\ObjectPoolDome.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
-     <Compile Include="Assets\FrameWork\Singleton\Dome\SingletonDome.cs" />
-     <Compile Include="Assets\FrameWork\Singleton\Dome\SingletonDomeClass.cs" />
-     <Compile Include="Assets\FrameWork\Singleton\Dome\SingletonDomeMono.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
-     <Compile Include="Assets\FrameWork\cs\cs.cs" />
+     <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link_android_subset.xml" />
      <None Include="Assets\FrameWork\FlexReader\readme.txt" />
