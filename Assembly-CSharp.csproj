@@ -51,6 +51,7 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\FrameWork\AssetBundles\AssetBundlesLoad.cs" />
+     <Compile Include="Assets\FrameWork\AssetBundles\LoadAbAsset.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Credentials.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Digest.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\DigestStore.cs" />
@@ -1666,6 +1667,7 @@
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
+     <Compile Include="Assets\FrameWork\cs\cs.cs" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link_android_subset.xml" />
      <None Include="Assets\FrameWork\FlexReader\readme.txt" />

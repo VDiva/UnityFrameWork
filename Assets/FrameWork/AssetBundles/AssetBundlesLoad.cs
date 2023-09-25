@@ -9,17 +9,16 @@ namespace FrameWork.AssetBundles
     public static class AssetBundlesLoad
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
-        
-        public static void LoadAsset<T>(string packName,string name,Action<T> action) where T : Object
+        public static T LoadAsset<T>(string packName,string name) where T : Object
         {
             AssetBundle assetBundle;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                assetBundle=AssetBundle.LoadFromFile(GlobalVariables.ABAsWindows+"/"+GlobalVariables.ABName+"."+GlobalVariables.ABNameEnd);
+                assetBundle=AssetBundle.LoadFromFile(GlobalVariables.ABAsWindows+"/"+packName+"."+GlobalVariables.ABNameEnd);
                 _assetBundles.TryAdd(packName, assetBundle);
             }
             var obj=assetBundle.LoadAsset<T>(name);
-            action(obj);  
+            return obj;
         }
        
     }

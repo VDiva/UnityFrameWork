@@ -87,15 +87,15 @@ namespace FrameWork.Editor
         {
             foreach (var item in trans.GetComponents<Component>())
             {
-                swMode.WriteLine("\tprivate "+item.GetType().Name+" "+item.GetType().Name+item.gameObject.name+";");
+                swMode.WriteLine("\tprivate "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
 
                 if (isRoot)
                 {
-                    swView.WriteLine("\t\t"+item.GetType().Name+item.gameObject.name+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
                 }
                 else
                 {
-                    swView.WriteLine("\t\t"+item.GetType().Name+item.gameObject.name+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
                 }
             }
 
