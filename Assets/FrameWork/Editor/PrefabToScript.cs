@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FrameWork.Global;
 using UnityEditor;
@@ -44,8 +45,10 @@ namespace FrameWork.Editor
                     using (StreamWriter sw = new StreamWriter( path+"/"+name + "//" + name + ".cs", false))
                     {
                         sw.WriteLine("using UnityEngine;");
-                        sw.WriteLine("public partial class "+name+" : MonoBehaviour");
-                        sw.WriteLine("{");
+                        sw.WriteLine("namespace Prefab.Script\n{");
+                        sw.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
+                        sw.WriteLine("\t{");
+                        sw.WriteLine("\t}");
                         sw.WriteLine("}");
                     }
                     
@@ -59,27 +62,38 @@ namespace FrameWork.Editor
                     // }
 
                     swMode.WriteLine("using UnityEngine;");
-                    swMode.WriteLine("public partial class "+name+" : MonoBehaviour");
-                    swMode.WriteLine("{");
+                    swMode.WriteLine("namespace Prefab.Script\n{");
+                    swMode.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
+                    swMode.WriteLine("\t{");
                     
                     swView.WriteLine("using UnityEngine;");
-                    swView.WriteLine("public partial class "+name+" : MonoBehaviour");
-                    swView.WriteLine("{");
-                    swView.WriteLine("\tprivate void Awake()\n\t{");
+                    swView.WriteLine("namespace Prefab.Script\n{");
+                    swView.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
+                    swView.WriteLine("\t{");
+                    swView.WriteLine("\t\tprivate void Awake()\n\t\t{");
                     
                     Writer(swMode,swView,"",trans,true);
                     
+                    swMode.WriteLine("\t}");
+                    
                     swMode.WriteLine("}");
+                    
+                    swView.WriteLine("\t\t}");
                     swView.WriteLine("\t}");
+                    
                     swView.WriteLine("}");
+                    
                 }
                 
             }
             
             AssetBundle.CreatPCAssetBundleAsWindows();
-            
-            
             AssetDatabase.Refresh();
+            if (Selection.activeGameObject.GetComponent("Prefab.Script."+Selection.activeGameObject.name)==null)
+            {
+                Type type = typeof(AssemblyType).Assembly.GetType("Prefab.Script." + Selection.activeGameObject.name);
+                Selection.activeGameObject.AddComponent(type);
+            }
         }
 
 
@@ -87,15 +101,15 @@ namespace FrameWork.Editor
         {
             foreach (var item in trans.GetComponents<Component>())
             {
-                swMode.WriteLine("\tprivate "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
+                swMode.WriteLine("\t\tprivate "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
 
                 if (isRoot)
                 {
-                    swView.WriteLine("\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
                 }
                 else
                 {
-                    swView.WriteLine("\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
                 }
             }
 
