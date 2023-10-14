@@ -3,3 +3,6 @@ Library
 Logs
 Temp
 obj
+Packages
+*.csproj
+

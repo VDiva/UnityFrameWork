@@ -1,5 +1,6 @@
 using System;
 using FrameWork.AssetBundles;
+
 using UnityEngine;
 
 namespace FrameWork.cs
@@ -8,7 +9,7 @@ namespace FrameWork.cs
     {
         private void Start()
         {
-            Debug.Log(LoadAbAsset.LoadAsset<GameObject>("Sphere").name);
+            
         }
     }
 }
