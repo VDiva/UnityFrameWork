@@ -1,68 +1,71 @@
-using System;
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-using FrameWork.Global;
-using UnityEngine;
-
-namespace FrameWork.Tool
-{
-    public class Tool
-    {
-        
-        public static string GetMd5(string path)
-        {
-            using (FileStream fs=new FileStream(path,FileMode.Open))
-            {
-                MD5 md5 = new MD5CryptoServiceProvider();
-                byte[] md5Info = md5.ComputeHash(fs);
-
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < md5Info.Length; i++)
-                    sb.Append(md5Info[i].ToString("x2"));
-                return sb.ToString();
-            }
-        }
-
-        public static byte[] Serialize<T>(T obj)
-        {
-            try
-            {
-                using (MemoryStream ms=new MemoryStream())
-                {
-                    ProtoBuf.Serializer.Serialize<T>(ms,obj);
-                    byte[] result = new byte[ms.Length];
-                    ms.Position = 0;
-                    ms.Read(result, 0, result.Length);
-                    return result;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Log("序列化失败:"+e);
-                return null;
-            }
-        }
-
-
-
-        public static T DeSerialize<T>(byte[] data)
-        {
-            try
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    ms.Write(data, 0, data.Length);
-                    ms.Position = 0;
-                    T result = ProtoBuf.Serializer.Deserialize<T>(ms);
-                    return result;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.Log("反序列化失败: " + ex.ToString());
-                return (T)default;
-            }
-        }
-    }
-}
+// using System;
+// using System.IO;
+// using System.Linq;
+// using System.Security.Cryptography;
+// using System.Text;
+// using FrameWork.Global;
+// using GameData;
+// using UnityEngine;
+// using NetWork;
+//
+// namespace FrameWork.Tool
+// {
+//     public class Tool
+//     {
+//         
+//         public static string GetMd5(string path)
+//         {
+//             using (FileStream fs=new FileStream(path,FileMode.Open))
+//             {
+//                 MD5 md5 = new MD5CryptoServiceProvider();
+//                 byte[] md5Info = md5.ComputeHash(fs);
+//
+//                 StringBuilder sb = new StringBuilder();
+//                 for (int i = 0; i < md5Info.Length; i++)
+//                     sb.Append(md5Info[i].ToString("x2"));
+//                 return sb.ToString();
+//             }
+//         }
+//
+//         
+//         
+//         
+//         public static byte[] Serialize(Data data)
+//         {
+//             using (MemoryStream ms=new MemoryStream())
+//             {
+//                 using (BinaryWriter bw=new BinaryWriter(ms))
+//                 {
+//                     var stream = data.ToByteArray();
+//                     bw.Write(stream.Length);
+//                     bw.Write(stream);
+//                     return ms.ToArray();
+//                 }
+//             }
+//         }
+//         
+//         public static bool DeSerialize(byte[] bytes,out Data data)
+//         {
+//             using (MemoryStream ms=new MemoryStream(bytes))
+//             {
+//                 using (BinaryReader br=new BinaryReader(ms))
+//                 {
+//                     if (bytes.Length>4)
+//                     {
+//                         int lenght=br.ReadInt32();
+//                         Debug.Log(lenght);
+//                         if (bytes.Length-4>=lenght)
+//                         {
+//                             var dataBytes=new byte[bytes.Length-4];
+//                             Buffer.BlockCopy(bytes,4,dataBytes,0,lenght);
+//                             data=Data.Parser.ParseFrom(dataBytes);
+//                             return true;
+//                         }
+//                     }
+//                 }
+//             }
+//             data = null;
+//             return false;
+//         }
+//     }
+// }

@@ -1,0 +1,11 @@
+syntax="proto3";
+
+package GameData;
+
+
+message Data{
+
+    string Name=1;
+}
+
+

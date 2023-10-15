@@ -1,26 +1,30 @@
 using System;
 using System.Net.Sockets;
-using System.Reflection;
-using FrameWork.AssetBundles;
-using FrameWork.NetManager.Attribute;
-using FrameWork.NetManager.Socket;
+using GameData;
 using UnityEngine;
-
+using NetWork;
 namespace FrameWork.cs
 {
     public class cs : MonoBehaviour
     {
-        
-
+        private NetWorkSystem netWork;
         private void Start()
         {
-            NetWork _netWork = new NetWork();
-            _netWork.OpenServer += OpenServer;
-            _netWork.acceptAction += Accept;
-            _netWork.ReceiveSuccessAction += Receive;
-            _netWork.NetAsServer("127.0.0.1",8888,100,2048);
+            netWork = new NetWorkSystem();
+            netWork.NetAsClient("127.0.0.1",8888,2048);
+            
+            netWork.client.ReceiveSuccessAction += Receive;
         }
-        
+
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                netWork.client.SendMessage(new Data(){Name = "nihao"});
+            }
+        }
+
         private void OpenServer()
         {
             Debug.Log("服务器以打开");
