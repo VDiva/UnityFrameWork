@@ -8,3 +8,8 @@ ProjectSettings
 *.csproj
 
 Game-FrameWork.sln
+
+
+App.config
+
+packages.config
