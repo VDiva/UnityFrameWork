@@ -15,15 +15,12 @@ namespace Server
     {
         static void Main(string[] args)
         {
-           NetWorkSystem netWork=new NetWorkSystem();
-            netWork.OpenServer += OpenServer;
-            netWork.acceptAction += Accpet;
-            netWork.ReceiveSuccessAction += Receive;
-            var dataByte=Tool.Serialize(new GameData.Data() { Name="adwad"});
-            var data = Tool.DeSerialize(dataByte, out GameData.Data da);
-            Console.WriteLine(da.Name);
 
-            netWork.NetAsServer("127.0.0.1", 8888, 100, 2048);
+            NetWorkSystem.OpenServer += OpenServer;
+            NetWorkSystem.acceptAction += Accpet;
+            NetWorkSystem.ReceiveSuccessAction += Receive;
+
+            NetWorkSystem.NetAsServer("127.0.0.1", 8888, 100, 2048);
             Console.ReadKey();
         }
 
@@ -42,7 +39,8 @@ namespace Server
 
             if (Tool.DeSerialize(data, out Data da))
             {
-                Console.WriteLine(da.Name);
+                Vector3Data vec3 = da.TransfromData.PositionData.Vector3Data;
+                Console.WriteLine("x:"+vec3.X+"-y:"+vec3.Y+"-z:"+vec3.Z);
             }
 
         }

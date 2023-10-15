@@ -3,9 +3,61 @@ syntax="proto3";
 package GameData;
 
 
-message Data{
+enum CMD{
+    MESSAGE=0;
+    Transfrom=1;
+    Animator=2;
+}
 
-    string Name=1;
+message Data{
+    CMD CMD=1;
+    TransfromData TransfromData=2;
+}
+
+message Vector3Data{
+    float X=1;
+    float Y=2;
+    float Z=3;
+}
+
+message Vector2Data{
+    float X=1;
+    float Y=2;
+    
+}
+
+message TransfromData{
+    LocalPositionData LocalPositionData=1;
+    PositionData PositionData=2;
+    LocalRotationData LocalRotationData=3;
+    RotationData RotationData=4;
+    LocalScaleData LocalScaleData=5;
+}
+
+
+message PositionData{
+    Vector2Data Vector2Data=1;
+    Vector3Data Vector3Data=2;
+}
+
+message LocalPositionData{
+    Vector2Data Vector2Data=1;
+    Vector3Data Vector3Data=2;
+}
+
+message RotationData{
+    Vector2Data Vector2Data=1;
+    Vector3Data Vector3Data=2;
+}
+
+message LocalRotationData{
+    Vector2Data Vector2Data=1;
+    Vector3Data Vector3Data=2;
+}
+
+message LocalScaleData{
+    Vector2Data Vector2Data=1;
+    Vector3Data Vector3Data=2;
 }
 
 

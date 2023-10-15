@@ -1,44 +1,34 @@
 using System;
 using System.Net.Sockets;
+using FrameWork.NetManager.Convert;
 using GameData;
 using UnityEngine;
 using NetWork;
+using Random = UnityEngine.Random;
+
 namespace FrameWork.cs
 {
     public class cs : MonoBehaviour
     {
-        private NetWorkSystem netWork;
+        
         private void Start()
         {
-            netWork = new NetWorkSystem();
-            netWork.NetAsClient("127.0.0.1",8888,2048);
             
-            netWork.client.ReceiveSuccessAction += Receive;
+            NetWorkSystem.NetAsClient("127.0.0.1",8888,2048);
+            
         }
 
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.A))
-            {
-                netWork.client.SendMessage(new Data(){Name = "nihao"});
-            }
+            
         }
 
-        private void OpenServer()
+        private void FixedUpdate()
         {
-            Debug.Log("服务器以打开");
+            
         }
 
-        private void Accept(object obj, SocketAsyncEventArgs args)
-        {
-            Debug.Log("链接到服务器");
-        }
-        
-        private void Receive(byte[] data,object obj, SocketAsyncEventArgs args)
-        {
-            Debug.Log("收到消息"+data);
-        }
     }
     
     

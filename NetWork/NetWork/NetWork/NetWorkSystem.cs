@@ -6,25 +6,21 @@ namespace NetWork
 {
     public class NetWorkSystem
     {
-        private System.Net.Sockets.Socket _socket;
-        private int count;
+        private static System.Net.Sockets.Socket _socket;
+        private static int _count;
         
         
-        public Client client;
-        private SocketAsyncEventArgs _accept;
+        public static Client client;
+        private static SocketAsyncEventArgs _accept;
 
-        public Action OpenServer;
+        public static Action OpenServer;
 
-        public Action<byte[],object, SocketAsyncEventArgs> ReceiveSuccessAction;
-        public Action<object, SocketAsyncEventArgs> acceptAction;
-        private int index=0;
-        public NetWorkSystem()
-        {
-            _accept = new SocketAsyncEventArgs();
-            _accept.Completed += OnAcceptCompleted;
-        }
+        public static Action<byte[],object, SocketAsyncEventArgs> ReceiveSuccessAction;
+        public static Action<object, SocketAsyncEventArgs> acceptAction;
+        private static int index=0;
         
-        public void NetAsClient(string ip,int port,int count)
+        
+        public static void NetAsClient(string ip,int port,int count)
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             _socket = new System.Net.Sockets.Socket(ipEndPoint.AddressFamily, SocketType.Stream,ProtocolType.Tcp);
@@ -34,18 +30,20 @@ namespace NetWork
         }
         
         
-        public void NetAsServer(string ip,int port,int maxAccept,int count)
+        public static void NetAsServer(string ip,int port,int maxAccept,int count)
         {
+            _accept = new SocketAsyncEventArgs();
+            _accept.Completed += OnAcceptCompleted;
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             _socket = new System.Net.Sockets.Socket(ipEndPoint.AddressFamily, SocketType.Stream,ProtocolType.Tcp);
-            this.count = count;
+            _count = count;
             _socket.Bind(ipEndPoint);
             _socket.Listen(maxAccept);
             OpenServer?.Invoke();
             WaitAccept();
         }
 
-        private void WaitAccept()
+        private static void WaitAccept()
         {
             bool success=_socket.AcceptAsync(_accept);
             if (!success)
@@ -55,7 +53,7 @@ namespace NetWork
         }
         
         
-        void SuccessConnect()
+        static void  SuccessConnect()
         {
             Client cli=new Client(_accept.AcceptSocket, 2048) { ID = index };
             cli.ReceiveSuccessAction += ReceiveSuccessAction;
@@ -66,23 +64,14 @@ namespace NetWork
             WaitAccept();
         }
         
-        private void OnAcceptCompleted(object obj,SocketAsyncEventArgs args)
+        private static void OnAcceptCompleted(object obj,SocketAsyncEventArgs args)
         {
             SuccessConnect();
         }
 
 
 
-        private void Receive(byte[] data,object obj,SocketAsyncEventArgs args)
-        {
 
-        }
-
-
-        private void ReceiveErr(object obj, SocketAsyncEventArgs args,string msg)
-        {
-
-        }
 
     }
 }

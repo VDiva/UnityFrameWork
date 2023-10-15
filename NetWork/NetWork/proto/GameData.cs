@@ -24,17 +24,56 @@ namespace GameData {
     static GameDataReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5HYW1lRGF0YS5wcm90bxIIR2FtZURhdGEiFAoERGF0YRIMCgROYW1lGAEg",
-            "ASgJYgZwcm90bzM="));
+            "Cg5HYW1lRGF0YS5wcm90bxIIR2FtZURhdGEiUgoERGF0YRIaCgNDTUQYASAB",
+            "KA4yDS5HYW1lRGF0YS5DTUQSLgoNVHJhbnNmcm9tRGF0YRgCIAEoCzIXLkdh",
+            "bWVEYXRhLlRyYW5zZnJvbURhdGEiLgoLVmVjdG9yM0RhdGESCQoBWBgBIAEo",
+            "AhIJCgFZGAIgASgCEgkKAVoYAyABKAIiIwoLVmVjdG9yMkRhdGESCQoBWBgB",
+            "IAEoAhIJCgFZGAIgASgCIo0CCg1UcmFuc2Zyb21EYXRhEjYKEUxvY2FsUG9z",
+            "aXRpb25EYXRhGAEgASgLMhsuR2FtZURhdGEuTG9jYWxQb3NpdGlvbkRhdGES",
+            "LAoMUG9zaXRpb25EYXRhGAIgASgLMhYuR2FtZURhdGEuUG9zaXRpb25EYXRh",
+            "EjYKEUxvY2FsUm90YXRpb25EYXRhGAMgASgLMhsuR2FtZURhdGEuTG9jYWxS",
+            "b3RhdGlvbkRhdGESLAoMUm90YXRpb25EYXRhGAQgASgLMhYuR2FtZURhdGEu",
+            "Um90YXRpb25EYXRhEjAKDkxvY2FsU2NhbGVEYXRhGAUgASgLMhguR2FtZURh",
+            "dGEuTG9jYWxTY2FsZURhdGEiZgoMUG9zaXRpb25EYXRhEioKC1ZlY3RvcjJE",
+            "YXRhGAEgASgLMhUuR2FtZURhdGEuVmVjdG9yMkRhdGESKgoLVmVjdG9yM0Rh",
+            "dGEYAiABKAsyFS5HYW1lRGF0YS5WZWN0b3IzRGF0YSJrChFMb2NhbFBvc2l0",
+            "aW9uRGF0YRIqCgtWZWN0b3IyRGF0YRgBIAEoCzIVLkdhbWVEYXRhLlZlY3Rv",
+            "cjJEYXRhEioKC1ZlY3RvcjNEYXRhGAIgASgLMhUuR2FtZURhdGEuVmVjdG9y",
+            "M0RhdGEiZgoMUm90YXRpb25EYXRhEioKC1ZlY3RvcjJEYXRhGAEgASgLMhUu",
+            "R2FtZURhdGEuVmVjdG9yMkRhdGESKgoLVmVjdG9yM0RhdGEYAiABKAsyFS5H",
+            "YW1lRGF0YS5WZWN0b3IzRGF0YSJrChFMb2NhbFJvdGF0aW9uRGF0YRIqCgtW",
+            "ZWN0b3IyRGF0YRgBIAEoCzIVLkdhbWVEYXRhLlZlY3RvcjJEYXRhEioKC1Zl",
+            "Y3RvcjNEYXRhGAIgASgLMhUuR2FtZURhdGEuVmVjdG9yM0RhdGEiaAoOTG9j",
+            "YWxTY2FsZURhdGESKgoLVmVjdG9yMkRhdGEYASABKAsyFS5HYW1lRGF0YS5W",
+            "ZWN0b3IyRGF0YRIqCgtWZWN0b3IzRGF0YRgCIAEoCzIVLkdhbWVEYXRhLlZl",
+            "Y3RvcjNEYXRhKi8KA0NNRBILCgdNRVNTQUdFEAASDQoJVHJhbnNmcm9tEAES",
+            "DAoIQW5pbWF0b3IQAmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Data), global::GameData.Data.Parser, new[]{ "Name" }, null, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GameData.CMD), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Data), global::GameData.Data.Parser, new[]{ "CMD", "TransfromData" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Vector3Data), global::GameData.Vector3Data.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Vector2Data), global::GameData.Vector2Data.Parser, new[]{ "X", "Y" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.TransfromData), global::GameData.TransfromData.Parser, new[]{ "LocalPositionData", "PositionData", "LocalRotationData", "RotationData", "LocalScaleData" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.PositionData), global::GameData.PositionData.Parser, new[]{ "Vector2Data", "Vector3Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.LocalPositionData), global::GameData.LocalPositionData.Parser, new[]{ "Vector2Data", "Vector3Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.RotationData), global::GameData.RotationData.Parser, new[]{ "Vector2Data", "Vector3Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.LocalRotationData), global::GameData.LocalRotationData.Parser, new[]{ "Vector2Data", "Vector3Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.LocalScaleData), global::GameData.LocalScaleData.Parser, new[]{ "Vector2Data", "Vector3Data" }, null, null, null, null)
           }));
     }
     #endregion
 
   }
+  #region Enums
+  public enum CMD {
+    [pbr::OriginalName("MESSAGE")] Message = 0,
+    [pbr::OriginalName("Transfrom")] Transfrom = 1,
+    [pbr::OriginalName("Animator")] Animator = 2,
+  }
+
+  #endregion
+
   #region Messages
   public sealed partial class Data : pb::IMessage<Data>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -70,7 +109,8 @@ namespace GameData {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Data(Data other) : this() {
-      name_ = other.name_;
+      cMD_ = other.cMD_;
+      transfromData_ = other.transfromData_ != null ? other.transfromData_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -80,15 +120,27 @@ namespace GameData {
       return new Data(this);
     }
 
-    /// <summary>Field number for the "Name" field.</summary>
-    public const int NameFieldNumber = 1;
-    private string name_ = "";
+    /// <summary>Field number for the "CMD" field.</summary>
+    public const int CMDFieldNumber = 1;
+    private global::GameData.CMD cMD_ = global::GameData.CMD.Message;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string Name {
-      get { return name_; }
+    public global::GameData.CMD CMD {
+      get { return cMD_; }
       set {
-        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        cMD_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "TransfromData" field.</summary>
+    public const int TransfromDataFieldNumber = 2;
+    private global::GameData.TransfromData transfromData_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.TransfromData TransfromData {
+      get { return transfromData_; }
+      set {
+        transfromData_ = value;
       }
     }
 
@@ -107,7 +159,8 @@ namespace GameData {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Name != other.Name) return false;
+      if (CMD != other.CMD) return false;
+      if (!object.Equals(TransfromData, other.TransfromData)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -115,7 +168,8 @@ namespace GameData {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (CMD != global::GameData.CMD.Message) hash ^= CMD.GetHashCode();
+      if (transfromData_ != null) hash ^= TransfromData.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -134,9 +188,13 @@ namespace GameData {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (Name.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(Name);
+      if (CMD != global::GameData.CMD.Message) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) CMD);
+      }
+      if (transfromData_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(TransfromData);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -148,9 +206,13 @@ namespace GameData {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (Name.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(Name);
+      if (CMD != global::GameData.CMD.Message) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) CMD);
+      }
+      if (transfromData_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(TransfromData);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -162,8 +224,11 @@ namespace GameData {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (Name.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      if (CMD != global::GameData.CMD.Message) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) CMD);
+      }
+      if (transfromData_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(TransfromData);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -177,8 +242,837 @@ namespace GameData {
       if (other == null) {
         return;
       }
-      if (other.Name.Length != 0) {
-        Name = other.Name;
+      if (other.CMD != global::GameData.CMD.Message) {
+        CMD = other.CMD;
+      }
+      if (other.transfromData_ != null) {
+        if (transfromData_ == null) {
+          TransfromData = new global::GameData.TransfromData();
+        }
+        TransfromData.MergeFrom(other.TransfromData);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            CMD = (global::GameData.CMD) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (transfromData_ == null) {
+              TransfromData = new global::GameData.TransfromData();
+            }
+            input.ReadMessage(TransfromData);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            CMD = (global::GameData.CMD) input.ReadEnum();
+            break;
+          }
+          case 18: {
+            if (transfromData_ == null) {
+              TransfromData = new global::GameData.TransfromData();
+            }
+            input.ReadMessage(TransfromData);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class Vector3Data : pb::IMessage<Vector3Data>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<Vector3Data> _parser = new pb::MessageParser<Vector3Data>(() => new Vector3Data());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<Vector3Data> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Vector3Data() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Vector3Data(Vector3Data other) : this() {
+      x_ = other.x_;
+      y_ = other.y_;
+      z_ = other.z_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Vector3Data Clone() {
+      return new Vector3Data(this);
+    }
+
+    /// <summary>Field number for the "X" field.</summary>
+    public const int XFieldNumber = 1;
+    private float x_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float X {
+      get { return x_; }
+      set {
+        x_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Y" field.</summary>
+    public const int YFieldNumber = 2;
+    private float y_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float Y {
+      get { return y_; }
+      set {
+        y_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Z" field.</summary>
+    public const int ZFieldNumber = 3;
+    private float z_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float Z {
+      get { return z_; }
+      set {
+        z_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as Vector3Data);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(Vector3Data other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(X, other.X)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Y, other.Y)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Z, other.Z)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (X != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(X);
+      if (Y != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Y);
+      if (Z != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Z);
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (X != 0F) {
+        output.WriteRawTag(13);
+        output.WriteFloat(X);
+      }
+      if (Y != 0F) {
+        output.WriteRawTag(21);
+        output.WriteFloat(Y);
+      }
+      if (Z != 0F) {
+        output.WriteRawTag(29);
+        output.WriteFloat(Z);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (X != 0F) {
+        output.WriteRawTag(13);
+        output.WriteFloat(X);
+      }
+      if (Y != 0F) {
+        output.WriteRawTag(21);
+        output.WriteFloat(Y);
+      }
+      if (Z != 0F) {
+        output.WriteRawTag(29);
+        output.WriteFloat(Z);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (X != 0F) {
+        size += 1 + 4;
+      }
+      if (Y != 0F) {
+        size += 1 + 4;
+      }
+      if (Z != 0F) {
+        size += 1 + 4;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(Vector3Data other) {
+      if (other == null) {
+        return;
+      }
+      if (other.X != 0F) {
+        X = other.X;
+      }
+      if (other.Y != 0F) {
+        Y = other.Y;
+      }
+      if (other.Z != 0F) {
+        Z = other.Z;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 13: {
+            X = input.ReadFloat();
+            break;
+          }
+          case 21: {
+            Y = input.ReadFloat();
+            break;
+          }
+          case 29: {
+            Z = input.ReadFloat();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 13: {
+            X = input.ReadFloat();
+            break;
+          }
+          case 21: {
+            Y = input.ReadFloat();
+            break;
+          }
+          case 29: {
+            Z = input.ReadFloat();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class Vector2Data : pb::IMessage<Vector2Data>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<Vector2Data> _parser = new pb::MessageParser<Vector2Data>(() => new Vector2Data());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<Vector2Data> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Vector2Data() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Vector2Data(Vector2Data other) : this() {
+      x_ = other.x_;
+      y_ = other.y_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Vector2Data Clone() {
+      return new Vector2Data(this);
+    }
+
+    /// <summary>Field number for the "X" field.</summary>
+    public const int XFieldNumber = 1;
+    private float x_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float X {
+      get { return x_; }
+      set {
+        x_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Y" field.</summary>
+    public const int YFieldNumber = 2;
+    private float y_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public float Y {
+      get { return y_; }
+      set {
+        y_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as Vector2Data);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(Vector2Data other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(X, other.X)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Y, other.Y)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (X != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(X);
+      if (Y != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Y);
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (X != 0F) {
+        output.WriteRawTag(13);
+        output.WriteFloat(X);
+      }
+      if (Y != 0F) {
+        output.WriteRawTag(21);
+        output.WriteFloat(Y);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (X != 0F) {
+        output.WriteRawTag(13);
+        output.WriteFloat(X);
+      }
+      if (Y != 0F) {
+        output.WriteRawTag(21);
+        output.WriteFloat(Y);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (X != 0F) {
+        size += 1 + 4;
+      }
+      if (Y != 0F) {
+        size += 1 + 4;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(Vector2Data other) {
+      if (other == null) {
+        return;
+      }
+      if (other.X != 0F) {
+        X = other.X;
+      }
+      if (other.Y != 0F) {
+        Y = other.Y;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 13: {
+            X = input.ReadFloat();
+            break;
+          }
+          case 21: {
+            Y = input.ReadFloat();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 13: {
+            X = input.ReadFloat();
+            break;
+          }
+          case 21: {
+            Y = input.ReadFloat();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class TransfromData : pb::IMessage<TransfromData>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TransfromData> _parser = new pb::MessageParser<TransfromData>(() => new TransfromData());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<TransfromData> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TransfromData() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TransfromData(TransfromData other) : this() {
+      localPositionData_ = other.localPositionData_ != null ? other.localPositionData_.Clone() : null;
+      positionData_ = other.positionData_ != null ? other.positionData_.Clone() : null;
+      localRotationData_ = other.localRotationData_ != null ? other.localRotationData_.Clone() : null;
+      rotationData_ = other.rotationData_ != null ? other.rotationData_.Clone() : null;
+      localScaleData_ = other.localScaleData_ != null ? other.localScaleData_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public TransfromData Clone() {
+      return new TransfromData(this);
+    }
+
+    /// <summary>Field number for the "LocalPositionData" field.</summary>
+    public const int LocalPositionDataFieldNumber = 1;
+    private global::GameData.LocalPositionData localPositionData_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.LocalPositionData LocalPositionData {
+      get { return localPositionData_; }
+      set {
+        localPositionData_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "PositionData" field.</summary>
+    public const int PositionDataFieldNumber = 2;
+    private global::GameData.PositionData positionData_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.PositionData PositionData {
+      get { return positionData_; }
+      set {
+        positionData_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "LocalRotationData" field.</summary>
+    public const int LocalRotationDataFieldNumber = 3;
+    private global::GameData.LocalRotationData localRotationData_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.LocalRotationData LocalRotationData {
+      get { return localRotationData_; }
+      set {
+        localRotationData_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RotationData" field.</summary>
+    public const int RotationDataFieldNumber = 4;
+    private global::GameData.RotationData rotationData_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.RotationData RotationData {
+      get { return rotationData_; }
+      set {
+        rotationData_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "LocalScaleData" field.</summary>
+    public const int LocalScaleDataFieldNumber = 5;
+    private global::GameData.LocalScaleData localScaleData_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.LocalScaleData LocalScaleData {
+      get { return localScaleData_; }
+      set {
+        localScaleData_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as TransfromData);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(TransfromData other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(LocalPositionData, other.LocalPositionData)) return false;
+      if (!object.Equals(PositionData, other.PositionData)) return false;
+      if (!object.Equals(LocalRotationData, other.LocalRotationData)) return false;
+      if (!object.Equals(RotationData, other.RotationData)) return false;
+      if (!object.Equals(LocalScaleData, other.LocalScaleData)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (localPositionData_ != null) hash ^= LocalPositionData.GetHashCode();
+      if (positionData_ != null) hash ^= PositionData.GetHashCode();
+      if (localRotationData_ != null) hash ^= LocalRotationData.GetHashCode();
+      if (rotationData_ != null) hash ^= RotationData.GetHashCode();
+      if (localScaleData_ != null) hash ^= LocalScaleData.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (localPositionData_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(LocalPositionData);
+      }
+      if (positionData_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(PositionData);
+      }
+      if (localRotationData_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(LocalRotationData);
+      }
+      if (rotationData_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(RotationData);
+      }
+      if (localScaleData_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(LocalScaleData);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (localPositionData_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(LocalPositionData);
+      }
+      if (positionData_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(PositionData);
+      }
+      if (localRotationData_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(LocalRotationData);
+      }
+      if (rotationData_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(RotationData);
+      }
+      if (localScaleData_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(LocalScaleData);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (localPositionData_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LocalPositionData);
+      }
+      if (positionData_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(PositionData);
+      }
+      if (localRotationData_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LocalRotationData);
+      }
+      if (rotationData_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(RotationData);
+      }
+      if (localScaleData_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LocalScaleData);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(TransfromData other) {
+      if (other == null) {
+        return;
+      }
+      if (other.localPositionData_ != null) {
+        if (localPositionData_ == null) {
+          LocalPositionData = new global::GameData.LocalPositionData();
+        }
+        LocalPositionData.MergeFrom(other.LocalPositionData);
+      }
+      if (other.positionData_ != null) {
+        if (positionData_ == null) {
+          PositionData = new global::GameData.PositionData();
+        }
+        PositionData.MergeFrom(other.PositionData);
+      }
+      if (other.localRotationData_ != null) {
+        if (localRotationData_ == null) {
+          LocalRotationData = new global::GameData.LocalRotationData();
+        }
+        LocalRotationData.MergeFrom(other.LocalRotationData);
+      }
+      if (other.rotationData_ != null) {
+        if (rotationData_ == null) {
+          RotationData = new global::GameData.RotationData();
+        }
+        RotationData.MergeFrom(other.RotationData);
+      }
+      if (other.localScaleData_ != null) {
+        if (localScaleData_ == null) {
+          LocalScaleData = new global::GameData.LocalScaleData();
+        }
+        LocalScaleData.MergeFrom(other.LocalScaleData);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -196,7 +1090,38 @@ namespace GameData {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            Name = input.ReadString();
+            if (localPositionData_ == null) {
+              LocalPositionData = new global::GameData.LocalPositionData();
+            }
+            input.ReadMessage(LocalPositionData);
+            break;
+          }
+          case 18: {
+            if (positionData_ == null) {
+              PositionData = new global::GameData.PositionData();
+            }
+            input.ReadMessage(PositionData);
+            break;
+          }
+          case 26: {
+            if (localRotationData_ == null) {
+              LocalRotationData = new global::GameData.LocalRotationData();
+            }
+            input.ReadMessage(LocalRotationData);
+            break;
+          }
+          case 34: {
+            if (rotationData_ == null) {
+              RotationData = new global::GameData.RotationData();
+            }
+            input.ReadMessage(RotationData);
+            break;
+          }
+          case 42: {
+            if (localScaleData_ == null) {
+              LocalScaleData = new global::GameData.LocalScaleData();
+            }
+            input.ReadMessage(LocalScaleData);
             break;
           }
         }
@@ -215,7 +1140,1258 @@ namespace GameData {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            Name = input.ReadString();
+            if (localPositionData_ == null) {
+              LocalPositionData = new global::GameData.LocalPositionData();
+            }
+            input.ReadMessage(LocalPositionData);
+            break;
+          }
+          case 18: {
+            if (positionData_ == null) {
+              PositionData = new global::GameData.PositionData();
+            }
+            input.ReadMessage(PositionData);
+            break;
+          }
+          case 26: {
+            if (localRotationData_ == null) {
+              LocalRotationData = new global::GameData.LocalRotationData();
+            }
+            input.ReadMessage(LocalRotationData);
+            break;
+          }
+          case 34: {
+            if (rotationData_ == null) {
+              RotationData = new global::GameData.RotationData();
+            }
+            input.ReadMessage(RotationData);
+            break;
+          }
+          case 42: {
+            if (localScaleData_ == null) {
+              LocalScaleData = new global::GameData.LocalScaleData();
+            }
+            input.ReadMessage(LocalScaleData);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class PositionData : pb::IMessage<PositionData>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PositionData> _parser = new pb::MessageParser<PositionData>(() => new PositionData());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PositionData> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PositionData() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PositionData(PositionData other) : this() {
+      vector2Data_ = other.vector2Data_ != null ? other.vector2Data_.Clone() : null;
+      vector3Data_ = other.vector3Data_ != null ? other.vector3Data_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PositionData Clone() {
+      return new PositionData(this);
+    }
+
+    /// <summary>Field number for the "Vector2Data" field.</summary>
+    public const int Vector2DataFieldNumber = 1;
+    private global::GameData.Vector2Data vector2Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector2Data Vector2Data {
+      get { return vector2Data_; }
+      set {
+        vector2Data_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Vector3Data" field.</summary>
+    public const int Vector3DataFieldNumber = 2;
+    private global::GameData.Vector3Data vector3Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector3Data Vector3Data {
+      get { return vector3Data_; }
+      set {
+        vector3Data_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PositionData);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PositionData other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Vector2Data, other.Vector2Data)) return false;
+      if (!object.Equals(Vector3Data, other.Vector3Data)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (vector2Data_ != null) hash ^= Vector2Data.GetHashCode();
+      if (vector3Data_ != null) hash ^= Vector3Data.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (vector2Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PositionData other) {
+      if (other == null) {
+        return;
+      }
+      if (other.vector2Data_ != null) {
+        if (vector2Data_ == null) {
+          Vector2Data = new global::GameData.Vector2Data();
+        }
+        Vector2Data.MergeFrom(other.Vector2Data);
+      }
+      if (other.vector3Data_ != null) {
+        if (vector3Data_ == null) {
+          Vector3Data = new global::GameData.Vector3Data();
+        }
+        Vector3Data.MergeFrom(other.Vector3Data);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class LocalPositionData : pb::IMessage<LocalPositionData>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<LocalPositionData> _parser = new pb::MessageParser<LocalPositionData>(() => new LocalPositionData());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<LocalPositionData> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[5]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalPositionData() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalPositionData(LocalPositionData other) : this() {
+      vector2Data_ = other.vector2Data_ != null ? other.vector2Data_.Clone() : null;
+      vector3Data_ = other.vector3Data_ != null ? other.vector3Data_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalPositionData Clone() {
+      return new LocalPositionData(this);
+    }
+
+    /// <summary>Field number for the "Vector2Data" field.</summary>
+    public const int Vector2DataFieldNumber = 1;
+    private global::GameData.Vector2Data vector2Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector2Data Vector2Data {
+      get { return vector2Data_; }
+      set {
+        vector2Data_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Vector3Data" field.</summary>
+    public const int Vector3DataFieldNumber = 2;
+    private global::GameData.Vector3Data vector3Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector3Data Vector3Data {
+      get { return vector3Data_; }
+      set {
+        vector3Data_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as LocalPositionData);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(LocalPositionData other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Vector2Data, other.Vector2Data)) return false;
+      if (!object.Equals(Vector3Data, other.Vector3Data)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (vector2Data_ != null) hash ^= Vector2Data.GetHashCode();
+      if (vector3Data_ != null) hash ^= Vector3Data.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (vector2Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(LocalPositionData other) {
+      if (other == null) {
+        return;
+      }
+      if (other.vector2Data_ != null) {
+        if (vector2Data_ == null) {
+          Vector2Data = new global::GameData.Vector2Data();
+        }
+        Vector2Data.MergeFrom(other.Vector2Data);
+      }
+      if (other.vector3Data_ != null) {
+        if (vector3Data_ == null) {
+          Vector3Data = new global::GameData.Vector3Data();
+        }
+        Vector3Data.MergeFrom(other.Vector3Data);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class RotationData : pb::IMessage<RotationData>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<RotationData> _parser = new pb::MessageParser<RotationData>(() => new RotationData());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<RotationData> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public RotationData() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public RotationData(RotationData other) : this() {
+      vector2Data_ = other.vector2Data_ != null ? other.vector2Data_.Clone() : null;
+      vector3Data_ = other.vector3Data_ != null ? other.vector3Data_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public RotationData Clone() {
+      return new RotationData(this);
+    }
+
+    /// <summary>Field number for the "Vector2Data" field.</summary>
+    public const int Vector2DataFieldNumber = 1;
+    private global::GameData.Vector2Data vector2Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector2Data Vector2Data {
+      get { return vector2Data_; }
+      set {
+        vector2Data_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Vector3Data" field.</summary>
+    public const int Vector3DataFieldNumber = 2;
+    private global::GameData.Vector3Data vector3Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector3Data Vector3Data {
+      get { return vector3Data_; }
+      set {
+        vector3Data_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as RotationData);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(RotationData other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Vector2Data, other.Vector2Data)) return false;
+      if (!object.Equals(Vector3Data, other.Vector3Data)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (vector2Data_ != null) hash ^= Vector2Data.GetHashCode();
+      if (vector3Data_ != null) hash ^= Vector3Data.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (vector2Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(RotationData other) {
+      if (other == null) {
+        return;
+      }
+      if (other.vector2Data_ != null) {
+        if (vector2Data_ == null) {
+          Vector2Data = new global::GameData.Vector2Data();
+        }
+        Vector2Data.MergeFrom(other.Vector2Data);
+      }
+      if (other.vector3Data_ != null) {
+        if (vector3Data_ == null) {
+          Vector3Data = new global::GameData.Vector3Data();
+        }
+        Vector3Data.MergeFrom(other.Vector3Data);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class LocalRotationData : pb::IMessage<LocalRotationData>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<LocalRotationData> _parser = new pb::MessageParser<LocalRotationData>(() => new LocalRotationData());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<LocalRotationData> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[7]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalRotationData() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalRotationData(LocalRotationData other) : this() {
+      vector2Data_ = other.vector2Data_ != null ? other.vector2Data_.Clone() : null;
+      vector3Data_ = other.vector3Data_ != null ? other.vector3Data_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalRotationData Clone() {
+      return new LocalRotationData(this);
+    }
+
+    /// <summary>Field number for the "Vector2Data" field.</summary>
+    public const int Vector2DataFieldNumber = 1;
+    private global::GameData.Vector2Data vector2Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector2Data Vector2Data {
+      get { return vector2Data_; }
+      set {
+        vector2Data_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Vector3Data" field.</summary>
+    public const int Vector3DataFieldNumber = 2;
+    private global::GameData.Vector3Data vector3Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector3Data Vector3Data {
+      get { return vector3Data_; }
+      set {
+        vector3Data_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as LocalRotationData);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(LocalRotationData other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Vector2Data, other.Vector2Data)) return false;
+      if (!object.Equals(Vector3Data, other.Vector3Data)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (vector2Data_ != null) hash ^= Vector2Data.GetHashCode();
+      if (vector3Data_ != null) hash ^= Vector3Data.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (vector2Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(LocalRotationData other) {
+      if (other == null) {
+        return;
+      }
+      if (other.vector2Data_ != null) {
+        if (vector2Data_ == null) {
+          Vector2Data = new global::GameData.Vector2Data();
+        }
+        Vector2Data.MergeFrom(other.Vector2Data);
+      }
+      if (other.vector3Data_ != null) {
+        if (vector3Data_ == null) {
+          Vector3Data = new global::GameData.Vector3Data();
+        }
+        Vector3Data.MergeFrom(other.Vector3Data);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class LocalScaleData : pb::IMessage<LocalScaleData>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<LocalScaleData> _parser = new pb::MessageParser<LocalScaleData>(() => new LocalScaleData());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<LocalScaleData> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[8]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalScaleData() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalScaleData(LocalScaleData other) : this() {
+      vector2Data_ = other.vector2Data_ != null ? other.vector2Data_.Clone() : null;
+      vector3Data_ = other.vector3Data_ != null ? other.vector3Data_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public LocalScaleData Clone() {
+      return new LocalScaleData(this);
+    }
+
+    /// <summary>Field number for the "Vector2Data" field.</summary>
+    public const int Vector2DataFieldNumber = 1;
+    private global::GameData.Vector2Data vector2Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector2Data Vector2Data {
+      get { return vector2Data_; }
+      set {
+        vector2Data_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Vector3Data" field.</summary>
+    public const int Vector3DataFieldNumber = 2;
+    private global::GameData.Vector3Data vector3Data_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.Vector3Data Vector3Data {
+      get { return vector3Data_; }
+      set {
+        vector3Data_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as LocalScaleData);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(LocalScaleData other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Vector2Data, other.Vector2Data)) return false;
+      if (!object.Equals(Vector3Data, other.Vector3Data)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (vector2Data_ != null) hash ^= Vector2Data.GetHashCode();
+      if (vector3Data_ != null) hash ^= Vector3Data.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (vector2Data_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (vector2Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector2Data);
+      }
+      if (vector3Data_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Vector3Data);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(LocalScaleData other) {
+      if (other == null) {
+        return;
+      }
+      if (other.vector2Data_ != null) {
+        if (vector2Data_ == null) {
+          Vector2Data = new global::GameData.Vector2Data();
+        }
+        Vector2Data.MergeFrom(other.Vector2Data);
+      }
+      if (other.vector3Data_ != null) {
+        if (vector3Data_ == null) {
+          Vector3Data = new global::GameData.Vector3Data();
+        }
+        Vector3Data.MergeFrom(other.Vector3Data);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (vector2Data_ == null) {
+              Vector2Data = new global::GameData.Vector2Data();
+            }
+            input.ReadMessage(Vector2Data);
+            break;
+          }
+          case 18: {
+            if (vector3Data_ == null) {
+              Vector3Data = new global::GameData.Vector3Data();
+            }
+            input.ReadMessage(Vector3Data);
             break;
           }
         }
