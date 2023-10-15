@@ -1,4 +1,5 @@
 using System;
+using System.Net.Sockets;
 using System.Reflection;
 using FrameWork.AssetBundles;
 using FrameWork.NetManager.Attribute;
@@ -15,13 +16,24 @@ namespace FrameWork.cs
         {
             NetWork _netWork = new NetWork();
             _netWork.OpenServer += OpenServer;
+            _netWork.acceptAction += Accept;
+            _netWork.client.ReceiveSuccessAction += Receive;
             _netWork.NetAsServer("127.0.0.1",8888,100,2048);
-            Debug.Log("h");
         }
         
         private void OpenServer()
         {
             Debug.Log("服务器以打开");
+        }
+
+        private void Accept(object obj, SocketAsyncEventArgs args)
+        {
+            Debug.Log("链接到服务器");
+        }
+        
+        private void Receive(byte[] data,object obj, SocketAsyncEventArgs args)
+        {
+            Debug.Log("收到消息"+data);
         }
     }
     

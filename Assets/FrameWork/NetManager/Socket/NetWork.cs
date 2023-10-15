@@ -8,7 +8,7 @@ namespace FrameWork.NetManager.Socket
     {
         private System.Net.Sockets.Socket _socket;
 
-        private Client _client;
+        public Client client;
         private SocketAsyncEventArgs _accept;
 
         public Action OpenServer;
@@ -25,7 +25,7 @@ namespace FrameWork.NetManager.Socket
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             _socket = new System.Net.Sockets.Socket(ipEndPoint.AddressFamily, SocketType.Stream,ProtocolType.Tcp);
-            _client = new Client(_socket, count);
+            client = new Client(_socket, count);
             _socket.Connect(ipEndPoint);
            
         }
@@ -35,7 +35,7 @@ namespace FrameWork.NetManager.Socket
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             _socket = new System.Net.Sockets.Socket(ipEndPoint.AddressFamily, SocketType.Stream,ProtocolType.Tcp);
-            _client = new Client(_socket, count);
+            client = new Client(_socket, count);
             _socket.Bind(ipEndPoint);
             _socket.Listen(maxAccept);
             OpenServer?.Invoke();
