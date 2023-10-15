@@ -8,11 +8,14 @@ namespace FrameWork.NetManager.Socket
     {
         private System.Net.Sockets.Socket _socket;
 
+        
+        
         public Client client;
         private SocketAsyncEventArgs _accept;
 
         public Action OpenServer;
 
+        public Action<byte[],object, SocketAsyncEventArgs> ReceiveSuccessAction;
         public Action<object, SocketAsyncEventArgs> acceptAction;
         private int index=0;
         public NetWork()
@@ -55,7 +58,9 @@ namespace FrameWork.NetManager.Socket
         
         void SuccessConnect()
         {
-            SocketManager.Instance.AddClient(index,new Client(_accept.AcceptSocket,2048){ID = index});
+            Client cli=new Client(_accept.AcceptSocket, 2048) { ID = index };
+            cli.ReceiveSuccessAction += ReceiveSuccessAction;
+            SocketManager.Instance.AddClient(index,cli);
             _accept.AcceptSocket = null;
             acceptAction?.Invoke(_accept.AcceptSocket,_accept);
             index += 1;

@@ -17,7 +17,7 @@ namespace FrameWork.cs
             NetWork _netWork = new NetWork();
             _netWork.OpenServer += OpenServer;
             _netWork.acceptAction += Accept;
-            _netWork.client.ReceiveSuccessAction += Receive;
+            _netWork.ReceiveSuccessAction += Receive;
             _netWork.NetAsServer("127.0.0.1",8888,100,2048);
         }
         
