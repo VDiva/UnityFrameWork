@@ -16,9 +16,22 @@ namespace FrameWork.NetManager.Attribute
         private string _key;
         public NetFile(string key)
         {
+        
             _key = key;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public class Identity : System.Attribute
+    {
+        private Identity _identity;
+        public Identity()
+        {
+            
+        }
+    }
+    
+    
     
     
 }

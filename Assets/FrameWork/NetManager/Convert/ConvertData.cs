@@ -64,14 +64,12 @@ namespace FrameWork.NetManager.Convert
             };
         }
 
-        public static Vector2Data ToVector3Data(this Vector2Data vec2)
+        public static Vector2Data ToVector2Data(this Vector2Data vec2)
         {
             return new Vector2Data()
             {
                 X = vec2.X,
                 Y = vec2.Y,
-                
-
             };
         }
         
