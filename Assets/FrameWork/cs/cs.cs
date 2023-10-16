@@ -1,5 +1,8 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
+using FrameWork.AssetBundles;
+using FrameWork.Global;
 using FrameWork.NetManager.Convert;
 using GameData;
 using UnityEngine;
@@ -13,7 +16,12 @@ namespace FrameWork.cs
         
         private void Start()
         {
-            
+           DownLoad.DownLoadAbVersion(GlobalVariables.ABConfigPath+"/ABConfig.txt",(s =>
+           {
+               Debug.Log(Application.persistentDataPath);
+               File.WriteAllBytes(Application.persistentDataPath+"/ABConfig.txt",s);
+               Debug.Log(s);
+           } ));
         }
 
 

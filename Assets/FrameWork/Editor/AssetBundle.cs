@@ -1,14 +1,15 @@
+using System.Collections;
 using System.IO;
+using FrameWork.Coroutine;
 using FrameWork.Global;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace FrameWork.Editor
 {
     public class AssetBundle: UnityEditor.Editor
     {
-        
-        
         
         [MenuItem("FrameWork/AB/CreatAssetBundle for Android")]
         public static void CreatAssetBundleAsAndroid()
@@ -49,6 +50,42 @@ namespace FrameWork.Editor
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Windows Finish!");
         }
+
+
+        [MenuItem("Assets/FrameWork/SetAB/Material")]
+        public static void SetMaterialAb()
+        {
+            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+            ai.assetBundleName = GlobalVariables.MaterialABName;
+            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+        }
+        
+        [MenuItem("Assets/FrameWork/SetAB/UiPrefab")]
+        public static void SetUiPrefabAb()
+        {
+            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+            ai.assetBundleName = GlobalVariables.UiABName;
+            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+        }
+        
+        [MenuItem("Assets/FrameWork/SetAB/ScriptPrefab")]
+        public static void SetScriptPrefabAb()
+        {
+            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+            ai.assetBundleName = GlobalVariables.ScriptPrefabABName;
+            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+        }
+        
+        [MenuItem("Assets/FrameWork/SetAB/Screen")]
+        public static void SetScreen()
+        {
+            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+            ai.assetBundleName = GlobalVariables.ScreenABName;
+            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+        }
+
+
+        
         
     }
 }

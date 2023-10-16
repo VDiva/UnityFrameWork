@@ -26,7 +26,7 @@ namespace FrameWork.Editor
             
             
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-            ai.assetBundleName = GlobalVariables.ABName;
+            ai.assetBundleName = GlobalVariables.ScriptPrefabABName;
             ai.assetBundleVariant = GlobalVariables.ABNameEnd;
             
             if (!Directory.Exists(path+"/"+name))
@@ -88,6 +88,7 @@ namespace FrameWork.Editor
             }
             
             AssetBundle.CreatPCAssetBundleAsWindows();
+        
             AssetDatabase.Refresh();
             if (Selection.activeGameObject.GetComponent("Prefab.Script."+Selection.activeGameObject.name)==null)
             {

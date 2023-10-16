@@ -7,9 +7,24 @@ namespace FrameWork.AssetBundles
 {
     public class LoadAbAsset
     {
-        public static T LoadAsset<T>(string name) where T : UnityEngine.Object
+        public static T LoadAssetAsPrefab<T>(string name) where T : UnityEngine.Object
         {
-            return AssetBundlesLoad.LoadAsset<T>(GlobalVariables.ABName,name);
+            return AssetBundlesLoad.LoadAsset<T>(GlobalVariables.ScriptPrefabABName,name);
+        }
+        
+        public static T LoadAssetAsUiPrefab<T>(string name) where T : UnityEngine.Object
+        {
+            return AssetBundlesLoad.LoadAsset<T>(GlobalVariables.UiABName,name);
+        }
+        
+        public static T LoadAssetAsMaterial<T>(string name) where T : UnityEngine.Object
+        {
+            return AssetBundlesLoad.LoadAsset<T>(GlobalVariables.MaterialABName,name);
+        }
+        
+        public static T LoadAssetAsScreen<T>(string name) where T : UnityEngine.Object
+        {
+            return AssetBundlesLoad.LoadAsset<T>(GlobalVariables.ScreenABName,name);
         }
     }
 }
