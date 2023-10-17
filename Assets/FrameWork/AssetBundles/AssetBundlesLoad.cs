@@ -15,14 +15,17 @@ namespace FrameWork.AssetBundles
             AssetBundle assetBundle;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName);
+                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.ABNameEnd);
+                Debug.Log(Application.persistentDataPath+"/"+packName);
                 if (fileInfo.Exists)
                 {
                     assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.ABNameEnd);
+                    Debug.Log("从新包"+packName+"加载:"+name);
                 }
                 else
                 {
                     assetBundle=AssetBundle.LoadFromFile(GlobalVariables.ABAsWindows+"/"+packName+"."+GlobalVariables.ABNameEnd);
+                    Debug.Log("从旧包"+packName+"加载:"+name);
                 }
                 _assetBundles.TryAdd(packName, assetBundle);
                 
