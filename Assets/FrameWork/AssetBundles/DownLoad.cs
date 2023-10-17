@@ -29,6 +29,7 @@ namespace FrameWork.AssetBundles
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
+                    
                     lenght = response.ContentLength;
                     Console.WriteLine(response.ContentLength);
                 }

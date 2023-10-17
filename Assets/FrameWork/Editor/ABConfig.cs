@@ -35,7 +35,7 @@ namespace FrameWork.Editor
                 Directory.CreateDirectory(GlobalVariables.ABConfigPath);
             }
             
-            using (StreamWriter sw=new StreamWriter(GlobalVariables.ABConfigPath+"/ABConfig.txt",false))
+            using (StreamWriter sw=new StreamWriter(GlobalVariables.ABConfigPath+"/"+GlobalVariables.ABConfigName,false))
             {
                 sw.Write(info);
             }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Text;
 using FrameWork.AssetBundles;
 using FrameWork.Global;
 using FrameWork.NetManager.Convert;
@@ -16,8 +17,13 @@ namespace FrameWork.cs
         
         private void Start()
         {
-            GameObject go=LoadAbAsset.LoadAssetAsPrefab<GameObject>("Cube");
-            Instantiate(go, transform);
+            VersionDetection.Detection((strings =>
+            {
+                foreach (var item in strings)
+                {
+                    Debug.Log(item);
+                }
+            } ));
         }
 
 
