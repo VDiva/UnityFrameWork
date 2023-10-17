@@ -10,7 +10,7 @@ namespace FrameWork.AssetBundles
 {
     public static class VersionDetection
     {
-        public static void Detection(Action<string[]> versionInfo)
+        public static void Detection(Action<List<string>> versionInfo)
         {
             DownLoad.DownLoadAsset(GlobalVariables.UpdateDownLoadUrl+GlobalVariables.ABConfigName,(
                 (f, f1, arg3, arg4) =>
@@ -59,11 +59,16 @@ namespace FrameWork.AssetBundles
                                 infos.Add(item.Key);
                             }
                         }
-                        versionInfo(infos.ToArray());
+                        versionInfo(infos);
                     }
                     else
                     {
-                        versionInfo(newInfo);
+                        foreach (var item in newInfo)
+                        {
+                            infos.Add(item.Split(' ')[0]);
+                        }
+                        
+                        versionInfo(infos);
                     }
                     
                     
