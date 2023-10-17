@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using FrameWork.Global;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -14,8 +15,17 @@ namespace FrameWork.AssetBundles
             AssetBundle assetBundle;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                assetBundle=AssetBundle.LoadFromFile(GlobalVariables.ABAsWindows+"/"+packName+"."+GlobalVariables.ABNameEnd);
+                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName);
+                if (fileInfo.Exists)
+                {
+                    assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.ABNameEnd);
+                }
+                else
+                {
+                    assetBundle=AssetBundle.LoadFromFile(GlobalVariables.ABAsWindows+"/"+packName+"."+GlobalVariables.ABNameEnd);
+                }
                 _assetBundles.TryAdd(packName, assetBundle);
+                
             }
             var obj=assetBundle.LoadAsset<T>(name);
             return obj;

@@ -16,11 +16,13 @@ namespace FrameWork.cs
         
         private void Start()
         {
-           DownLoad.DownLoadAbVersion(GlobalVariables.ABConfigPath+"/ABConfig.txt",(s =>
+           DownLoad.DownLoadAsset("https://download-cdn.jetbrains.com/rider/JetBrains.Rider-2023.2.2.exe",((progress,speed,curDown,lenght) =>
            {
-               Debug.Log(Application.persistentDataPath);
-               File.WriteAllBytes(Application.persistentDataPath+"/ABConfig.txt",s);
-               Debug.Log(s);
+               Debug.Log("下载进度:"+progress+"-下载速度:"+speed+"-"+curDown+"/"+lenght);
+           } ),((bytes,fileName) =>
+           {
+               File.WriteAllBytes(Application.persistentDataPath+"/"+fileName,bytes);
+               Debug.Log("下载完成");
            } ));
         }
 

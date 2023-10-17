@@ -26,6 +26,13 @@ namespace FrameWork.Tool
                 return sb.ToString();
             }
         }
+        
+        public static long ConvertDateTimep(DateTime time)
+        {
+            return ((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
+            //等价于：
+            //return ((time.ToUniversalTime().Ticks - new DateTime(1970, 1, 1, 0, 0, 0, 0).Ticks) / 10000000) * 1000;
+        }
 
     }
 }

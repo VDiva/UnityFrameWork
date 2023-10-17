@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.IO;
+using System.Net;
 using System.Text;
 using FrameWork.Coroutine;
 using UnityEngine;
@@ -9,48 +11,68 @@ namespace FrameWork.AssetBundles
 {
     public class DownLoad
     {
-        public static void DownLoadAbVersion(string path,Action<byte[]> action)
+        static int num = 1024; //byte
+        public static void DownLoadAsset(string path,Action<float,float,string,string> progress,Action<byte[],string> data)
         {
-            Mono.Instance.StartCoroutine(DownLoadAbVersionIEumerator(path,action));
+            Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data));
         }
 
-        static IEnumerator DownLoadAbVersionIEumerator(string path,Action<byte[]> action)
+        static IEnumerator DownLoadAssetIEumerator(string path,Action<float,float,string,string> progress,Action<byte[],string> data)
         {
             using (UnityWebRequest uwr=UnityWebRequest.Get(path))
             {
-                yield return uwr.SendWebRequest();
+                
+                long lenght=1;
+                
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
+                request.Method = "HEAD";
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    lenght = response.ContentLength;
+                    Console.WriteLine(response.ContentLength);
+                }
+
+                string fileSize = GetFileSize(lenght);
+                uwr.SendWebRequest();
+                
                 if (uwr.isHttpError|| uwr.isNetworkError)
                 {
                     Debug.Log(uwr.error);
+                    yield break;
                 }
-                else
+                long statrTime = Tool.Tool.ConvertDateTimep(DateTime.Now);
+                
+                while (!uwr.isDone)
                 {
-                    byte[] data=uwr.downloadHandler.data;
-                    action(data);
+                    long curTime = Tool.Tool.ConvertDateTimep(DateTime.Now)-statrTime;
+                    float prog = uwr.downloadProgress;
+                    
+                    progress(prog,prog/curTime*1000,GetFileSize((long)(prog*lenght)),fileSize);
+                    yield return null;
+                }
+
+                if (uwr.isDone)
+                {
+                    var downLoad = uwr.downloadHandler;
+                    data(downLoad.data,Path.GetFileName(path));
                 }
             }
         }
         
         
-        public static void DownLoadAb(string path,Action<AssetBundle> action)
+        public static string GetFileSize(long size)
         {
-            Mono.Instance.StartCoroutine(DownLoadAbIEumerator(path,action));
+            if (size < num)
+                return size + "B";
+            if (size < Math.Pow(num, 2))
+                return (size / num).ToString("f2") + "K"; //kb
+            if (size < Math.Pow(num, 3))
+                return (size / Math.Pow(num, 2)).ToString("f2") + "M"; //M
+            if (size < Math.Pow(num, 4))
+                return (size / Math.Pow(num, 3)).ToString("f2") + "G"; //G
+            return (size / Math.Pow(num, 4)).ToString("f2") + "T"; //T
         }
-
-        static IEnumerator DownLoadAbIEumerator(string path,Action<AssetBundle> action)
-        {
-            using (UnityWebRequest uwr=UnityWebRequest.Get(path))
-            {
-                yield return uwr.SendWebRequest();
-                if (uwr.isHttpError|| uwr.isNetworkError)
-                {
-                    Debug.Log(uwr.error);
-                }
-                else
-                {
-                    byte[] data=uwr.downloadHandler.data;
-                }
-            }
-        }
+        
     }
 }
