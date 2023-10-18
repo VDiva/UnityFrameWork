@@ -93,29 +93,28 @@ namespace FrameWork.AssetBundles
             
         }
         
-        public static void GetPackSize(string path,Action<long> lenght)
-        {
+        // public static void GetPackSize(string path,Action<long> lenght)
+        // {
+        //     Mono.Instance.StartCoroutine(GetPackSizeIEnumerator(path, lenght));
+        // }
 
-            Mono.Instance.StartCoroutine(GetPackSizeIEnumerator(path, lenght));
-        }
-
-        public static IEnumerator GetPackSizeIEnumerator(string path,Action<long> lenght)
-        {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
-            request.Method = "HEAD";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            while (true)
-            {
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    lenght(response.ContentLength);
-                    Debug.Log(response.ContentLength);
-                    yield break;
-                }
-                yield return 0;
-                
-            }
-        }
+        // public static IEnumerator GetPackSizeIEnumerator(string path,Action<long> lenght)
+        // {
+        //     HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
+        //     request.Method = "HEAD";
+        //     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        //     while (true)
+        //     {
+        //         if (response.StatusCode == HttpStatusCode.OK)
+        //         {
+        //             lenght(response.ContentLength);
+        //             Debug.Log(response.ContentLength);
+        //             yield break;
+        //         }
+        //         yield return 0;
+        //         
+        //     }
+        // }
         
     }
 }

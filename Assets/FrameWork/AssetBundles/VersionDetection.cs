@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using FrameWork.Coroutine;
 using FrameWork.Global;
@@ -12,53 +13,47 @@ namespace FrameWork.AssetBundles
 {
     public static class VersionDetection
     {
-        public static void Detection(Action<List<string>> versionInfo)
+        public static void Detection(Action<List<AbPackDate>> versionInfo)
         {
             DownLoad.DownLoadAsset(GlobalVariables.UpdateDownLoadUrl+GlobalVariables.ABConfigName,(
                 (f, f1, arg3, arg4) =>
                 { } ),(
                 (bytes, s) =>
                 {
-                    List<string> infos = new List<string>();
+                    List<AbPackDate> infos = new List<AbPackDate>();
 
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
                     
                     FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+  GlobalVariables.ABConfigName);
-                    ConcurrentDictionary<string, string> newInfoDictionary;
-                    ConcurrentDictionary<string, string> oldInfoDictionary;
+                    List<AbPackDate> newInfoList=new List<AbPackDate>();
+                    List<AbPackDate> oldInfoList=new List<AbPackDate>();
                     
                     if (fileInfo.Exists)
                     {
-                        newInfoDictionary = new ConcurrentDictionary<string, string>();
-                        oldInfoDictionary = new ConcurrentDictionary<string, string>();
+                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" + GlobalVariables.ABConfigName,Encoding.UTF8);
+                        string[] oldInfos = oldInfo.Split('|');
+                        
+                        
                         foreach (var item in newInfo)
                         {
-                            string[] sinInfo = item.Split(' ');
-                            newInfoDictionary.TryAdd(sinInfo[0], sinInfo[1]);
+                            string[] strings = item.Split(' ');
+                            newInfoList.Add(new AbPackDate(){Name = strings[0],Size = strings[1],Md5 = strings[2]});
                         }
-
-                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" + GlobalVariables.ABConfigName,Encoding.UTF8);
-
-                        string[] oldInfos = oldInfo.Split('|');
                         foreach (var item in oldInfos)
                         {
-                            string[] sinInfo = item.Split(' ');
-                            oldInfoDictionary.TryAdd(sinInfo[0], sinInfo[1]);
+                            string[] strings = item.Split(' ');
+                            oldInfoList.Add(new AbPackDate(){Name = strings[0],Size = strings[1],Md5 = strings[2]});
                         }
 
-                        foreach (var item in newInfoDictionary)
+                        foreach (var newIn in newInfoList)
                         {
-                            if (oldInfoDictionary.TryGetValue(item.Key, out var value))
+                            foreach (var oldIn in oldInfoList)
                             {
-                                if (!value.Equals(item.Value))
+                                if (newIn.Name.Equals(oldIn.Name)&& !newIn.Md5.Equals(oldIn.Md5))
                                 {
-                                    infos.Add(item.Key);
+                                    infos.Add(newIn);
                                 }
-                            }
-                            else
-                            {
-                                infos.Add(item.Key);
                             }
                         }
                         versionInfo(infos);
@@ -67,61 +62,60 @@ namespace FrameWork.AssetBundles
                     {
                         foreach (var item in newInfo)
                         {
-                            infos.Add(item.Split(' ')[0]);
+                            string[] strings = item.Split(' ');
+                            infos.Add(new AbPackDate(){Name = strings[0],Size = strings[1],Md5 = strings[2]});
                         }
                         
                         versionInfo(infos);
                     }
-                    
-                    
                 }));
             
             
         }
 
 
-        public static string GetAllPackSize(List<string> infos)
-        {
-            long lenght = 1;
-            foreach (var item in infos)
-            {
-                long len=DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item);
-                lenght += len;
-            }
-
-            return DownLoad.GetFileSize(lenght);
-        }
-        
-        public static void GetAllPackSize(List<string> infos,Action<long> lenght)
-        {
-            Mono.Instance.StartCoroutine(GetAllPackSizeIEnumerator(infos, lenght));
-        }
-
-        public static IEnumerator GetAllPackSizeIEnumerator(List<string> infos,Action<long> lenght)
-        {
-            long len = 1;
-            int index = 0;
-            foreach (var item in infos)
-            {
-                DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item,(l =>
-                {
-                    len += l;
-                    index += 1;
-                } ));
-            }
-
-            yield return 0;
-
-            while (true)
-            {
-                if (index==infos.Count)
-                {
-                    lenght(len);
-                    yield break;
-                }
-
-                yield return 0;
-            }
-        }
+        // public static string GetAllPackSize(List<string> infos)
+        // {
+        //     long lenght = 1;
+        //     foreach (var item in infos)
+        //     {
+        //         long len=DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item);
+        //         lenght += len;
+        //     }
+        //
+        //     return DownLoad.GetFileSize(lenght);
+        // }
+        //
+        // public static void GetAllPackSize(List<List<string>> infos,Action<long> lenght)
+        // {
+        //     Mono.Instance.StartCoroutine(GetAllPackSizeIEnumerator(infos, lenght));
+        // }
+        //
+        // public static IEnumerator GetAllPackSizeIEnumerator(List<List<string>> infos,Action<long> lenght)
+        // {
+        //     long len = 1;
+        //     int index = 0;
+        //     foreach (var item in infos)
+        //     {
+        //         DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item[0],(l =>
+        //         {
+        //             len += l;
+        //             index += 1;
+        //         } ));
+        //     }
+        //
+        //     yield return 0;
+        //
+        //     while (true)
+        //     {
+        //         if (index==infos.Count)
+        //         {
+        //             lenght(len);
+        //             yield break;
+        //         }
+        //
+        //         yield return 0;
+        //     }
+        // }
     }
 }

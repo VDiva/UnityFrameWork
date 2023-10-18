@@ -24,7 +24,7 @@ namespace FrameWork.Editor
             {
                 if (item.Extension.Equals(".info"))
                 {
-                    info += item.Name + " "+ Tool.Tool.GetMd5(item.FullName);
+                    info += item.Name + " "+item.Length+" "+ Tool.Tool.GetMd5(item.FullName);
                     info += "|";
                 }
             }
