@@ -17,13 +17,32 @@ namespace FrameWork.cs
         
         private void Start()
         {
-            VersionDetection.Detection((abPack =>
+            VersionDetection.Detection(((abPack,config) =>
             {
+                long lenght = 0;
                 foreach (var item in abPack)
                 {
-                    Debug.Log(item.Name+"-"+item.Size+"-"+item.Md5);
+                    lenght += item.Size;
                 }
-            } ));
+                Debug.Log("检测到更新大小为:"+DownLoad.GetFileSize(lenght));
+                
+                DownLoadAbPack.AddPackDownTack(abPack,((progress, speed, curLenght, len) =>
+                {
+                    Debug.Log("下载进度:"+progress+"-下载速度:"+speed+"-"+curLenght+"/"+len);
+                } ),(list =>
+                {
+                    Debug.Log("下载成功 更新文件为"+DownLoad.GetFileSize(config.Length));
+                    File.WriteAllBytes(Application.persistentDataPath+"/"+GlobalVariables.ABConfigName,config);
+                    foreach (var item in list)
+                    {
+                        Debug.Log(item.Name+" 下载大小为:"+DownLoad.GetFileSize(item.PackData.Length));
+                        File.WriteAllBytes(Application.persistentDataPath+"/"+item.Name,item.PackData);
+                    }
+                    
+                } ));
+                
+                
+            }));
             
         }
 

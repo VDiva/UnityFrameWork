@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using FrameWork.Coroutine;
 using FrameWork.Global;
 using UnityEngine;
 
@@ -13,7 +9,7 @@ namespace FrameWork.AssetBundles
 {
     public static class VersionDetection
     {
-        public static void Detection(Action<List<AbPackDate>> versionInfo)
+        public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
         {
             DownLoad.DownLoadAsset(GlobalVariables.UpdateDownLoadUrl+GlobalVariables.ABConfigName,(
                 (f, f1, arg3, arg4) =>
@@ -38,12 +34,12 @@ namespace FrameWork.AssetBundles
                         foreach (var item in newInfo)
                         {
                             string[] strings = item.Split(' ');
-                            newInfoList.Add(new AbPackDate(){Name = strings[0],Size = strings[1],Md5 = strings[2]});
+                            newInfoList.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
                         }
                         foreach (var item in oldInfos)
                         {
                             string[] strings = item.Split(' ');
-                            oldInfoList.Add(new AbPackDate(){Name = strings[0],Size = strings[1],Md5 = strings[2]});
+                            oldInfoList.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
                         }
 
                         foreach (var newIn in newInfoList)
@@ -56,17 +52,17 @@ namespace FrameWork.AssetBundles
                                 }
                             }
                         }
-                        versionInfo(infos);
+                        versionInfo(infos,bytes);
                     }
                     else
                     {
                         foreach (var item in newInfo)
                         {
                             string[] strings = item.Split(' ');
-                            infos.Add(new AbPackDate(){Name = strings[0],Size = strings[1],Md5 = strings[2]});
+                            infos.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
                         }
                         
-                        versionInfo(infos);
+                        versionInfo(infos,bytes);
                     }
                 }));
             
