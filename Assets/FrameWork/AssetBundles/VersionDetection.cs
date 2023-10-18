@@ -46,6 +46,10 @@ namespace FrameWork.AssetBundles
                         {
                             foreach (var oldIn in oldInfoList)
                             {
+                                if (!ListHasValue(oldInfoList, newIn.Name))
+                                {
+                                    infos.Add(newIn);
+                                }
                                 if (newIn.Name.Equals(oldIn.Name)&& !newIn.Md5.Equals(oldIn.Md5))
                                 {
                                     infos.Add(newIn);
@@ -67,6 +71,19 @@ namespace FrameWork.AssetBundles
                 }));
             
             
+        }
+
+        public static bool ListHasValue(List<AbPackDate> da1, string da2)
+        {
+            foreach (var item in da1)
+            {
+                if (item.Name.Equals(da2))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
 
