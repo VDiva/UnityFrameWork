@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using FrameWork.Coroutine;
 using FrameWork.Global;
 using UnityEngine;
 
@@ -75,6 +77,51 @@ namespace FrameWork.AssetBundles
                 }));
             
             
+        }
+
+
+        public static string GetAllPackSize(List<string> infos)
+        {
+            long lenght = 1;
+            foreach (var item in infos)
+            {
+                long len=DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item);
+                lenght += len;
+            }
+
+            return DownLoad.GetFileSize(lenght);
+        }
+        
+        public static void GetAllPackSize(List<string> infos,Action<long> lenght)
+        {
+            Mono.Instance.StartCoroutine(GetAllPackSizeIEnumerator(infos, lenght));
+        }
+
+        public static IEnumerator GetAllPackSizeIEnumerator(List<string> infos,Action<long> lenght)
+        {
+            long len = 1;
+            int index = 0;
+            foreach (var item in infos)
+            {
+                DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item,(l =>
+                {
+                    len += l;
+                    index += 1;
+                } ));
+            }
+
+            yield return 0;
+
+            while (true)
+            {
+                if (index==infos.Count)
+                {
+                    lenght(len);
+                    yield break;
+                }
+
+                yield return 0;
+            }
         }
     }
 }

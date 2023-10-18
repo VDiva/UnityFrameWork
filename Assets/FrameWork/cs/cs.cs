@@ -19,11 +19,16 @@ namespace FrameWork.cs
         {
             VersionDetection.Detection((strings =>
             {
-                foreach (var item in strings)
+                VersionDetection.GetAllPackSize(strings,(size =>
                 {
-                    Debug.Log(item);
-                }
+                    Debug.Log("检测到有更新更新大小:"+size);
+                    // foreach (var item in strings)
+                    // {
+                    //     Debug.Log(item);
+                    // }
+                } ));
             } ));
+            
         }
 
 

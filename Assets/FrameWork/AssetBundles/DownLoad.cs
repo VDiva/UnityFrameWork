@@ -23,16 +23,16 @@ namespace FrameWork.AssetBundles
             {
                 
                 long lenght=1;
-                
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
-                request.Method = "HEAD";
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    
-                    lenght = response.ContentLength;
-                    Console.WriteLine(response.ContentLength);
-                }
+                // HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
+                // request.Method = "HEAD";
+                // HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                // if (response.StatusCode == HttpStatusCode.OK)
+                // {
+                //     
+                //     lenght = response.ContentLength;
+                //     Console.WriteLine(response.ContentLength);
+                // }
+                lenght=GetPackSize(path);
 
                 string fileSize = GetFileSize(lenght);
                 uwr.SendWebRequest();
@@ -73,6 +73,48 @@ namespace FrameWork.AssetBundles
             if (size < Math.Pow(num, 4))
                 return (size / Math.Pow(num, 3)).ToString("f2") + "G"; //G
             return (size / Math.Pow(num, 4)).ToString("f2") + "T"; //T
+        }
+
+
+        public static long GetPackSize(string path)
+        {
+            Debug.Log(path);
+            long lenght=1;
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
+            request.Method = "HEAD";
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                lenght = response.ContentLength;
+                Console.WriteLine(response.ContentLength);
+            }
+            return lenght;
+            
+        }
+        
+        public static void GetPackSize(string path,Action<long> lenght)
+        {
+
+            Mono.Instance.StartCoroutine(GetPackSizeIEnumerator(path, lenght));
+        }
+
+        public static IEnumerator GetPackSizeIEnumerator(string path,Action<long> lenght)
+        {
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
+            request.Method = "HEAD";
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            while (true)
+            {
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    lenght(response.ContentLength);
+                    Debug.Log(response.ContentLength);
+                    yield break;
+                }
+                yield return 0;
+                
+            }
         }
         
     }
