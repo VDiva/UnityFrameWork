@@ -49,6 +49,12 @@ namespace FrameWork.AssetBundles
             return obj;
         }
         
+        public static void SavePack(byte[] data,string packName)
+        {
+            _assetBundles.TryAdd(packName, AssetBundle.LoadFromMemory(data));
+        }
+        
+        
         public static void LoadAssetAsync<T>(string packName,string name,BuildTarget buildTarget,Action<T> action) where T : Object
         {
             AssetBundle assetBundle;

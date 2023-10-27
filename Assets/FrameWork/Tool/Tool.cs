@@ -33,6 +33,56 @@ namespace FrameWork.Tool
             //等价于：
             //return ((time.ToUniversalTime().Ticks - new DateTime(1970, 1, 1, 0, 0, 0, 0).Ticks) / 10000000) * 1000;
         }
+        
+        
+        
+        // public static void CopyAb(string path,string path2,string key)
+        // {
+        //     var data = File.ReadAllBytes(path);
+        //     var encryptData=Encrypt(data, key);
+        //     var newName="encrypt"+Path.GetFileName(path);
+        //     File.WriteAllBytes(path2+"/"+newName,encryptData);
+        // }
+        
+        
+        //private string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
+        
+        /// <summary>
+        /// AES加密
+        /// </summary>
+        /// <param name="toEncryptArray">明文</param>
+        /// <param name="key">密钥</param>
+        /// <returns></returns>
+        public static byte[] Encrypt(byte[] toEncryptArray, string key)
+        {
+            //byte[] keyArray = UTF8Encoding.UTF8.GetBytes(key);        
+            byte[] keyArray = Convert.FromBase64String(key);        
+            RijndaelManaged rDel = new RijndaelManaged();
+            rDel.Key = keyArray;
+            rDel.Mode = CipherMode.ECB;
+            rDel.Padding = PaddingMode.PKCS7;
+            ICryptoTransform cTransform = rDel.CreateEncryptor();
+            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+            return resultArray;
+        }
+ 
+        /// <summary>
+        /// AES解密
+        /// </summary>
+        /// <param name="toEncryptArray">密文</param>
+        /// <param name="key">密钥</param>
+        /// <returns></returns>
+        public static byte[] Decrypt(byte[] toEncryptArray, string key)
+        {
+            byte[] keyArray = Convert.FromBase64String(key);        
+            RijndaelManaged rDel = new RijndaelManaged();
+            rDel.Key = keyArray;
+            rDel.Mode = CipherMode.ECB;
+            rDel.Padding = PaddingMode.PKCS7;
+            ICryptoTransform cTransform = rDel.CreateDecryptor();
+            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+            return resultArray;
+        }
 
     }
 }
