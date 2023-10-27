@@ -11,7 +11,7 @@ namespace FrameWork.AssetBundles
     {
         public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
         {
-            DownLoad.DownLoadAsset(GlobalVariables.UpdateDownLoadUrl+GlobalVariables.ABConfigName,(
+            DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+GlobalVariables.Configure.ConfigName,(
                 (f, f1, arg3, arg4) =>
                 { } ),(
                 (bytes, s) =>
@@ -21,13 +21,13 @@ namespace FrameWork.AssetBundles
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
                     
-                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+  GlobalVariables.ABConfigName);
+                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+  GlobalVariables.Configure.ConfigName);
                     List<AbPackDate> newInfoList=new List<AbPackDate>();
                     List<AbPackDate> oldInfoList=new List<AbPackDate>();
                     
                     if (fileInfo.Exists)
                     {
-                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" + GlobalVariables.ABConfigName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" + GlobalVariables.Configure.ConfigName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
                         
                         

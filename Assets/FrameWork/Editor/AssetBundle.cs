@@ -18,7 +18,7 @@ namespace FrameWork.Editor
             {
                 Directory.CreateDirectory("AssetBundles/Android");
             }
-            BuildPipeline.BuildAssetBundles("AssetBundles/Android", BuildAssetBundleOptions.UncompressedAssetBundle, BuildTarget.Android);
+            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbAndroidPath, BuildAssetBundleOptions.UncompressedAssetBundle, BuildTarget.Android);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Android Finish!");
         }
@@ -31,7 +31,7 @@ namespace FrameWork.Editor
             {
                 Directory.CreateDirectory("AssetBundles/Ios");
             }
-            BuildPipeline.BuildAssetBundles("AssetBundles/Ios", BuildAssetBundleOptions.CollectDependencies, BuildTarget.iOS);
+            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbIosPath, BuildAssetBundleOptions.CollectDependencies, BuildTarget.iOS);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("IOS Finish!");
 
@@ -46,7 +46,7 @@ namespace FrameWork.Editor
             {
                 Directory.CreateDirectory("AssetBundles/StandaloneWindows");
             }
-            BuildPipeline.BuildAssetBundles("AssetBundles/StandaloneWindows", BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
+            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbWindowsPath, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Windows Finish!");
         }
@@ -56,32 +56,32 @@ namespace FrameWork.Editor
         public static void SetMaterialAb()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = "material";
-            ai.assetBundleVariant = "info";
+            ai.assetBundleName = GlobalVariables.Configure.AbMaterialName;
+            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
         }
         
         [MenuItem("Assets/FrameWork/SetAB/UiPrefab")]
         public static void SetUiPrefabAb()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = "uiprefab";
-            ai.assetBundleVariant = "info";
+            ai.assetBundleName = GlobalVariables.Configure.AbUiPrefabName;
+            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
         }
         
         [MenuItem("Assets/FrameWork/SetAB/Mode")]
         public static void SetModePrefabAb()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = "mode";
-            ai.assetBundleVariant = "info";
+            ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
+            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
         }
         
         [MenuItem("Assets/FrameWork/SetAB/Screen")]
         public static void SetScreen()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = "Screen";
-            ai.assetBundleVariant = "info";
+            ai.assetBundleName = GlobalVariables.Configure.AbScreenName;
+            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
         }
 
 

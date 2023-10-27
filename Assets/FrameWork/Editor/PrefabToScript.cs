@@ -18,7 +18,7 @@ namespace FrameWork.Editor
             
             
             
-            string path = "Assets/FrameWork/PrefabScript/";
+            string path = GlobalVariables.Configure.SpawnScriptPath;
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;
@@ -26,8 +26,8 @@ namespace FrameWork.Editor
             
             
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-            ai.assetBundleName = "mode";
-            ai.assetBundleVariant = "info";
+            ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
+            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
             
             if (!Directory.Exists(path+"/"+name))
             {

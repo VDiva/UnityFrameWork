@@ -5,10 +5,12 @@ using System.Text;
 using FrameWork.AssetBundles;
 using FrameWork.Global;
 using FrameWork.NetManager.Convert;
+using FrameWork.Tool;
 using FrameWork.Type;
 using GameData;
 using UnityEngine;
 using NetWork;
+using UnityEditor;
 using Random = UnityEngine.Random;
 
 namespace FrameWork.cs
@@ -18,7 +20,8 @@ namespace FrameWork.cs
         
         private void Start()
         {
-
+            
+            Debug.Log(GlobalVariables.Configure.DownLoadUrl);
             
             VersionDetection.Detection(((abPack,config) =>
             {
@@ -34,7 +37,7 @@ namespace FrameWork.cs
                     Debug.Log("下载进度:"+progress+"-下载速度:"+speed+"-"+curLenght+"/"+len);
                 } ),(list =>
                 {
-                    Debug.Log("下载成功 更新文件为"+DownLoad.GetFileSize(config.Length));
+                    Debug.Log("下载成功 更新文件为"+DownLoad.GetFileSize(lenght));
                     File.WriteAllBytes(Application.persistentDataPath+"/ABConfig.txt",config);
                     foreach (var item in list)
                     {

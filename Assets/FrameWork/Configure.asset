@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ebb6415b14643bfb81ca390f92f423a, type: 3}
+  m_Name: Configure
+  m_EditorClassIdentifier: 
+  DownLoadUrl: https://a.unity.cn/client_api/v1/buckets/f67ab219-9e85-4e72-967c-cb93450574ed/entry_by_path/content/?path=
+  ConfigName: ABConfig.txt
+  ConfigPath: Assets/FrameWork/Config
+  AbAndroidPath: AssetBundles/Android
+  AbWindowsPath: AssetBundles/StandaloneWindows
+  AbIosPath: AssetBundles/StandaloneWindows
+  AbEndName: info
+  AbMaterialName: material
+  AbUiPrefabName: uiprefab
+  AbModePrefabName: mode
+  AbScreenName: screen
+  SpawnScriptPath: Assets/FrameWork/PrefabScript

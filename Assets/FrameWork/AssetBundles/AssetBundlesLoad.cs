@@ -14,18 +14,18 @@ namespace FrameWork.AssetBundles
         public static T LoadAsset<T>(string packName,string name,BuildTarget buildTarget) where T : Object
         {
             AssetBundle assetBundle;
-            string path = "AssetBundles/";
+            string path = "";
 
             switch (buildTarget)
             {
                 case BuildTarget.Windows:
-                    path += "StandaloneWindows";
+                    path = GlobalVariables.Configure.AbWindowsPath;
                     break;
                 case BuildTarget.Android:
-                    path += "Android";
+                    path = GlobalVariables.Configure.AbAndroidPath;
                     break;
                 case BuildTarget.Ios:
-                    path += "Ios";
+                    path = GlobalVariables.Configure.AbIosPath;
                     break;
             }
             
@@ -58,18 +58,18 @@ namespace FrameWork.AssetBundles
         public static void LoadAssetAsync<T>(string packName,string name,BuildTarget buildTarget,Action<T> action) where T : Object
         {
             AssetBundle assetBundle;
-            string path = "AssetBundles/";
+            string path = "";
 
             switch (buildTarget)
             {
                 case BuildTarget.Windows:
-                    path += "StandaloneWindows";
+                    path = GlobalVariables.Configure.AbWindowsPath;
                     break;
                 case BuildTarget.Android:
-                    path += "Android";
+                    path = GlobalVariables.Configure.AbAndroidPath;
                     break;
                 case BuildTarget.Ios:
-                    path += "Ios";
+                    path = GlobalVariables.Configure.AbIosPath;
                     break;
             }
             

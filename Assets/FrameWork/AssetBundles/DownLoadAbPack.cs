@@ -28,7 +28,7 @@ namespace FrameWork.AssetBundles
         {
             if (_abPackDates.TryDequeue(out AbPackDate abPackDate))
             {
-                DownLoad.DownLoadAsset(GlobalVariables.UpdateDownLoadUrl+abPackDate.Name,((f, f1,s3,s4) =>
+                DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+abPackDate.Name,((f, f1,s3,s4) =>
                 {
                     long len = 0;
                     abPackDate.CurDownLoadSize = (long)(abPackDate.Size * f);
