@@ -54,7 +54,6 @@
      <Compile Include="Assets\FrameWork\AssetBundles\AssetBundlesLoad.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoad.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoadAbPack.cs" />
-     <Compile Include="Assets\FrameWork\AssetBundles\LoadAbAsset.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\VersionDetection.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Credentials.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Digest.cs" />
@@ -1680,6 +1679,7 @@
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
+     <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
      <Compile Include="Assets\FrameWork\cs\cs.cs" />
      <Compile Include="Assets\FrameWork\cs\dome.cs" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />

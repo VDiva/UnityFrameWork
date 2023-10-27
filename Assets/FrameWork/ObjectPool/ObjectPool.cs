@@ -7,7 +7,7 @@ namespace FrameWork.ObjectPool
 {
     public class ObjectPool<T> where T: class, new()
     {
-        private Type _type;
+        private System.Type _type;
         private int _num;
         private int _currentNum;
         private ConcurrentQueue<T> _objectPool;

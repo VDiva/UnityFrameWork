@@ -11,10 +11,10 @@ namespace FrameWork.Editor
         public static void CreateAbConfig()
         {
             string path = "";
-            if (Application.platform == RuntimePlatform.Android) path = GlobalVariables.ABAsAndroid;
-            if (Application.platform == RuntimePlatform.WindowsPlayer) path = GlobalVariables.ABAsWindows;
-            if (Application.platform == RuntimePlatform.IPhonePlayer) path = GlobalVariables.ABAsIos;
-            if (Application.platform == RuntimePlatform.WindowsEditor) path = GlobalVariables.ABAsWindows;
+            if (Application.platform == RuntimePlatform.Android) path = "AssetBundles/Android";
+            if (Application.platform == RuntimePlatform.WindowsPlayer) path ="AssetBundles/StandaloneWindows";
+            if (Application.platform == RuntimePlatform.IPhonePlayer) path = "AssetBundles/Ios";
+            if (Application.platform == RuntimePlatform.WindowsEditor) path = "AssetBundles/StandaloneWindows";
             
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
             FileInfo[] fileInfos = directoryInfo.GetFiles();
@@ -30,17 +30,15 @@ namespace FrameWork.Editor
             }
             info = info.Substring(0, info.Length - 1);
             
-            if (!Directory.Exists(GlobalVariables.ABConfigPath))
+            if (!Directory.Exists("Assets/ABConfig"))
             {
-                Directory.CreateDirectory(GlobalVariables.ABConfigPath);
+                Directory.CreateDirectory("Assets/ABConfig/");
             }
             
-            using (StreamWriter sw=new StreamWriter(GlobalVariables.ABConfigPath+"/"+GlobalVariables.ABConfigName,false))
+            using (StreamWriter sw=new StreamWriter("Assets/ABConfig/ABConfig.txt",false))
             {
                 sw.Write(info);
             }
-            
-            
             
             Debug.Log("AB包对比文件生成成功");
             AssetDatabase.Refresh();

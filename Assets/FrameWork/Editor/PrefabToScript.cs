@@ -18,7 +18,7 @@ namespace FrameWork.Editor
             
             
             
-            string path = GlobalVariables.PrefabPath;
+            string path = "Assets/FrameWork/PrefabScript/";
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;
@@ -26,8 +26,8 @@ namespace FrameWork.Editor
             
             
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-            ai.assetBundleName = GlobalVariables.ScriptPrefabABName;
-            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+            ai.assetBundleName = "mode";
+            ai.assetBundleVariant = "info";
             
             if (!Directory.Exists(path+"/"+name))
             {
@@ -92,7 +92,7 @@ namespace FrameWork.Editor
             AssetDatabase.Refresh();
             if (Selection.activeGameObject.GetComponent("Prefab.Script."+Selection.activeGameObject.name)==null)
             {
-                Type type = typeof(AssemblyType).Assembly.GetType("Prefab.Script." + Selection.activeGameObject.name);
+                System.Type type = typeof(AssemblyType).Assembly.GetType("Prefab.Script." + Selection.activeGameObject.name);
                 Selection.activeGameObject.AddComponent(type);
             }
         }

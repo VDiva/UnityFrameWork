@@ -14,11 +14,11 @@ namespace FrameWork.Editor
         [MenuItem("FrameWork/AB/CreatAssetBundle for Android")]
         public static void CreatAssetBundleAsAndroid()
         {
-            if (!Directory.Exists(GlobalVariables.ABAsAndroid))
+            if (!Directory.Exists("AssetBundles/Android"))
             {
-                Directory.CreateDirectory(GlobalVariables.ABAsAndroid);
+                Directory.CreateDirectory("AssetBundles/Android");
             }
-            BuildPipeline.BuildAssetBundles(GlobalVariables.ABAsAndroid, BuildAssetBundleOptions.UncompressedAssetBundle, BuildTarget.Android);
+            BuildPipeline.BuildAssetBundles("AssetBundles/Android", BuildAssetBundleOptions.UncompressedAssetBundle, BuildTarget.Android);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Android Finish!");
         }
@@ -27,11 +27,11 @@ namespace FrameWork.Editor
         public static void BuildAllAssetBundlesAsIOS()
         {
            
-            if (!Directory.Exists(GlobalVariables.ABAsIos))
+            if (!Directory.Exists("AssetBundles/Ios"))
             {
-                Directory.CreateDirectory(GlobalVariables.ABAsIos);
+                Directory.CreateDirectory("AssetBundles/Ios");
             }
-            BuildPipeline.BuildAssetBundles(GlobalVariables.ABAsIos, BuildAssetBundleOptions.CollectDependencies, BuildTarget.iOS);
+            BuildPipeline.BuildAssetBundles("AssetBundles/Ios", BuildAssetBundleOptions.CollectDependencies, BuildTarget.iOS);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("IOS Finish!");
 
@@ -42,11 +42,11 @@ namespace FrameWork.Editor
         public static void CreatPCAssetBundleAsWindows()
         {
             
-            if (!Directory.Exists(GlobalVariables.ABAsWindows))
+            if (!Directory.Exists("AssetBundles/StandaloneWindows"))
             {
-                Directory.CreateDirectory(GlobalVariables.ABAsWindows);
+                Directory.CreateDirectory("AssetBundles/StandaloneWindows");
             }
-            BuildPipeline.BuildAssetBundles(GlobalVariables.ABAsWindows, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
+            BuildPipeline.BuildAssetBundles("AssetBundles/StandaloneWindows", BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Windows Finish!");
         }
@@ -56,32 +56,32 @@ namespace FrameWork.Editor
         public static void SetMaterialAb()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.MaterialABName;
-            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+            ai.assetBundleName = "material";
+            ai.assetBundleVariant = "info";
         }
         
         [MenuItem("Assets/FrameWork/SetAB/UiPrefab")]
         public static void SetUiPrefabAb()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.UiABName;
-            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+            ai.assetBundleName = "uiprefab";
+            ai.assetBundleVariant = "info";
         }
         
-        [MenuItem("Assets/FrameWork/SetAB/ScriptPrefab")]
-        public static void SetScriptPrefabAb()
+        [MenuItem("Assets/FrameWork/SetAB/Mode")]
+        public static void SetModePrefabAb()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.ScriptPrefabABName;
-            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+            ai.assetBundleName = "mode";
+            ai.assetBundleVariant = "info";
         }
         
         [MenuItem("Assets/FrameWork/SetAB/Screen")]
         public static void SetScreen()
         {
             AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.ScreenABName;
-            ai.assetBundleVariant = GlobalVariables.ABNameEnd;
+            ai.assetBundleName = "Screen";
+            ai.assetBundleVariant = "info";
         }
 
 

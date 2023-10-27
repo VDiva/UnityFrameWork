@@ -5,6 +5,7 @@ using System.Text;
 using FrameWork.AssetBundles;
 using FrameWork.Global;
 using FrameWork.NetManager.Convert;
+using FrameWork.Type;
 using GameData;
 using UnityEngine;
 using NetWork;
@@ -17,6 +18,8 @@ namespace FrameWork.cs
         
         private void Start()
         {
+
+            
             VersionDetection.Detection(((abPack,config) =>
             {
                 long lenght = 0;
@@ -32,7 +35,7 @@ namespace FrameWork.cs
                 } ),(list =>
                 {
                     Debug.Log("下载成功 更新文件为"+DownLoad.GetFileSize(config.Length));
-                    File.WriteAllBytes(Application.persistentDataPath+"/"+GlobalVariables.ABConfigName,config);
+                    File.WriteAllBytes(Application.persistentDataPath+"/ABConfig.txt",config);
                     foreach (var item in list)
                     {
                         Debug.Log(item.Name+" 下载大小为:"+DownLoad.GetFileSize(item.PackData.Length));
