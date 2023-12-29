@@ -1,12 +1,9 @@
 ﻿using GameData;
 using NetWork;
+using NetWork.Enum;
 using NetWork.Tool;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+
 
 
 namespace Server
@@ -15,12 +12,15 @@ namespace Server
     {
         static void Main(string[] args)
         {
-
+            
             NetWorkSystem.OpenServer += OpenServer;
             NetWorkSystem.acceptAction += Accpet;
-            NetWorkSystem.ReceiveSuccessAction += Receive;
 
-            NetWorkSystem.NetAsServer("127.0.0.1", 8888, 100, 2048);
+            var client = NetWorkSystem.NetAsServer("127.0.0.1", 8889, 100, 2048, ConnectType.Udp);
+
+            client.ReceiveSuccessAction += Receive;
+
+            
             Console.ReadKey();
         }
 
@@ -39,8 +39,7 @@ namespace Server
 
             if (Tool.DeSerialize(data, out Data da))
             {
-                Vector3Data vec3 = da.TransfromData.PositionData.Vector3Data;
-                Console.WriteLine("x:"+vec3.X+"-y:"+vec3.Y+"-z:"+vec3.Z);
+                Console.WriteLine("接受到消息大小", data.Length);
             }
 
         }

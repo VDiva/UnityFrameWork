@@ -1,7 +1,9 @@
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using GameData;
+using NetWork.NetWork;
 
 namespace NetWork
 {
@@ -31,12 +33,19 @@ namespace NetWork
             _send = new SocketAsyncEventArgs();
             this.socket = socket;
 
+            lobby.Instance.lobbyAction += Lobby;
+
             _receive.Completed += ReceiveCompleted;
             _send.Completed += SendCompleted;
             WaitReceive();
         }
 
         
+        public void Lobby(Data data)
+        {
+
+        }
+
         
 
         public void SendMessage(Data data)
@@ -48,7 +57,19 @@ namespace NetWork
         {
             socket.Send(data);
         }
-        
+
+
+        public void SendMessage(EndPoint endPoint,Data data)
+        {
+            socket.SendTo(Tool.Tool.Serialize(data), endPoint);
+        }
+
+        public void SendMessage(EndPoint endPoint, byte[] data)
+        {
+            socket.SendTo(data,endPoint);
+        }
+
+
         public void SendMessageAsync(Data data)
         {
             var dataBytes = Tool.Tool.Serialize(data);
@@ -72,6 +93,33 @@ namespace NetWork
             }
         }
 
+        public void SendMessageAsync(EndPoint endPoint, Data data)
+        {
+            var dataBytes = Tool.Tool.Serialize(data);
+            _send.SetBuffer(dataBytes, 0, dataBytes.Length);
+            _send.RemoteEndPoint = endPoint;
+            bool success = socket.SendToAsync(_send);
+            if (!success)
+            {
+                SendSuccess();
+            }
+        }
+
+
+        public void SendMessageAsync(EndPoint endPoint, byte[] data)
+        {
+            _send.SetBuffer(data, 0, data.Length);
+            _send.RemoteEndPoint = endPoint;
+            bool success = socket.SendToAsync(_send);
+            if (!success)
+            {
+
+                SendSuccess();
+            }
+        }
+
+
+
         private void SendSuccess()
         {
             SendAction?.Invoke(_send.UserToken,_send);
@@ -92,6 +140,7 @@ namespace NetWork
             }
         }
 
+
         private void SuccessReceive()
         {
             try
@@ -109,19 +158,19 @@ namespace NetWork
                 {
                     if (_receive.SocketError == SocketError.Success)
                     {
-                        SocketManager.Instance.RemoveClient(ID);
+                        //SocketManager.Instance.RemoveClient(ID);
                         ReceiveErrAction?.Invoke(socket, _receive, "玩家主动断开链接");
                     }
                     else
                     {
-                        SocketManager.Instance.RemoveClient(ID);
+                        //SocketManager.Instance.RemoveClient(ID);
                         ReceiveErrAction?.Invoke(socket, _receive, "玩家由于网络问题断开链接");
                     }
                 }
                 WaitReceive();
             }catch (Exception ex)
             {
-                SocketManager.Instance.RemoveClient(ID);
+                //SocketManager.Instance.RemoveClient(ID);
                 Console.WriteLine(ex.ToString());
             }
         }
