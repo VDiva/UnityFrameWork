@@ -22,18 +22,9 @@
           }
         }
       },
-      "Kcp/2.7.0": {
-        "runtime": {
-          "lib/net8.0/Kcp.dll": {
-            "assemblyVersion": "2.7.0.0",
-            "fileVersion": "2.7.0.0"
-          }
-        }
-      },
       "NetWork/1.0.0": {
         "dependencies": {
-          "Google.Protobuf": "3.24.4",
-          "Kcp": "2.7.0"
+          "Google.Protobuf": "3.24.4"
         },
         "runtime": {
           "NetWork.dll": {}
@@ -53,13 +44,6 @@
       "sha512": "sha512-TmUI4ndd3x5HePyLmqAmGT6oVvoRCu+bMmrJmOpAFtCPEB+oUMWF8dyVY1zxXry/8cqsTHWszYRIAwpuUNpUyA==",
       "path": "google.protobuf/3.24.4",
       "hashPath": "google.protobuf.3.24.4.nupkg.sha512"
-    },
-    "Kcp/2.7.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-kz98axiuB+4CEyyCgmjHnk8c/qDILW4/HKzZa3W8JS/D5lxaPFYluuMhdSQa6nkw0cEMg/ev2bst6TF3ikCDDw==",
-      "path": "kcp/2.7.0",
-      "hashPath": "kcp.2.7.0.nupkg.sha512"
     },
     "NetWork/1.0.0": {
       "type": "project",
