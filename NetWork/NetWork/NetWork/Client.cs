@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using GameData;
 using NetWork.NetWork;
+using NetWork.NetWork.UserInfo;
 
 namespace NetWork
 {
@@ -46,6 +47,11 @@ namespace NetWork
         /// 保存接受消息的字节数组
         /// </summary>
         private byte[] _buffer;
+
+        /// <summary>
+        /// 用户信息
+        /// </summary>
+        private UserInfo userInfo;
 
         /// <summary>
         /// 初始化类

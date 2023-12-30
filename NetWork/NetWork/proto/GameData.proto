@@ -7,11 +7,26 @@ enum CMD{
     POSITION=0;
 }
 
+enum MessageProtocol{
+    Tcp=0;
+    Udp=1;
+}
+
+enum MessageType{
+    Room=0;
+    Lobby=1;
+    GameLobby=2;
+}
+
 message Data{
     CMD CMD=1;
-    TransfromData TransfromData=2;
-    RoomData RoomData=3;
+    MessageProtocol MessageProtocol=2;
+    MessageType MessageType=3;
+    TransfromData TransfromData=4;
+    RoomData RoomData=5;
 }
+
+
 
 message Vector3{
     float X=1;

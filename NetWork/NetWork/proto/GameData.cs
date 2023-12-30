@@ -24,21 +24,25 @@ namespace GameData {
     static GameDataReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5HYW1lRGF0YS5wcm90bxIIR2FtZURhdGEieAoERGF0YRIaCgNDTUQYASAB",
-            "KA4yDS5HYW1lRGF0YS5DTUQSLgoNVHJhbnNmcm9tRGF0YRgCIAEoCzIXLkdh",
-            "bWVEYXRhLlRyYW5zZnJvbURhdGESJAoIUm9vbURhdGEYAyABKAsyEi5HYW1l",
-            "RGF0YS5Sb29tRGF0YSIqCgdWZWN0b3IzEgkKAVgYASABKAISCQoBWRgCIAEo",
-            "AhIJCgFaGAMgASgCIhoKCFJvb21EYXRhEg4KBlJvb21JZBgBIAEoBSLUAQoN",
-            "VHJhbnNmcm9tRGF0YRIoCg1Mb2NhbFBvc2l0aW9uGAEgASgLMhEuR2FtZURh",
-            "dGEuVmVjdG9yMxIjCghQb3NpdGlvbhgCIAEoCzIRLkdhbWVEYXRhLlZlY3Rv",
-            "cjMSKAoNTG9jYWxSb3RhdGlvbhgDIAEoCzIRLkdhbWVEYXRhLlZlY3RvcjMS",
-            "IwoIUm90YXRpb24YBCABKAsyES5HYW1lRGF0YS5WZWN0b3IzEiUKCkxvY2Fs",
-            "U2NhbGUYBSABKAsyES5HYW1lRGF0YS5WZWN0b3IzKhMKA0NNRBIMCghQT1NJ",
-            "VElPThAAYgZwcm90bzM="));
+            "Cg5HYW1lRGF0YS5wcm90bxIIR2FtZURhdGEi2AEKBERhdGESGgoDQ01EGAEg",
+            "ASgOMg0uR2FtZURhdGEuQ01EEjIKD01lc3NhZ2VQcm90b2NvbBgCIAEoDjIZ",
+            "LkdhbWVEYXRhLk1lc3NhZ2VQcm90b2NvbBIqCgtNZXNzYWdlVHlwZRgDIAEo",
+            "DjIVLkdhbWVEYXRhLk1lc3NhZ2VUeXBlEi4KDVRyYW5zZnJvbURhdGEYBCAB",
+            "KAsyFy5HYW1lRGF0YS5UcmFuc2Zyb21EYXRhEiQKCFJvb21EYXRhGAUgASgL",
+            "MhIuR2FtZURhdGEuUm9vbURhdGEiKgoHVmVjdG9yMxIJCgFYGAEgASgCEgkK",
+            "AVkYAiABKAISCQoBWhgDIAEoAiIaCghSb29tRGF0YRIOCgZSb29tSWQYASAB",
+            "KAUi1AEKDVRyYW5zZnJvbURhdGESKAoNTG9jYWxQb3NpdGlvbhgBIAEoCzIR",
+            "LkdhbWVEYXRhLlZlY3RvcjMSIwoIUG9zaXRpb24YAiABKAsyES5HYW1lRGF0",
+            "YS5WZWN0b3IzEigKDUxvY2FsUm90YXRpb24YAyABKAsyES5HYW1lRGF0YS5W",
+            "ZWN0b3IzEiMKCFJvdGF0aW9uGAQgASgLMhEuR2FtZURhdGEuVmVjdG9yMxIl",
+            "CgpMb2NhbFNjYWxlGAUgASgLMhEuR2FtZURhdGEuVmVjdG9yMyoTCgNDTUQS",
+            "DAoIUE9TSVRJT04QACojCg9NZXNzYWdlUHJvdG9jb2wSBwoDVGNwEAASBwoD",
+            "VWRwEAEqMQoLTWVzc2FnZVR5cGUSCAoEUm9vbRAAEgkKBUxvYmJ5EAESDQoJ",
+            "R2FtZUxvYmJ5EAJiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GameData.CMD), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Data), global::GameData.Data.Parser, new[]{ "CMD", "TransfromData", "RoomData" }, null, null, null, null),
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GameData.CMD), typeof(global::GameData.MessageProtocol), typeof(global::GameData.MessageType), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Data), global::GameData.Data.Parser, new[]{ "CMD", "MessageProtocol", "MessageType", "TransfromData", "RoomData" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Vector3), global::GameData.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GameData.RoomData), global::GameData.RoomData.Parser, new[]{ "RoomId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GameData.TransfromData), global::GameData.TransfromData.Parser, new[]{ "LocalPosition", "Position", "LocalRotation", "Rotation", "LocalScale" }, null, null, null, null)
@@ -50,6 +54,17 @@ namespace GameData {
   #region Enums
   public enum CMD {
     [pbr::OriginalName("POSITION")] Position = 0,
+  }
+
+  public enum MessageProtocol {
+    [pbr::OriginalName("Tcp")] Tcp = 0,
+    [pbr::OriginalName("Udp")] Udp = 1,
+  }
+
+  public enum MessageType {
+    [pbr::OriginalName("Room")] Room = 0,
+    [pbr::OriginalName("Lobby")] Lobby = 1,
+    [pbr::OriginalName("GameLobby")] GameLobby = 2,
   }
 
   #endregion
@@ -90,6 +105,8 @@ namespace GameData {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Data(Data other) : this() {
       cMD_ = other.cMD_;
+      messageProtocol_ = other.messageProtocol_;
+      messageType_ = other.messageType_;
       transfromData_ = other.transfromData_ != null ? other.transfromData_.Clone() : null;
       roomData_ = other.roomData_ != null ? other.roomData_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -113,8 +130,32 @@ namespace GameData {
       }
     }
 
+    /// <summary>Field number for the "MessageProtocol" field.</summary>
+    public const int MessageProtocolFieldNumber = 2;
+    private global::GameData.MessageProtocol messageProtocol_ = global::GameData.MessageProtocol.Tcp;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.MessageProtocol MessageProtocol {
+      get { return messageProtocol_; }
+      set {
+        messageProtocol_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "MessageType" field.</summary>
+    public const int MessageTypeFieldNumber = 3;
+    private global::GameData.MessageType messageType_ = global::GameData.MessageType.Room;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.MessageType MessageType {
+      get { return messageType_; }
+      set {
+        messageType_ = value;
+      }
+    }
+
     /// <summary>Field number for the "TransfromData" field.</summary>
-    public const int TransfromDataFieldNumber = 2;
+    public const int TransfromDataFieldNumber = 4;
     private global::GameData.TransfromData transfromData_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -126,7 +167,7 @@ namespace GameData {
     }
 
     /// <summary>Field number for the "RoomData" field.</summary>
-    public const int RoomDataFieldNumber = 3;
+    public const int RoomDataFieldNumber = 5;
     private global::GameData.RoomData roomData_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -153,6 +194,8 @@ namespace GameData {
         return true;
       }
       if (CMD != other.CMD) return false;
+      if (MessageProtocol != other.MessageProtocol) return false;
+      if (MessageType != other.MessageType) return false;
       if (!object.Equals(TransfromData, other.TransfromData)) return false;
       if (!object.Equals(RoomData, other.RoomData)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -163,6 +206,8 @@ namespace GameData {
     public override int GetHashCode() {
       int hash = 1;
       if (CMD != global::GameData.CMD.Position) hash ^= CMD.GetHashCode();
+      if (MessageProtocol != global::GameData.MessageProtocol.Tcp) hash ^= MessageProtocol.GetHashCode();
+      if (MessageType != global::GameData.MessageType.Room) hash ^= MessageType.GetHashCode();
       if (transfromData_ != null) hash ^= TransfromData.GetHashCode();
       if (roomData_ != null) hash ^= RoomData.GetHashCode();
       if (_unknownFields != null) {
@@ -187,12 +232,20 @@ namespace GameData {
         output.WriteRawTag(8);
         output.WriteEnum((int) CMD);
       }
+      if (MessageProtocol != global::GameData.MessageProtocol.Tcp) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) MessageProtocol);
+      }
+      if (MessageType != global::GameData.MessageType.Room) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) MessageType);
+      }
       if (transfromData_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(34);
         output.WriteMessage(TransfromData);
       }
       if (roomData_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(42);
         output.WriteMessage(RoomData);
       }
       if (_unknownFields != null) {
@@ -209,12 +262,20 @@ namespace GameData {
         output.WriteRawTag(8);
         output.WriteEnum((int) CMD);
       }
+      if (MessageProtocol != global::GameData.MessageProtocol.Tcp) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) MessageProtocol);
+      }
+      if (MessageType != global::GameData.MessageType.Room) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) MessageType);
+      }
       if (transfromData_ != null) {
-        output.WriteRawTag(18);
+        output.WriteRawTag(34);
         output.WriteMessage(TransfromData);
       }
       if (roomData_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(42);
         output.WriteMessage(RoomData);
       }
       if (_unknownFields != null) {
@@ -229,6 +290,12 @@ namespace GameData {
       int size = 0;
       if (CMD != global::GameData.CMD.Position) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) CMD);
+      }
+      if (MessageProtocol != global::GameData.MessageProtocol.Tcp) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MessageProtocol);
+      }
+      if (MessageType != global::GameData.MessageType.Room) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MessageType);
       }
       if (transfromData_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TransfromData);
@@ -250,6 +317,12 @@ namespace GameData {
       }
       if (other.CMD != global::GameData.CMD.Position) {
         CMD = other.CMD;
+      }
+      if (other.MessageProtocol != global::GameData.MessageProtocol.Tcp) {
+        MessageProtocol = other.MessageProtocol;
+      }
+      if (other.MessageType != global::GameData.MessageType.Room) {
+        MessageType = other.MessageType;
       }
       if (other.transfromData_ != null) {
         if (transfromData_ == null) {
@@ -282,14 +355,22 @@ namespace GameData {
             CMD = (global::GameData.CMD) input.ReadEnum();
             break;
           }
-          case 18: {
+          case 16: {
+            MessageProtocol = (global::GameData.MessageProtocol) input.ReadEnum();
+            break;
+          }
+          case 24: {
+            MessageType = (global::GameData.MessageType) input.ReadEnum();
+            break;
+          }
+          case 34: {
             if (transfromData_ == null) {
               TransfromData = new global::GameData.TransfromData();
             }
             input.ReadMessage(TransfromData);
             break;
           }
-          case 26: {
+          case 42: {
             if (roomData_ == null) {
               RoomData = new global::GameData.RoomData();
             }
@@ -315,14 +396,22 @@ namespace GameData {
             CMD = (global::GameData.CMD) input.ReadEnum();
             break;
           }
-          case 18: {
+          case 16: {
+            MessageProtocol = (global::GameData.MessageProtocol) input.ReadEnum();
+            break;
+          }
+          case 24: {
+            MessageType = (global::GameData.MessageType) input.ReadEnum();
+            break;
+          }
+          case 34: {
             if (transfromData_ == null) {
               TransfromData = new global::GameData.TransfromData();
             }
             input.ReadMessage(TransfromData);
             break;
           }
-          case 26: {
+          case 42: {
             if (roomData_ == null) {
               RoomData = new global::GameData.RoomData();
             }

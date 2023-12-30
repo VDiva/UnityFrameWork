@@ -7,42 +7,43 @@ using System.Threading;
 
 namespace NetWork.NetWork.Message
 {
-    public class MessageProcessing: SingletonAsClass<MessageProcessing>
+    public class MessageTcp: SingletonAsClass<MessageTcp>
     {
         private ConcurrentQueue<Data> datas;
-        public MessageProcessing() { 
-        
+        public MessageTcp()
+        {
             datas = new ConcurrentQueue<Data>();
             new Thread(Processing).Start();
         }
 
-
         public void AddData(Data data)
         {
-            datas.Enqueue(data);    
+            datas.Enqueue(data);
         }
 
         private void Processing()
         {
             while (true)
             {
-                while (datas.Count>0)
+                while (datas.Count > 0)
                 {
-                    if(datas.TryDequeue(out Data data))
+                    if (datas.TryDequeue(out Data data))
                     {
-                        switch(data.MessageProtocol)
+                        switch (data.MessageType)
                         {
-                            case MessageProtocol.Tcp:
-                                MessageTcp.Instance.AddData(data);
+                            case MessageType.Room:
+                                RoomManager.Instance.RoomAction?.Invoke(data);
                                 break;
-                            case MessageProtocol.Udp:
-                                MessageUdp.Instance.AddData(data);
+                            case MessageType.GameLobby:
+                                GameLobby.Instance.GameLobbyAction?.Invoke(data);
+                                break;
+                            case MessageType.Lobby:
+                                lobby.Instance.lobbyAction?.Invoke(data);
                                 break;
                         }
                     }
                 }
             }
         }
-
     }
 }
