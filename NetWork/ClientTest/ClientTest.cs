@@ -16,12 +16,12 @@ namespace ClientTest
     {
         static void Main(string[] args)
         {
-            var client =NetWorkSystem.NetAsClient("127.0.0.1", 8888, 2048, ConnectType.Udp);
+            var client =new NetWorkSystem().NetAsClient("127.0.0.1", 7777, 2048, ConnectType.Tcp);
             EndPoint point = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8889);
             while (true)
             {
                 Thread.Sleep(1000);
-                client.SendMessage(point, new Data());
+                client.SendMessage(new Data());
             }
         }
 

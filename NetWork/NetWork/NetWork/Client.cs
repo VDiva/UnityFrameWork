@@ -40,12 +40,16 @@ namespace NetWork
             WaitReceive();
         }
 
-        
         public void Lobby(Data data)
         {
 
         }
 
+
+        public void GameLobby(Data data)
+        {
+
+        }
         
 
         public void SendMessage(Data data)
@@ -180,10 +184,5 @@ namespace NetWork
             SuccessReceive();
         }
 
-
-
-        
-        
-        
     }
 }

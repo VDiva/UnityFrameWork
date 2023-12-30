@@ -12,15 +12,23 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            
-            NetWorkSystem.OpenServer += OpenServer;
-            NetWorkSystem.acceptAction += Accpet;
 
-            var client = NetWorkSystem.NetAsServer("127.0.0.1", 8889, 100, 2048, ConnectType.Udp);
 
-            client.ReceiveSuccessAction += Receive;
 
-            
+            //var serverUdp =new NetWorkSystem();
+            //serverUdp.OpenServer += OpenServer;
+            //var client1 = new NetWorkSystem().NetAsServer("127.0.0.1", 8889, 100, 2048, ConnectType.Udp);
+            //client1.ReceiveSuccessAction += Receive;
+
+
+            var client2 = new NetWorkSystem();
+            client2.OpenServer += OpenServer;
+            client2.ReceiveSuccessAction += Receive;
+            client2.NetAsServer("127.0.0.1", 7777, 100, 2048, ConnectType.Tcp);
+
+
+
+
             Console.ReadKey();
         }
 
@@ -39,7 +47,7 @@ namespace Server
 
             if (Tool.DeSerialize(data, out Data da))
             {
-                Console.WriteLine("接受到消息大小", data.Length);
+                Console.WriteLine("接受到消息大小"+ data.Length);
             }
 
         }
