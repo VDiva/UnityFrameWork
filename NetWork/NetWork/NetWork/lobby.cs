@@ -7,6 +7,10 @@ namespace NetWork.NetWork
 {
     public class lobby:SingletonAsClass<lobby>
     {
+        /// <summary>
+        /// 大厅消息广播
+        /// </summary>
+        public Action<Data> GameLobbyAction;
         public Action<Data> lobbyAction;
     }
 }

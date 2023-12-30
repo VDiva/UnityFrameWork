@@ -15,19 +15,16 @@ namespace Server
 
 
 
-            //var serverUdp =new NetWorkSystem();
-            //serverUdp.OpenServer += OpenServer;
-            //var client1 = new NetWorkSystem().NetAsServer("127.0.0.1", 8889, 100, 2048, ConnectType.Udp);
-            //client1.ReceiveSuccessAction += Receive;
+            var serverUdp = new NetWorkSystem();
+            serverUdp.OpenServer += OpenServer;
+            var client1 = new NetWorkSystem().NetAsServerUdp("127.0.0.1", 8889,2048);
+            client1.ReceiveSuccessAction += Receive;
 
 
             var client2 = new NetWorkSystem();
             client2.OpenServer += OpenServer;
             client2.ReceiveSuccessAction += Receive;
-            client2.NetAsServer("127.0.0.1", 7777, 100, 2048, ConnectType.Tcp);
-
-
-
+            client2.NetAsServerTcp("127.0.0.1", 7777, 100, 2048);
 
             Console.ReadKey();
         }

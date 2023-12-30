@@ -9,21 +9,49 @@ namespace NetWork
 {
     public class Client
     {
+        /// <summary>
+        /// 客户端id
+        /// </summary>
         public int ID;
+        /// <summary>
+        /// 消息接受回调
+        /// </summary>
         public Action<byte[],object, SocketAsyncEventArgs> ReceiveSuccessAction;
+        /// <summary>
+        /// 消息接收失败回调
+        /// </summary>
         public Action<object, SocketAsyncEventArgs,string> ReceiveErrAction;
+        /// <summary>
+        /// 消息发送成功回调
+        /// </summary>
         public Action<object, SocketAsyncEventArgs> SendAction;
         
         
-        
+        /// <summary>
+        /// socket对象
+        /// </summary>
         public System.Net.Sockets.Socket socket;
         
+        /// <summary>
+        /// 接受消息套接字
+        /// </summary>
         private SocketAsyncEventArgs _receive;
 
+        /// <summary>
+        /// 发送消息套接字
+        /// </summary>
         private SocketAsyncEventArgs _send;
 
+        /// <summary>
+        /// 保存接受消息的字节数组
+        /// </summary>
         private byte[] _buffer;
-        
+
+        /// <summary>
+        /// 初始化类
+        /// </summary>
+        /// <param name="socket">socket对象</param>
+        /// <param name="count">接受消息的最大大小</param>
         public Client(System.Net.Sockets.Socket socket,int count)
         {
             _buffer = new byte[count];
@@ -40,40 +68,67 @@ namespace NetWork
             WaitReceive();
         }
 
+        /// <summary>
+        /// 大厅消息
+        /// </summary>
+        /// <param name="data"></param>
         public void Lobby(Data data)
         {
 
         }
 
-
+        /// <summary>
+        /// 游戏大厅消息
+        /// </summary>
+        /// <param name="data"></param>
         public void GameLobby(Data data)
         {
 
         }
         
 
+        /// <summary>
+        /// 发送消息tcp
+        /// </summary>
+        /// <param name="data"></param>
         public void SendMessage(Data data)
         {
             socket.Send(Tool.Tool.Serialize(data));
         }
         
+        /// <summary>
+        /// 发送消息tcp
+        /// </summary>
+        /// <param name="data"></param>
         public void SendMessage(byte[] data)
         {
             socket.Send(data);
         }
 
-
+        /// <summary>
+        /// 发送消息udp
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="data"></param>
         public void SendMessage(EndPoint endPoint,Data data)
         {
             socket.SendTo(Tool.Tool.Serialize(data), endPoint);
         }
 
+        /// <summary>
+        /// 发送消息udp
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="data"></param>
         public void SendMessage(EndPoint endPoint, byte[] data)
         {
             socket.SendTo(data,endPoint);
         }
 
-
+        /// <summary>
+        /// 异步发送消息tcp
+        /// </summary>
+        /// <param name="data"></param>
         public void SendMessageAsync(Data data)
         {
             var dataBytes = Tool.Tool.Serialize(data);
@@ -84,8 +139,11 @@ namespace NetWork
                 SendSuccess();
             }
         }
-        
-        
+
+        /// <summary>
+        /// 异步发送消息tcp
+        /// </summary>
+        /// <param name="data"></param>
         public void SendMessageAsync(byte[] data)
         {
             _send.SetBuffer(data,0,data.Length);
@@ -97,6 +155,11 @@ namespace NetWork
             }
         }
 
+        /// <summary>
+        /// 异步发送消息udp
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="data"></param>
         public void SendMessageAsync(EndPoint endPoint, Data data)
         {
             var dataBytes = Tool.Tool.Serialize(data);
@@ -110,6 +173,11 @@ namespace NetWork
         }
 
 
+        /// <summary>
+        /// 异步发送消息udp
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <param name="data"></param>
         public void SendMessageAsync(EndPoint endPoint, byte[] data)
         {
             _send.SetBuffer(data, 0, data.Length);
@@ -123,18 +191,28 @@ namespace NetWork
         }
 
 
-
+        /// <summary>
+        /// 消息发送成功
+        /// </summary>
         private void SendSuccess()
         {
             SendAction?.Invoke(_send.UserToken,_send);
         }
         
+        /// <summary>
+        /// 消息发送成功套接字回调
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="args"></param>
         private void SendCompleted(object obj, SocketAsyncEventArgs args)
         {
             SendSuccess();
         }
 
 
+        /// <summary>
+        /// 等待消息
+        /// </summary>
         private void WaitReceive()
         {
             bool success= socket.ReceiveAsync(_receive);
@@ -145,6 +223,9 @@ namespace NetWork
         }
 
 
+        /// <summary>
+        /// 接受消息成功
+        /// </summary>
         private void SuccessReceive()
         {
             try
@@ -179,9 +260,21 @@ namespace NetWork
             }
         }
 
+        /// <summary>
+        /// 消息套接字回调
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="args"></param>
         private void ReceiveCompleted(object obj, SocketAsyncEventArgs args)
         {
             SuccessReceive();
+        }
+
+
+
+        private void Room(Data data)
+        {
+           
         }
 
     }
