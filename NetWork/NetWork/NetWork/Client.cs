@@ -1,15 +1,19 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using GameData;
 using NetWork.NetWork;
 using NetWork.NetWork.UserInfo;
+using NetWork.NetWork.Message;
+using NetWork.NetWork.Data;
+using GameData;
 
 namespace NetWork
 {
     public class Client
     {
+
+
+        #region 变量
         /// <summary>
         /// 客户端id
         /// </summary>
@@ -17,7 +21,7 @@ namespace NetWork
         /// <summary>
         /// 消息接受回调
         /// </summary>
-        public Action<byte[],object, SocketAsyncEventArgs> ReceiveSuccessAction;
+        public Action<byte[],Client, SocketAsyncEventArgs> ReceiveSuccessAction;
         /// <summary>
         /// 消息接收失败回调
         /// </summary>
@@ -48,11 +52,18 @@ namespace NetWork
         /// </summary>
         private byte[] _buffer;
 
+
+        private GameData.RoomData roomData;
         /// <summary>
         /// 用户信息
         /// </summary>
         private UserInfo userInfo;
 
+
+        #endregion
+
+
+        #region 构造函数
         /// <summary>
         /// 初始化类
         /// </summary>
@@ -66,32 +77,48 @@ namespace NetWork
             _receive.SetBuffer(_buffer,0,count);
             _send = new SocketAsyncEventArgs();
             this.socket = socket;
-
-            lobby.Instance.lobbyAction += Lobby;
-
+            lobby.Instance.lobbyAction += LobbyMsg;
             _receive.Completed += ReceiveCompleted;
             _send.Completed += SendCompleted;
             WaitReceive();
         }
+        #endregion
 
-        /// <summary>
-        /// 大厅消息
-        /// </summary>
-        /// <param name="data"></param>
-        public void Lobby(Data data)
+
+        #region 大厅消息
+
+        public void LobbyMsg(QueueData data)
         {
-
+            if (!socket.Connected)
+            {
+                lobby.Instance.lobbyAction -= LobbyMsg;
+                return;
+            }
         }
 
+        #endregion
+
+
+        #region 游戏消息
+
         /// <summary>
-        /// 游戏大厅消息
+        /// 游戏消息
         /// </summary>
         /// <param name="data"></param>
-        public void GameLobby(Data data)
+        public void GameMsg(QueueData data)
         {
-
+            if (!socket.Connected)
+            {
+                Game.Instance.GameAction -= GameMsg;
+                return;
+            }
         }
-        
+
+        #endregion
+
+
+        #region 发送消息
+
 
         /// <summary>
         /// 发送消息tcp
@@ -101,7 +128,7 @@ namespace NetWork
         {
             socket.Send(Tool.Tool.Serialize(data));
         }
-        
+
         /// <summary>
         /// 发送消息tcp
         /// </summary>
@@ -116,7 +143,7 @@ namespace NetWork
         /// </summary>
         /// <param name="endPoint"></param>
         /// <param name="data"></param>
-        public void SendMessage(EndPoint endPoint,Data data)
+        public void SendMessage(EndPoint endPoint, Data data)
         {
             socket.SendTo(Tool.Tool.Serialize(data), endPoint);
         }
@@ -128,7 +155,7 @@ namespace NetWork
         /// <param name="data"></param>
         public void SendMessage(EndPoint endPoint, byte[] data)
         {
-            socket.SendTo(data,endPoint);
+            socket.SendTo(data, endPoint);
         }
 
         /// <summary>
@@ -138,8 +165,8 @@ namespace NetWork
         public void SendMessageAsync(Data data)
         {
             var dataBytes = Tool.Tool.Serialize(data);
-            _send.SetBuffer(dataBytes,0,dataBytes.Length);
-            bool success= socket.SendAsync(_send);
+            _send.SetBuffer(dataBytes, 0, dataBytes.Length);
+            bool success = socket.SendAsync(_send);
             if (!success)
             {
                 SendSuccess();
@@ -152,11 +179,11 @@ namespace NetWork
         /// <param name="data"></param>
         public void SendMessageAsync(byte[] data)
         {
-            _send.SetBuffer(data,0,data.Length);
-            bool success= socket.SendAsync(_send);
+            _send.SetBuffer(data, 0, data.Length);
+            bool success = socket.SendAsync(_send);
             if (!success)
             {
-               
+
                 SendSuccess();
             }
         }
@@ -202,9 +229,9 @@ namespace NetWork
         /// </summary>
         private void SendSuccess()
         {
-            SendAction?.Invoke(_send.UserToken,_send);
+            SendAction?.Invoke(_send.UserToken, _send);
         }
-        
+
         /// <summary>
         /// 消息发送成功套接字回调
         /// </summary>
@@ -216,12 +243,16 @@ namespace NetWork
         }
 
 
+        #endregion
+
+
+        # region 接受消息
         /// <summary>
         /// 等待消息
         /// </summary>
         private void WaitReceive()
         {
-            bool success= socket.ReceiveAsync(_receive);
+            bool success = socket.ReceiveAsync(_receive);
             if (!success)
             {
                 SuccessReceive();
@@ -243,23 +274,26 @@ namespace NetWork
                 //}
                 if (_receive.BytesTransferred > 0 && _receive.SocketError == SocketError.Success)
                 {
-                    ReceiveSuccessAction?.Invoke(_receive.Buffer, socket, _receive);
+                    ReceiveSuccessAction?.Invoke(_receive.Buffer, this, _receive);
                 }
                 else if (_receive.BytesTransferred == 0)
                 {
                     if (_receive.SocketError == SocketError.Success)
                     {
                         //SocketManager.Instance.RemoveClient(ID);
+                        socket.Close();
                         ReceiveErrAction?.Invoke(socket, _receive, "玩家主动断开链接");
                     }
                     else
                     {
                         //SocketManager.Instance.RemoveClient(ID);
+                        socket.Close();
                         ReceiveErrAction?.Invoke(socket, _receive, "玩家由于网络问题断开链接");
                     }
                 }
                 WaitReceive();
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 //SocketManager.Instance.RemoveClient(ID);
                 Console.WriteLine(ex.ToString());
@@ -275,13 +309,67 @@ namespace NetWork
         {
             SuccessReceive();
         }
+        #endregion
 
 
-
+        #region 房间消息
         private void Room(Data data)
         {
-           
+            if (!socket.Connected)
+            {
+                socket.Close();
+                return;
+            }
+
+            ParseRoom(data);
         }
+
+
+        private void ParseRoom(Data data)
+        {
+            switch (data.RoomCMD)
+            {
+                case RoomCMD.Join:
+                    break;
+                case RoomCMD.Quit:
+                    break;
+                case RoomCMD.Ready:
+                    break;
+                case RoomCMD.NoReady:
+                    break;
+                case RoomCMD.Start:
+                    break;
+            }
+        }
+
+        #endregion
+
+
+        #region Rpc消息
+
+        public void RpcTcp(MessageSendType messageSendType, string MethodName)
+        {
+
+            Data data = MessageData.GameData.DeQueue();
+            data.MessageSendType = messageSendType;
+            data.MessageProtocol = MessageProtocol.Tcp;
+            data.MessageType = MessageType.Room;
+            data.RoomData = roomData;
+            SendMessage(data);
+        }
+
+        public void RpcUdp(MessageSendType messageSendType, EndPoint endPoint, string MethodName)
+        {
+            Data data = MessageData.GameData.DeQueue();
+            data.MessageSendType = messageSendType;
+            data.MessageProtocol = MessageProtocol.Tcp;
+            data.MessageType = MessageType.Room;
+            data.RoomData = roomData;
+            SendMessage(endPoint, data);
+        }
+
+        #endregion
+
 
     }
 }

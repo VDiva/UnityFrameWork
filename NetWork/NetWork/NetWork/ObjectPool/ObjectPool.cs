@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace FrameWork.ObjectPool
 {
@@ -11,13 +12,14 @@ namespace FrameWork.ObjectPool
         private int _num;
         private int _currentNum;
         private ConcurrentQueue<T> _objectPool;
-        
-        public ObjectPool(int num=-1)
+        private Action<T> action;
+        public ObjectPool(Action<T> action = null, int num = -1)
         {
             _objectPool = new ConcurrentQueue<T>();
             _type = typeof(T);
             _currentNum = 0;
             _num = num;
+            this.action = action;
         }
 
 
@@ -40,6 +42,18 @@ namespace FrameWork.ObjectPool
                 if (_num==-1)
                 {
                     T t2 = new T();
+                    FieldInfo[] data= _type.GetFields();
+                    foreach(FieldInfo item in data)
+                    {
+                        FieldInfo field = _type.GetField(item.Name);
+                        Type type = field.GetType();
+                        ConstructorInfo[] constructor= type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic);
+                        if (constructor.Length>0)
+                        {
+                            field.SetValue(t2, Activator.CreateInstance(field.GetType()));
+                        }
+                    }
+                    action?.Invoke(t2);
                     return t2;
                 }
                 else
@@ -51,6 +65,18 @@ namespace FrameWork.ObjectPool
                     else
                     {
                         T t2 = new T();
+                        FieldInfo[] data = _type.GetFields();
+                        foreach (FieldInfo item in data)
+                        {
+                            FieldInfo field = _type.GetField(item.Name);
+                            Type type = field.GetType();
+                            ConstructorInfo[] constructor = type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic);
+                            if (constructor.Length > 0)
+                            {
+                                field.SetValue(t2, Activator.CreateInstance(field.GetType()));
+                            }
+                        }
+                        action?.Invoke(t2);
                         return t2;
                     }
                 }

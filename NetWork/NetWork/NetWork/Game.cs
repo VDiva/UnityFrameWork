@@ -5,11 +5,11 @@ using System.Text;
 
 namespace NetWork.NetWork
 {
-    public class GameLobby: SingletonAsClass<GameLobby>
+    public class Game: SingletonAsClass<Game>
     {
         /// <summary>
         /// 游戏大厅消息广播
         /// </summary>
-        public Action<Data> GameLobbyAction;
+        public Action<Data.QueueData> GameAction;
     }
 }

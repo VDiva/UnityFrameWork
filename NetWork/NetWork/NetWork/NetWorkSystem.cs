@@ -3,10 +3,14 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using NetWork.Enum;
+using NetWork.NetWork.Message;
+
 namespace NetWork
 {
     public class NetWorkSystem
     {
+
+        #region 变量
         /// <summary>
         /// 链接的socket
         /// </summary>
@@ -30,7 +34,7 @@ namespace NetWork
         /// <summary>
         /// 消息接受成功回调只在tcp使用
         /// </summary>
-        public Action<byte[],object, SocketAsyncEventArgs> ReceiveSuccessAction;
+        public Action<byte[],Client, SocketAsyncEventArgs> ReceiveSuccessAction;
 
         /// <summary>
         /// 客户端链接成功回调之在tcp使用
@@ -42,14 +46,10 @@ namespace NetWork
         /// </summary>
         private int index=0;
 
+        #endregion
 
-        /// <summary>
-        ///使用Tcp方式链接
-        /// </summary>
-        /// <param name="ip">地址</param>
-        /// <param name="port">端口有</param>
-        /// <param name="count">传输数据最大大小</param>
-        /// <returns></returns>
+
+        #region 客户端Tcp方式链接
         public Client NetAsClientTcp(string ip,int port,int count)
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
@@ -58,15 +58,10 @@ namespace NetWork
             var client = new Client(_socket, count);
             return client;
         }
+        #endregion
 
 
-        /// <summary>
-        /// 使用udp方式链接
-        /// </summary>
-        /// <param name="ip">地址</param>
-        /// <param name="port">端口有</param>
-        /// <param name="count">传输数据最大大小</param>
-        /// <returns></returns>
+        #region 客户端Udp链接
         public Client NetAsClientUdp(string ip, int port, int count)
         {
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
@@ -76,15 +71,10 @@ namespace NetWork
             var client = new Client(_socket, count);
             return client;
         }
+        #endregion
 
 
-        /// <summary>
-        /// 使用Tcp方式开启一个服务器
-        /// </summary>
-        /// <param name="ip">地址</param>
-        /// <param name="port">端口</param>
-        /// <param name="maxAccept">最大链接数量</param>
-        /// <param name="count">传输数据最大大小</param>
+        #region Tcp开启服务器
         public void NetAsServerTcp(string ip,int port,int maxAccept,int count)
         {
             
@@ -95,16 +85,14 @@ namespace NetWork
             _accept = new SocketAsyncEventArgs();
             _accept.Completed += OnAcceptCompleted;
             _count=count;
+            ReceiveSuccessAction += Parse;
             WaitAccept();
             OpenServer?.Invoke();
         }
+        #endregion
 
-        /// <summary>
-        /// 使用udp的方式开启一个服务器
-        /// </summary>
-        /// <param name="ip">地址</param>
-        /// <param name="port">端口</param>
-        /// <param name="count">传输数据最大大小</param>
+
+        #region Udp开启服务器
         /// <returns></returns>
         public Client NetAsServerUdp(string ip, int port, int count)
         {
@@ -113,11 +101,14 @@ namespace NetWork
             _socket = new System.Net.Sockets.Socket(ipEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
             _socket.Bind(ipEndPoint);
             Client client = new Client(_socket, count);
+            client.ReceiveSuccessAction += Parse;
             OpenServer?.Invoke();
             return client;
         }
+        #endregion
 
 
+        #region 服务器等待链接
         /// <summary>
         /// 等待客户端链接
         /// </summary>
@@ -152,6 +143,26 @@ namespace NetWork
         {
             SuccessConnect();
         }
+        #endregion
+
+
+
+
+        #region 处理消息
+
+        private void Parse(byte[] bytes, Client client, SocketAsyncEventArgs args)
+        {
+            if(Tool.Tool.DeSerialize(bytes, out GameData.Data data))
+            {
+                NetWork.Data.QueueData queueData=MessageData.QueueData.DeQueue();
+                queueData.client = client;
+                queueData.data = data;
+                MessageProcessing.Instance.AddData(queueData);
+            }
+
+        }
+
+        #endregion
 
     }
 }

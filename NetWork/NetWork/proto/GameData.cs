@@ -24,36 +24,61 @@ namespace GameData {
     static GameDataReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg5HYW1lRGF0YS5wcm90bxIIR2FtZURhdGEi2AEKBERhdGESGgoDQ01EGAEg",
-            "ASgOMg0uR2FtZURhdGEuQ01EEjIKD01lc3NhZ2VQcm90b2NvbBgCIAEoDjIZ",
-            "LkdhbWVEYXRhLk1lc3NhZ2VQcm90b2NvbBIqCgtNZXNzYWdlVHlwZRgDIAEo",
-            "DjIVLkdhbWVEYXRhLk1lc3NhZ2VUeXBlEi4KDVRyYW5zZnJvbURhdGEYBCAB",
-            "KAsyFy5HYW1lRGF0YS5UcmFuc2Zyb21EYXRhEiQKCFJvb21EYXRhGAUgASgL",
-            "MhIuR2FtZURhdGEuUm9vbURhdGEiKgoHVmVjdG9yMxIJCgFYGAEgASgCEgkK",
-            "AVkYAiABKAISCQoBWhgDIAEoAiIaCghSb29tRGF0YRIOCgZSb29tSWQYASAB",
-            "KAUi1AEKDVRyYW5zZnJvbURhdGESKAoNTG9jYWxQb3NpdGlvbhgBIAEoCzIR",
-            "LkdhbWVEYXRhLlZlY3RvcjMSIwoIUG9zaXRpb24YAiABKAsyES5HYW1lRGF0",
-            "YS5WZWN0b3IzEigKDUxvY2FsUm90YXRpb24YAyABKAsyES5HYW1lRGF0YS5W",
-            "ZWN0b3IzEiMKCFJvdGF0aW9uGAQgASgLMhEuR2FtZURhdGEuVmVjdG9yMxIl",
-            "CgpMb2NhbFNjYWxlGAUgASgLMhEuR2FtZURhdGEuVmVjdG9yMyoTCgNDTUQS",
-            "DAoIUE9TSVRJT04QACojCg9NZXNzYWdlUHJvdG9jb2wSBwoDVGNwEAASBwoD",
-            "VWRwEAEqMQoLTWVzc2FnZVR5cGUSCAoEUm9vbRAAEgkKBUxvYmJ5EAESDQoJ",
-            "R2FtZUxvYmJ5EAJiBnByb3RvMw=="));
+            "Cg5HYW1lRGF0YS5wcm90bxIIR2FtZURhdGEi3gIKBERhdGESJAoITG9iYnlD",
+            "TUQYASABKA4yEi5HYW1lRGF0YS5Mb2JieUNNRBIiCgdHYW1lQ01EGAIgASgO",
+            "MhEuR2FtZURhdGEuR2FtZUNNRBIiCgdSb29tQ01EGAMgASgOMhEuR2FtZURh",
+            "dGEuUm9vbUNNRBIyCg9NZXNzYWdlUHJvdG9jb2wYBCABKA4yGS5HYW1lRGF0",
+            "YS5NZXNzYWdlUHJvdG9jb2wSKgoLTWVzc2FnZVR5cGUYBSABKA4yFS5HYW1l",
+            "RGF0YS5NZXNzYWdlVHlwZRIyCg9NZXNzYWdlU2VuZFR5cGUYBiABKA4yGS5H",
+            "YW1lRGF0YS5NZXNzYWdlU2VuZFR5cGUSLgoNVHJhbnNmcm9tRGF0YRgHIAEo",
+            "CzIXLkdhbWVEYXRhLlRyYW5zZnJvbURhdGESJAoIUm9vbURhdGEYCCABKAsy",
+            "Ei5HYW1lRGF0YS5Sb29tRGF0YSIqCgdWZWN0b3IzEgkKAVgYASABKAISCQoB",
+            "WRgCIAEoAhIJCgFaGAMgASgCIhoKCFJvb21EYXRhEg4KBlJvb21JZBgBIAEo",
+            "BSLUAQoNVHJhbnNmcm9tRGF0YRIoCg1Mb2NhbFBvc2l0aW9uGAEgASgLMhEu",
+            "R2FtZURhdGEuVmVjdG9yMxIjCghQb3NpdGlvbhgCIAEoCzIRLkdhbWVEYXRh",
+            "LlZlY3RvcjMSKAoNTG9jYWxSb3RhdGlvbhgDIAEoCzIRLkdhbWVEYXRhLlZl",
+            "Y3RvcjMSIwoIUm90YXRpb24YBCABKAsyES5HYW1lRGF0YS5WZWN0b3IzEiUK",
+            "CkxvY2FsU2NhbGUYBSABKAsyES5HYW1lRGF0YS5WZWN0b3IzIhcKCEVycm9y",
+            "TXNnEgsKA01zZxgBIAEoCSpICghMb2JieUNNRBIMCghNYXRjUm9vbRAAEgsK",
+            "B0pvaW5Sb20QARITCg9NYXRjaHN1Y2Nlc3NmdWwQAhIMCghFcnJMb2JieRAD",
+            "KhYKB0dhbWVDTUQSCwoHRXJyR2FtZRAAKk4KB1Jvb21DTUQSCAoESm9pbhAA",
+            "EggKBFF1aXQQARIJCgVSZWFkeRACEgsKB05vUmVhZHkQAxIMCghBbGxSZWFk",
+            "eRAEEgkKBVN0YXJ0EAUqIwoPTWVzc2FnZVByb3RvY29sEgcKA1RjcBAAEgcK",
+            "A1VkcBABKiwKC01lc3NhZ2VUeXBlEggKBFJvb20QABIJCgVMb2JieRABEggK",
+            "BEdhbWUQAiovCg9NZXNzYWdlU2VuZFR5cGUSBwoDQWxsEAASCAoEU2VsZhAB",
+            "EgkKBU90aGVyEAJiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GameData.CMD), typeof(global::GameData.MessageProtocol), typeof(global::GameData.MessageType), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Data), global::GameData.Data.Parser, new[]{ "CMD", "MessageProtocol", "MessageType", "TransfromData", "RoomData" }, null, null, null, null),
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GameData.LobbyCMD), typeof(global::GameData.GameCMD), typeof(global::GameData.RoomCMD), typeof(global::GameData.MessageProtocol), typeof(global::GameData.MessageType), typeof(global::GameData.MessageSendType), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Data), global::GameData.Data.Parser, new[]{ "LobbyCMD", "GameCMD", "RoomCMD", "MessageProtocol", "MessageType", "MessageSendType", "TransfromData", "RoomData" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GameData.Vector3), global::GameData.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GameData.RoomData), global::GameData.RoomData.Parser, new[]{ "RoomId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.TransfromData), global::GameData.TransfromData.Parser, new[]{ "LocalPosition", "Position", "LocalRotation", "Rotation", "LocalScale" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.TransfromData), global::GameData.TransfromData.Parser, new[]{ "LocalPosition", "Position", "LocalRotation", "Rotation", "LocalScale" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameData.ErrorMsg), global::GameData.ErrorMsg.Parser, new[]{ "Msg" }, null, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Enums
-  public enum CMD {
-    [pbr::OriginalName("POSITION")] Position = 0,
+  public enum LobbyCMD {
+    [pbr::OriginalName("MatcRoom")] MatcRoom = 0,
+    [pbr::OriginalName("JoinRom")] JoinRom = 1,
+    [pbr::OriginalName("Matchsuccessful")] Matchsuccessful = 2,
+    [pbr::OriginalName("ErrLobby")] ErrLobby = 3,
+  }
+
+  public enum GameCMD {
+    [pbr::OriginalName("ErrGame")] ErrGame = 0,
+  }
+
+  public enum RoomCMD {
+    [pbr::OriginalName("Join")] Join = 0,
+    [pbr::OriginalName("Quit")] Quit = 1,
+    [pbr::OriginalName("Ready")] Ready = 2,
+    [pbr::OriginalName("NoReady")] NoReady = 3,
+    [pbr::OriginalName("AllReady")] AllReady = 4,
+    [pbr::OriginalName("Start")] Start = 5,
   }
 
   public enum MessageProtocol {
@@ -64,7 +89,13 @@ namespace GameData {
   public enum MessageType {
     [pbr::OriginalName("Room")] Room = 0,
     [pbr::OriginalName("Lobby")] Lobby = 1,
-    [pbr::OriginalName("GameLobby")] GameLobby = 2,
+    [pbr::OriginalName("Game")] Game = 2,
+  }
+
+  public enum MessageSendType {
+    [pbr::OriginalName("All")] All = 0,
+    [pbr::OriginalName("Self")] Self = 1,
+    [pbr::OriginalName("Other")] Other = 2,
   }
 
   #endregion
@@ -104,9 +135,12 @@ namespace GameData {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Data(Data other) : this() {
-      cMD_ = other.cMD_;
+      lobbyCMD_ = other.lobbyCMD_;
+      gameCMD_ = other.gameCMD_;
+      roomCMD_ = other.roomCMD_;
       messageProtocol_ = other.messageProtocol_;
       messageType_ = other.messageType_;
+      messageSendType_ = other.messageSendType_;
       transfromData_ = other.transfromData_ != null ? other.transfromData_.Clone() : null;
       roomData_ = other.roomData_ != null ? other.roomData_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -118,20 +152,44 @@ namespace GameData {
       return new Data(this);
     }
 
-    /// <summary>Field number for the "CMD" field.</summary>
-    public const int CMDFieldNumber = 1;
-    private global::GameData.CMD cMD_ = global::GameData.CMD.Position;
+    /// <summary>Field number for the "LobbyCMD" field.</summary>
+    public const int LobbyCMDFieldNumber = 1;
+    private global::GameData.LobbyCMD lobbyCMD_ = global::GameData.LobbyCMD.MatcRoom;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GameData.CMD CMD {
-      get { return cMD_; }
+    public global::GameData.LobbyCMD LobbyCMD {
+      get { return lobbyCMD_; }
       set {
-        cMD_ = value;
+        lobbyCMD_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "GameCMD" field.</summary>
+    public const int GameCMDFieldNumber = 2;
+    private global::GameData.GameCMD gameCMD_ = global::GameData.GameCMD.ErrGame;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.GameCMD GameCMD {
+      get { return gameCMD_; }
+      set {
+        gameCMD_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "RoomCMD" field.</summary>
+    public const int RoomCMDFieldNumber = 3;
+    private global::GameData.RoomCMD roomCMD_ = global::GameData.RoomCMD.Join;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.RoomCMD RoomCMD {
+      get { return roomCMD_; }
+      set {
+        roomCMD_ = value;
       }
     }
 
     /// <summary>Field number for the "MessageProtocol" field.</summary>
-    public const int MessageProtocolFieldNumber = 2;
+    public const int MessageProtocolFieldNumber = 4;
     private global::GameData.MessageProtocol messageProtocol_ = global::GameData.MessageProtocol.Tcp;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -143,7 +201,7 @@ namespace GameData {
     }
 
     /// <summary>Field number for the "MessageType" field.</summary>
-    public const int MessageTypeFieldNumber = 3;
+    public const int MessageTypeFieldNumber = 5;
     private global::GameData.MessageType messageType_ = global::GameData.MessageType.Room;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -154,8 +212,20 @@ namespace GameData {
       }
     }
 
+    /// <summary>Field number for the "MessageSendType" field.</summary>
+    public const int MessageSendTypeFieldNumber = 6;
+    private global::GameData.MessageSendType messageSendType_ = global::GameData.MessageSendType.All;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GameData.MessageSendType MessageSendType {
+      get { return messageSendType_; }
+      set {
+        messageSendType_ = value;
+      }
+    }
+
     /// <summary>Field number for the "TransfromData" field.</summary>
-    public const int TransfromDataFieldNumber = 4;
+    public const int TransfromDataFieldNumber = 7;
     private global::GameData.TransfromData transfromData_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -167,7 +237,7 @@ namespace GameData {
     }
 
     /// <summary>Field number for the "RoomData" field.</summary>
-    public const int RoomDataFieldNumber = 5;
+    public const int RoomDataFieldNumber = 8;
     private global::GameData.RoomData roomData_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -193,9 +263,12 @@ namespace GameData {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (CMD != other.CMD) return false;
+      if (LobbyCMD != other.LobbyCMD) return false;
+      if (GameCMD != other.GameCMD) return false;
+      if (RoomCMD != other.RoomCMD) return false;
       if (MessageProtocol != other.MessageProtocol) return false;
       if (MessageType != other.MessageType) return false;
+      if (MessageSendType != other.MessageSendType) return false;
       if (!object.Equals(TransfromData, other.TransfromData)) return false;
       if (!object.Equals(RoomData, other.RoomData)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -205,9 +278,12 @@ namespace GameData {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (CMD != global::GameData.CMD.Position) hash ^= CMD.GetHashCode();
+      if (LobbyCMD != global::GameData.LobbyCMD.MatcRoom) hash ^= LobbyCMD.GetHashCode();
+      if (GameCMD != global::GameData.GameCMD.ErrGame) hash ^= GameCMD.GetHashCode();
+      if (RoomCMD != global::GameData.RoomCMD.Join) hash ^= RoomCMD.GetHashCode();
       if (MessageProtocol != global::GameData.MessageProtocol.Tcp) hash ^= MessageProtocol.GetHashCode();
       if (MessageType != global::GameData.MessageType.Room) hash ^= MessageType.GetHashCode();
+      if (MessageSendType != global::GameData.MessageSendType.All) hash ^= MessageSendType.GetHashCode();
       if (transfromData_ != null) hash ^= TransfromData.GetHashCode();
       if (roomData_ != null) hash ^= RoomData.GetHashCode();
       if (_unknownFields != null) {
@@ -228,24 +304,36 @@ namespace GameData {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (CMD != global::GameData.CMD.Position) {
+      if (LobbyCMD != global::GameData.LobbyCMD.MatcRoom) {
         output.WriteRawTag(8);
-        output.WriteEnum((int) CMD);
+        output.WriteEnum((int) LobbyCMD);
+      }
+      if (GameCMD != global::GameData.GameCMD.ErrGame) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) GameCMD);
+      }
+      if (RoomCMD != global::GameData.RoomCMD.Join) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) RoomCMD);
       }
       if (MessageProtocol != global::GameData.MessageProtocol.Tcp) {
-        output.WriteRawTag(16);
+        output.WriteRawTag(32);
         output.WriteEnum((int) MessageProtocol);
       }
       if (MessageType != global::GameData.MessageType.Room) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(40);
         output.WriteEnum((int) MessageType);
       }
+      if (MessageSendType != global::GameData.MessageSendType.All) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) MessageSendType);
+      }
       if (transfromData_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(58);
         output.WriteMessage(TransfromData);
       }
       if (roomData_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(66);
         output.WriteMessage(RoomData);
       }
       if (_unknownFields != null) {
@@ -258,24 +346,36 @@ namespace GameData {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (CMD != global::GameData.CMD.Position) {
+      if (LobbyCMD != global::GameData.LobbyCMD.MatcRoom) {
         output.WriteRawTag(8);
-        output.WriteEnum((int) CMD);
+        output.WriteEnum((int) LobbyCMD);
+      }
+      if (GameCMD != global::GameData.GameCMD.ErrGame) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) GameCMD);
+      }
+      if (RoomCMD != global::GameData.RoomCMD.Join) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) RoomCMD);
       }
       if (MessageProtocol != global::GameData.MessageProtocol.Tcp) {
-        output.WriteRawTag(16);
+        output.WriteRawTag(32);
         output.WriteEnum((int) MessageProtocol);
       }
       if (MessageType != global::GameData.MessageType.Room) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(40);
         output.WriteEnum((int) MessageType);
       }
+      if (MessageSendType != global::GameData.MessageSendType.All) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) MessageSendType);
+      }
       if (transfromData_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(58);
         output.WriteMessage(TransfromData);
       }
       if (roomData_ != null) {
-        output.WriteRawTag(42);
+        output.WriteRawTag(66);
         output.WriteMessage(RoomData);
       }
       if (_unknownFields != null) {
@@ -288,14 +388,23 @@ namespace GameData {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (CMD != global::GameData.CMD.Position) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) CMD);
+      if (LobbyCMD != global::GameData.LobbyCMD.MatcRoom) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) LobbyCMD);
+      }
+      if (GameCMD != global::GameData.GameCMD.ErrGame) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) GameCMD);
+      }
+      if (RoomCMD != global::GameData.RoomCMD.Join) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RoomCMD);
       }
       if (MessageProtocol != global::GameData.MessageProtocol.Tcp) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MessageProtocol);
       }
       if (MessageType != global::GameData.MessageType.Room) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MessageType);
+      }
+      if (MessageSendType != global::GameData.MessageSendType.All) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) MessageSendType);
       }
       if (transfromData_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TransfromData);
@@ -315,14 +424,23 @@ namespace GameData {
       if (other == null) {
         return;
       }
-      if (other.CMD != global::GameData.CMD.Position) {
-        CMD = other.CMD;
+      if (other.LobbyCMD != global::GameData.LobbyCMD.MatcRoom) {
+        LobbyCMD = other.LobbyCMD;
+      }
+      if (other.GameCMD != global::GameData.GameCMD.ErrGame) {
+        GameCMD = other.GameCMD;
+      }
+      if (other.RoomCMD != global::GameData.RoomCMD.Join) {
+        RoomCMD = other.RoomCMD;
       }
       if (other.MessageProtocol != global::GameData.MessageProtocol.Tcp) {
         MessageProtocol = other.MessageProtocol;
       }
       if (other.MessageType != global::GameData.MessageType.Room) {
         MessageType = other.MessageType;
+      }
+      if (other.MessageSendType != global::GameData.MessageSendType.All) {
+        MessageSendType = other.MessageSendType;
       }
       if (other.transfromData_ != null) {
         if (transfromData_ == null) {
@@ -352,25 +470,37 @@ namespace GameData {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            CMD = (global::GameData.CMD) input.ReadEnum();
+            LobbyCMD = (global::GameData.LobbyCMD) input.ReadEnum();
             break;
           }
           case 16: {
-            MessageProtocol = (global::GameData.MessageProtocol) input.ReadEnum();
+            GameCMD = (global::GameData.GameCMD) input.ReadEnum();
             break;
           }
           case 24: {
+            RoomCMD = (global::GameData.RoomCMD) input.ReadEnum();
+            break;
+          }
+          case 32: {
+            MessageProtocol = (global::GameData.MessageProtocol) input.ReadEnum();
+            break;
+          }
+          case 40: {
             MessageType = (global::GameData.MessageType) input.ReadEnum();
             break;
           }
-          case 34: {
+          case 48: {
+            MessageSendType = (global::GameData.MessageSendType) input.ReadEnum();
+            break;
+          }
+          case 58: {
             if (transfromData_ == null) {
               TransfromData = new global::GameData.TransfromData();
             }
             input.ReadMessage(TransfromData);
             break;
           }
-          case 42: {
+          case 66: {
             if (roomData_ == null) {
               RoomData = new global::GameData.RoomData();
             }
@@ -393,25 +523,37 @@ namespace GameData {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            CMD = (global::GameData.CMD) input.ReadEnum();
+            LobbyCMD = (global::GameData.LobbyCMD) input.ReadEnum();
             break;
           }
           case 16: {
-            MessageProtocol = (global::GameData.MessageProtocol) input.ReadEnum();
+            GameCMD = (global::GameData.GameCMD) input.ReadEnum();
             break;
           }
           case 24: {
+            RoomCMD = (global::GameData.RoomCMD) input.ReadEnum();
+            break;
+          }
+          case 32: {
+            MessageProtocol = (global::GameData.MessageProtocol) input.ReadEnum();
+            break;
+          }
+          case 40: {
             MessageType = (global::GameData.MessageType) input.ReadEnum();
             break;
           }
-          case 34: {
+          case 48: {
+            MessageSendType = (global::GameData.MessageSendType) input.ReadEnum();
+            break;
+          }
+          case 58: {
             if (transfromData_ == null) {
               TransfromData = new global::GameData.TransfromData();
             }
             input.ReadMessage(TransfromData);
             break;
           }
-          case 42: {
+          case 66: {
             if (roomData_ == null) {
               RoomData = new global::GameData.RoomData();
             }
@@ -1250,6 +1392,195 @@ namespace GameData {
               LocalScale = new global::GameData.Vector3();
             }
             input.ReadMessage(LocalScale);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class ErrorMsg : pb::IMessage<ErrorMsg>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<ErrorMsg> _parser = new pb::MessageParser<ErrorMsg>(() => new ErrorMsg());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<ErrorMsg> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GameData.GameDataReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ErrorMsg() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ErrorMsg(ErrorMsg other) : this() {
+      msg_ = other.msg_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ErrorMsg Clone() {
+      return new ErrorMsg(this);
+    }
+
+    /// <summary>Field number for the "Msg" field.</summary>
+    public const int MsgFieldNumber = 1;
+    private string msg_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Msg {
+      get { return msg_; }
+      set {
+        msg_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as ErrorMsg);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(ErrorMsg other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Msg != other.Msg) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Msg.Length != 0) hash ^= Msg.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Msg.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Msg);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Msg.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Msg);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (Msg.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Msg);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(ErrorMsg other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Msg.Length != 0) {
+        Msg = other.Msg;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Msg = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Msg = input.ReadString();
             break;
           }
         }

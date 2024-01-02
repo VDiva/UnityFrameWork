@@ -10,6 +10,6 @@ namespace NetWork.NetWork
         /// <summary>
         /// 大厅消息广播
         /// </summary>
-        public Action<Data> lobbyAction;
+        public Action<Data.QueueData> lobbyAction;
     }
 }

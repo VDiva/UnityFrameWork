@@ -9,15 +9,15 @@ namespace NetWork.NetWork.Message
 {
     public class MessageProcessing: SingletonAsClass<MessageProcessing>
     {
-        private ConcurrentQueue<Data> datas;
+        private ConcurrentQueue<Data.QueueData> datas;
         public MessageProcessing() { 
         
-            datas = new ConcurrentQueue<Data>();
+            datas = new ConcurrentQueue<Data.QueueData>();
             new Thread(Processing).Start();
         }
 
 
-        public void AddData(Data data)
+        public void AddData(Data.QueueData data)
         {
             datas.Enqueue(data);    
         }
@@ -28,9 +28,10 @@ namespace NetWork.NetWork.Message
             {
                 while (datas.Count>0)
                 {
-                    if(datas.TryDequeue(out Data data))
+                    if(datas.TryDequeue(out Data.QueueData data))
                     {
-                        switch(data.MessageProtocol)
+                        
+                        switch(data.data.MessageProtocol)
                         {
                             case MessageProtocol.Tcp:
                                 MessageTcp.Instance.AddData(data);

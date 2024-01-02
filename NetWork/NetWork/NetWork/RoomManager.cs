@@ -10,6 +10,24 @@ namespace NetWork.NetWork
         /// <summary>
         /// 房间消息广播
         /// </summary>
-        public Action<Data> RoomAction;
+        public Action<Data.QueueData> RoomAction;
+
+        public Action<Data.QueueData> RoomParseAction;
+
+        public RoomManager()
+        {
+            RoomParseAction += Parse;
+        }
+
+        public void Parse(Data.QueueData data)
+        {
+            GameData.Data gameData = data.data;
+            switch (gameData.RoomCMD)
+            {
+                case RoomCMD.Join:
+                    break;
+            }
+        }
+
     }
 }

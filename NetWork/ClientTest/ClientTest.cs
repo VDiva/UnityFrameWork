@@ -18,7 +18,7 @@ namespace ClientTest
         {
             var client1 =new NetWorkSystem().NetAsClientTcp("127.0.0.1", 7777, 2048);
             var client2 =new NetWorkSystem().NetAsClientUdp("127.0.0.1", 8888, 2048);
-            
+            client2.Rpc(MessageSendType.All, "");
             EndPoint point = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8889);
             while (true)
             {

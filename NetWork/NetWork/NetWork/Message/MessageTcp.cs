@@ -9,14 +9,14 @@ namespace NetWork.NetWork.Message
 {
     public class MessageTcp: SingletonAsClass<MessageTcp>
     {
-        private ConcurrentQueue<Data> datas;
+        private ConcurrentQueue<Data.QueueData> datas;
         public MessageTcp()
         {
-            datas = new ConcurrentQueue<Data>();
+            datas = new ConcurrentQueue<Data.QueueData>();
             new Thread(Processing).Start();
         }
 
-        public void AddData(Data data)
+        public void AddData(Data.QueueData data)
         {
             datas.Enqueue(data);
         }
@@ -27,15 +27,15 @@ namespace NetWork.NetWork.Message
             {
                 while (datas.Count > 0)
                 {
-                    if (datas.TryDequeue(out Data data))
+                    if (datas.TryDequeue(out Data.QueueData data))
                     {
-                        switch (data.MessageType)
+                        switch (data.data.MessageType)
                         {
                             case MessageType.Room:
-                                RoomManager.Instance.RoomAction?.Invoke(data);
+                                RoomManager.Instance.RoomParseAction?.Invoke(data);
                                 break;
-                            case MessageType.GameLobby:
-                                GameLobby.Instance.GameLobbyAction?.Invoke(data);
+                            case MessageType.Game:
+                                Game.Instance.GameAction?.Invoke(data);
                                 break;
                             case MessageType.Lobby:
                                 lobby.Instance.lobbyAction?.Invoke(data);

@@ -3,8 +3,24 @@ syntax="proto3";
 package GameData;
 
 
-enum CMD{
-    POSITION=0;
+enum LobbyCMD{
+    MatcRoom=0;
+    JoinRom=1;
+    Matchsuccessful=2;
+    ErrLobby=3;
+}
+
+enum GameCMD{
+    ErrGame=0;
+}
+
+enum RoomCMD{
+    Join=0;
+    Quit=1;
+    Ready=2;
+    NoReady=3;
+    AllReady=4;
+    Start=5;
 }
 
 enum MessageProtocol{
@@ -15,15 +31,24 @@ enum MessageProtocol{
 enum MessageType{
     Room=0;
     Lobby=1;
-    GameLobby=2;
+    Game=2;
+}
+
+enum MessageSendType{
+    All=0;
+    Self=1;
+    Other=2;
 }
 
 message Data{
-    CMD CMD=1;
-    MessageProtocol MessageProtocol=2;
-    MessageType MessageType=3;
-    TransfromData TransfromData=4;
-    RoomData RoomData=5;
+    LobbyCMD LobbyCMD=1;
+    GameCMD GameCMD=2;
+    RoomCMD RoomCMD=3;
+    MessageProtocol MessageProtocol=4;
+    MessageType MessageType=5;
+    MessageSendType MessageSendType=6;
+    TransfromData TransfromData=7;
+    RoomData RoomData=8;
 }
 
 
@@ -44,6 +69,10 @@ message TransfromData{
     Vector3 LocalRotation=3;
     Vector3 Rotation=4;
     Vector3 LocalScale=5;
+}
+
+message ErrorMsg{
+    string Msg=1;
 }
 
 
