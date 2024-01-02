@@ -101,7 +101,8 @@ namespace NetWork
             _socket = new System.Net.Sockets.Socket(ipEndPoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
             _socket.Bind(ipEndPoint);
             Client client = new Client(_socket, count);
-            client.ReceiveSuccessAction += Parse;
+            client.ReceiveSuccessAction += ReceiveSuccessAction;
+            ReceiveSuccessAction += Parse;
             OpenServer?.Invoke();
             return client;
         }
@@ -144,8 +145,6 @@ namespace NetWork
             SuccessConnect();
         }
         #endregion
-
-
 
 
         #region 处理消息
