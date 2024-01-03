@@ -127,6 +127,7 @@ namespace NetWork
         public void SendMessage(Data data)
         {
             socket.Send(Tool.Tool.Serialize(data));
+            MessageData.GameData.EnQueue(data);
         }
 
         /// <summary>
@@ -146,6 +147,7 @@ namespace NetWork
         public void SendMessage(EndPoint endPoint, Data data)
         {
             socket.SendTo(Tool.Tool.Serialize(data), endPoint);
+            MessageData.GameData.EnQueue(data);
         }
 
         /// <summary>
@@ -167,6 +169,7 @@ namespace NetWork
             var dataBytes = Tool.Tool.Serialize(data);
             _send.SetBuffer(dataBytes, 0, dataBytes.Length);
             bool success = socket.SendAsync(_send);
+            MessageData.GameData.EnQueue(data);
             if (!success)
             {
                 SendSuccess();
@@ -199,6 +202,7 @@ namespace NetWork
             _send.SetBuffer(dataBytes, 0, dataBytes.Length);
             _send.RemoteEndPoint = endPoint;
             bool success = socket.SendToAsync(_send);
+            MessageData.GameData.EnQueue(data);
             if (!success)
             {
                 SendSuccess();
