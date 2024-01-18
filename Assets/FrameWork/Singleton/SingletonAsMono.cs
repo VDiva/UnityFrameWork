@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace FrameWork.Singleton
 {
-    public class SingletonAsMono<T> : MonoBehaviour where T: class
+    public class SingletonAsMono<T> : MonoBehaviour where T: Component
     {
         private static T _instance;
 
@@ -12,13 +12,26 @@ namespace FrameWork.Singleton
             {
                 if (_instance==null)
                 {
-                    GameObject obj = new GameObject(typeof(T).Name);
-                    _instance = obj.AddComponent(typeof(T)) as T;
+
+                    if (FindObjectOfType<T>()!=null)
+                    {
+                        _instance = FindObjectOfType<T>();
+                    }
+                    else
+                    {
+                        GameObject go = new GameObject();
+                        go.name = typeof(T).Name;
+                        _instance=go.AddComponent<T>();
+                    }
+                    
                 }
 
                 return _instance;
             }
         }
+
         
     }
+        
+    
 }

@@ -1666,6 +1666,8 @@
      <Compile Include="Assets\FrameWork\FlexReader\Mapping\TableMapperBase.cs" />
      <Compile Include="Assets\FrameWork\Global\AssemblyType.cs" />
      <Compile Include="Assets\FrameWork\Global\GlobalVariables.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\System\NetWork.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\System\NetWorkSystem.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
@@ -1674,6 +1676,8 @@
      <Compile Include="Assets\FrameWork\Tool\Configure.cs" />
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
+     <Compile Include="Assets\FrameWork\cs\cs.cs" />
+     <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
      <None Include="Assets\FrameWork\Protobuf\Google.Protobuf.xml" />
@@ -1688,34 +1692,34 @@
      <None Include="Assets\FrameWork\Protobuf\System.Runtime.CompilerServices.Unsafe.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\ReleaseNotes.txt" />
  <Reference Include="Unity.Timeline.Editor">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.VSCode.Editor">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.TextMeshPro.Editor">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.UI">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="Unity.Timeline">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
  </Reference>
  <Reference Include="Unity.Rider.Editor">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.VisualStudio.Editor">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.VisualStudio.Editor.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.VisualStudio.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.TextMeshPro">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
  </Reference>
  <Reference Include="Unity.PlasticSCM.Editor">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.PlasticSCM.Editor.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.PlasticSCM.Editor.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.UI">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -1904,31 +1908,31 @@
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/Managed/UnityEditor.dll</HintPath>
  </Reference>
  <Reference Include="ICSharpCode.SharpZipLib">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/FlexReader/ICSharpCode.SharpZipLib.dll</HintPath>
- </Reference>
- <Reference Include="NetWork">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetManager/Socket/Debug/netstandard2.0/NetWork.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/FlexReader/ICSharpCode.SharpZipLib.dll</HintPath>
  </Reference>
  <Reference Include="Google.Protobuf">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/Google.Protobuf.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/Google.Protobuf.dll</HintPath>
  </Reference>
  <Reference Include="protobuf-net.Core">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.Core.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.Core.dll</HintPath>
  </Reference>
  <Reference Include="protobuf-net">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.dll</HintPath>
  </Reference>
  <Reference Include="System.Buffers">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Buffers.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Buffers.dll</HintPath>
  </Reference>
  <Reference Include="System.Collections.Immutable">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Collections.Immutable.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Collections.Immutable.dll</HintPath>
  </Reference>
  <Reference Include="System.Memory">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Memory.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Memory.dll</HintPath>
  </Reference>
  <Reference Include="System.Runtime.CompilerServices.Unsafe">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+ </Reference>
+ <Reference Include="RiptideNetworking">
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/RiptideNetworking.dll</HintPath>
  </Reference>
  <Reference Include="netstandard">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>

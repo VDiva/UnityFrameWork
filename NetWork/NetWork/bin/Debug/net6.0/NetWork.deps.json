@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "NetWork/1.0.0": {
+        "dependencies": {
+          "RiptideNetworking": "2.1.2.0"
+        },
+        "runtime": {
+          "NetWork.dll": {}
+        }
+      },
+      "RiptideNetworking/2.1.2.0": {
+        "runtime": {
+          "RiptideNetworking.dll": {
+            "assemblyVersion": "2.1.2.0",
+            "fileVersion": "2.1.2.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "NetWork/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "RiptideNetworking/2.1.2.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

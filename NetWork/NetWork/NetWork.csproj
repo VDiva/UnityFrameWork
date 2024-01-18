@@ -1,25 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <BaseOutputPath>C:\Users\18060\Documents\GitHub\Game-FrameWork\Assets\FrameWork\NetManager\Socket</BaseOutputPath>
-    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>False</Optimize>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Optimize>False</Optimize>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.24.4" />
+    <Folder Include="Dll\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="RiptideNetworking">
+      <HintPath>Dll\RiptideNetworking.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

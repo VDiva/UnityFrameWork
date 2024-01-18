@@ -1,0 +1,18 @@
+﻿using NetWork.System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NetWork
+{
+    public class MainServer
+    {
+        static void Main(string[] args)
+        {
+            NetWorkSystem.Start(8888, 100);
+            Console.ReadKey();
+        }
+    }
+}

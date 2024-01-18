@@ -70,16 +70,16 @@
      <Compile Include="Assets\FrameWork\AssetBundles-Browser-1.7.0\Editor\MessageSystem.cs" />
      <None Include="Assets\FrameWork\AssetBundles-Browser-1.7.0\Editor\Unity.AssetBundleBrowser.Editor.asmdef" />
  <Reference Include="UnityEditor.UI">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.UI">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.TestRunner">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.TestRunner">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.TestRunner.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.TestRunner.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -280,46 +280,46 @@
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="ICSharpCode.SharpZipLib">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/FlexReader/ICSharpCode.SharpZipLib.dll</HintPath>
- </Reference>
- <Reference Include="NetWork">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetManager/Socket/Debug/netstandard2.0/NetWork.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/FlexReader/ICSharpCode.SharpZipLib.dll</HintPath>
  </Reference>
  <Reference Include="Google.Protobuf">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/Google.Protobuf.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/Google.Protobuf.dll</HintPath>
  </Reference>
  <Reference Include="protobuf-net.Core">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.Core.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.Core.dll</HintPath>
  </Reference>
  <Reference Include="protobuf-net">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/protobuf-net.dll</HintPath>
  </Reference>
  <Reference Include="System.Buffers">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Buffers.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Buffers.dll</HintPath>
  </Reference>
  <Reference Include="System.Collections.Immutable">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Collections.Immutable.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Collections.Immutable.dll</HintPath>
  </Reference>
  <Reference Include="System.Memory">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Memory.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Memory.dll</HintPath>
  </Reference>
  <Reference Include="System.Runtime.CompilerServices.Unsafe">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
  </Reference>
  <Reference Include="log4netPlastic">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/log4netPlastic.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/log4netPlastic.dll</HintPath>
  </Reference>
  <Reference Include="Unity.Plastic.Antlr3.Runtime">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/Unity.Plastic.Antlr3.Runtime.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/Unity.Plastic.Antlr3.Runtime.dll</HintPath>
  </Reference>
  <Reference Include="Unity.Plastic.Newtonsoft.Json">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/Unity.Plastic.Newtonsoft.Json.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/Unity.Plastic.Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="unityplastic">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/unityplastic.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/unityplastic.dll</HintPath>
+ </Reference>
+ <Reference Include="RiptideNetworking">
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/RiptideNetworking.dll</HintPath>
  </Reference>
  <Reference Include="nunit.framework">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>

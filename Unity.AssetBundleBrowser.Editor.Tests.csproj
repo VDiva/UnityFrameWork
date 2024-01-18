@@ -56,16 +56,16 @@
      <Compile Include="Assets\FrameWork\AssetBundles-Browser-1.7.0\Tests\Editor\Util\TestUtil.cs" />
      <None Include="Assets\FrameWork\AssetBundles-Browser-1.7.0\Tests\Editor\Unity.AssetBundleBrowser.Editor.Tests.asmdef" />
  <Reference Include="UnityEngine.TestRunner">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.TestRunner.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.TestRunner.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.TestRunner">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.UI">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.UI">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -266,7 +266,7 @@
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="nunit.framework">
- <HintPath>C:/Users/18060/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>
