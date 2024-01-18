@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetWork.Type
 {
-    public enum ClientToServerMessageType: ushort
+    public enum ClientToServerMessageType : ushort
     {
         Login = 1,
         Logout = 2,

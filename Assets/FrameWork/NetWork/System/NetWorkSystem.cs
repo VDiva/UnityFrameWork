@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using NetWork.Type;
 using Riptide;
 using Riptide.Utils;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace NetWork.System
     {
         private static Client _client;
         private static ushort _id;
-        
+        private static long _serverTick;
         
         public static void Start(string address)
         {
@@ -60,6 +61,13 @@ namespace NetWork.System
         public static void DisConnect()
         {
             _client.Disconnect();
+        }
+
+        [MessageHandler((ushort)ServerToClientMessageType.SyncTick)]
+        private static void SyncTick(Message message)
+        {
+            _serverTick = message.GetUShort();
+            Debug.Log(_serverTick);
         }
         
     }

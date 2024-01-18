@@ -1666,8 +1666,11 @@
      <Compile Include="Assets\FrameWork\FlexReader\Mapping\TableMapperBase.cs" />
      <Compile Include="Assets\FrameWork\Global\AssemblyType.cs" />
      <Compile Include="Assets\FrameWork\Global\GlobalVariables.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\System\MessageSystem.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWork.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWorkSystem.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\Type\ClientToServerMessageType.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\Type\ServerToClientMessageType.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />

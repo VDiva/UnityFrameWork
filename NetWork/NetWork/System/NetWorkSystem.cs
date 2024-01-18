@@ -1,4 +1,5 @@
 ﻿
+using NetWork.Type;
 using Riptide;
 using Riptide.Utils;
 
@@ -13,8 +14,9 @@ namespace NetWork.System
 
         private static Thread updateMessageThread;
 
-    
+        private static Thread tickThread;
 
+        private static ushort currentTick;
         private static void OnConnect(object? sender, ServerConnectedEventArgs e)
         {
             clients.TryAdd(e.Client.Id, e.Client);
@@ -32,6 +34,7 @@ namespace NetWork.System
         public static void Start(ushort port,ushort maxConnect)
         {
             updateMessageThread?.Abort();
+            tickThread?.Abort();
             server = new Server();
             clients = new Dictionary<ushort, Connection>();
             RiptideLogger.Initialize(Console.WriteLine, false);
@@ -40,6 +43,9 @@ namespace NetWork.System
             server.Start(port,maxConnect);
             updateMessageThread = new Thread(UpdateMessage);
             updateMessageThread.Start();
+
+            tickThread = new Thread(UpdateTick);
+            tickThread.Start();
         }
 
         private static void UpdateMessage()
@@ -51,9 +57,29 @@ namespace NetWork.System
             }
         }
 
+        private static void UpdateTick()
+        {
+            while (true)
+            {
+                Thread.Sleep(1000);
+                currentTick += 1;
+                SendTick();
+            }
+        }
+
+        private static void SendTick()
+        {
+            var msg = CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.SyncTick);
+            msg.AddUShort(currentTick);
+            server.SendToAll(msg);
+        }
+
+
         public static Message CreateMessage(MessageSendMode sendMode,Enum id)
         {
-            return Message.Create(sendMode, id);
+            Message msg = Message.Create(sendMode, id);
+            msg.AddUShort(currentTick);
+            return msg;
         }
 
 
@@ -72,9 +98,16 @@ namespace NetWork.System
             server.Send(message, id);
         }
 
+        public static long GetTick()
+        {
+            return currentTick;
+        }
 
 
-
+        public static Connection GetClient(ushort id)
+        {
+            return clients[id];
+        }
 
     }
 }

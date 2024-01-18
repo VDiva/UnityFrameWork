@@ -15,9 +15,9 @@ namespace FrameWork.cs
 
         private void Update()
         {
-            var message=NetWorkSystem.CreateMessage(MessageSendMode.Reliable, 1);
-            message.AddString("消息:"+Random.Range(0, 100));
-            NetWorkSystem.Send(message);
+            // var message=NetWorkSystem.CreateMessage(MessageSendMode.Reliable, clien);
+            // message.AddString("消息:"+Random.Range(0, 100));
+            // NetWorkSystem.Send(message);
         }
     }
 }

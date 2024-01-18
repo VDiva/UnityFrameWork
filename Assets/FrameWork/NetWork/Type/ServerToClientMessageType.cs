@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetWork.Type
 {
-    public enum ServerToClientMessageType: ushort
+    public enum ServerToClientMessageType : ushort
     {
         SyncTick=1,
 
