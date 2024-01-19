@@ -49,8 +49,8 @@ namespace NetWork.System
             var tick = message.GetUShort();
             var id = message.GetUShort();
             var loc = message.GetVector3();
-            
-            NetWorkSystem.OnTransform?.Invoke(tick,id,loc);
+            var ro = message.GetVector3();
+            NetWorkSystem.OnTransform?.Invoke(tick,id,loc,ro);
             Debug.Log(id+"-"+loc+"-"+tick);
         }
     }

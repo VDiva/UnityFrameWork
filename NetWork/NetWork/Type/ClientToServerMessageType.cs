@@ -22,6 +22,7 @@ namespace NetWork.Type
 
 
 
-        Transform=100
+        Transform=100,
+        Instantiate = 101,
     }
 }

@@ -135,10 +135,20 @@ namespace NetWork
                 var y = message.GetFloat();
                 var z = message.GetFloat();
 
+
+                var rx = message.GetFloat();
+                var ry = message.GetFloat();
+                var rz = message.GetFloat();
+
                 msg.AddUShort(id);
                 msg.AddFloat(x);
                 msg.AddFloat(y);
                 msg.AddFloat(z);
+
+                msg.AddFloat(rx);
+                msg.AddFloat(ry);
+                msg.AddFloat(rz);
+
                 room.Transform(msg);
             }
         }

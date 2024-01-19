@@ -8,59 +8,70 @@ namespace FrameWork.cs
 {
     public class Player : MonoBehaviour
     {
-        public int tick;
-        public Vector3 selfLoc;
-        public Vector3 syncLoc;
-        public float l = 0;
-        public float lp = 0;
+        // public int tick;
+        // public Vector3 selfLoc;
+        // public Vector3 syncLoc;
+        // public float l = 0;
+        // public float lp = 0;
         public ushort id;
-        public bool isSync = false;
+        // public bool isSync = false;
         public void Init(ushort id)
         {
             this.id = id;
         }
-        private void FixedUpdate()
-        {
-            if (NetWorkSystem.GetClientId()==id)
-            {
-                var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
-                //msg.AddUShort(id);
-                msg.AddVector3(transform.position);
-                NetWorkSystem.Send(msg);
-            }
-        }
+        // private void FixedUpdate()
+        // {
+        //     if (NetWorkSystem.GetClientId()==id)
+        //     {
+        //         var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
+        //         //msg.AddUShort(id);
+        //         msg.AddVector3(transform.position);
+        //         NetWorkSystem.Send(msg);
+        //     }
+        // }
 
+        
+        
         private void Update()
         {
             if (id==NetWorkSystem.GetClientId())
             {
                 var h = Input.GetAxis("Horizontal");
                 var v = Input.GetAxis("Vertical");
+                
+                
+                
                 Vector3 dir = new Vector3(h, 0, v);
                 transform.Translate(dir*Time.deltaTime*5,Space.World);
             }
 
-            if (!NetWorkSystem.GetClientId().Equals(id))
+
+            if (Input.GetKey(KeyCode.Space))
             {
-                transform.position = Vector3.Lerp(selfLoc, syncLoc, l);
-                l += Time.deltaTime*10;
+                transform.Rotate(Vector3.one);
             }
+
+            // if (!NetWorkSystem.GetClientId().Equals(id))
+            // {
+            //     transform.position = Vector3.Lerp(selfLoc, syncLoc, l);
+            //     l += Time.deltaTime*10;
+            // }
             
         }
 
-        public void SyncTransform(ushort tick,ushort id,Vector3 loc)
-        {
-            
-            if (NetWorkSystem.GetClientId().Equals(id))return;
-            
-            this.tick = tick;
-            var ti = NetWorkSystem.serverTick;
-            if (ti>=tick&& tick>=ti-2)
-            {
-                selfLoc = transform.position;
-                syncLoc = loc;
-                l = 0;
-            }
-        }
+        // public void SyncTransform(ushort tick,ushort id,Vector3 loc)
+        // {
+        //     
+        //     if (NetWorkSystem.GetClientId().Equals(id))return;
+        //     if(this.id!=id)return;
+        //     this.tick = tick;
+        //     var ti = NetWorkSystem.serverTick;
+        //     if (ti>=tick&& tick>=ti-2)
+        //     {
+        //         selfLoc = transform.position;
+        //         syncLoc = loc;
+        //         l = 0;
+        //     }
+        // }
     }
 }

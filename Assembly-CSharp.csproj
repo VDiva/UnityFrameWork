@@ -1666,6 +1666,8 @@
      <Compile Include="Assets\FrameWork\FlexReader\Mapping\TableMapperBase.cs" />
      <Compile Include="Assets\FrameWork\Global\AssemblyType.cs" />
      <Compile Include="Assets\FrameWork\Global\GlobalVariables.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\Component\Identity.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\Component\SyncTransform.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\MessageSystem.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWork.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWorkSystem.cs" />

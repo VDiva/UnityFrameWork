@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using FrameWork.NetWork.Component;
 using NetWork.System;
 using Riptide;
 using UnityEngine;
@@ -53,8 +54,12 @@ namespace FrameWork.cs
             this.roomId = roomId;
             var go=Instantiate(prefab, Vector3.zero, Quaternion.identity);
             var p = go.AddComponent<Player>();
+            var identity = go.AddComponent<Identity>();
+            var sync = go.AddComponent<SyncTransform>();
+            sync.positionSyncSpeed = 3;
+            identity.SetId(id);
             p.Init(id);
-            NetWorkSystem.OnTransform += p.SyncTransform;
+            //NetWorkSystem.OnTransform += p.SyncTransform;
             player.TryAdd(id, p);
         }
         
@@ -62,7 +67,7 @@ namespace FrameWork.cs
         {
             if (player.TryRemove(id, out Player go))
             {
-                NetWorkSystem.OnTransform -= go.SyncTransform;
+                //NetWorkSystem.OnTransform -= go.SyncTransform;
                 Destroy(go.gameObject);
             }
         }

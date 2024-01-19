@@ -15,7 +15,7 @@ namespace NetWork.System
         public static Action<ushort> OnPlayerLeftRoom;
         public static Action<string> OnJoinError;
         public static Action<string> OnInformation;
-        public static Action<ushort,ushort, Vector3> OnTransform;
+        public static Action<ushort,ushort, Vector3,Vector3> OnTransform;
         
         
         private static Client _client;
@@ -107,12 +107,20 @@ namespace NetWork.System
         {
             return _client.Id;
         }
+
+
+        // public static GameObject Instantiate(GameObject prefab,Vector3 position,Quaternion rotation)
+        // {
+        //     
+        // }
+        
         
         [MessageHandler((ushort)ServerToClientMessageType.SyncTick)]
         private static void SyncTick(Message message)
         {
             serverTick = message.GetUShort();
         }
+        
         
         
         
