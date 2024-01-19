@@ -145,7 +145,7 @@ namespace NetWork
 
         public void SendSelf(ushort id, Message message)
         {
-            messages.Add(me);
+            messages.Add(message);
             foreach (var player in players)
             {
                 if (player.Value.Id == id)
