@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Folder Include="Dll\" />
+    <Folder Include="ObjectPool\" />
   </ItemGroup>
 
   <ItemGroup>

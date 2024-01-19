@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NetWork.System;
+﻿
 using NetWork.Type;
 using Riptide;
 
@@ -11,14 +6,14 @@ namespace NetWork
 {
     public class Room
     {
-        private int roomId;
-        private string roomName;
+        public int roomId;
+        public string roomName;
 
-        private int maxCount;
+        public int maxCount;
         //private List<Connection> players;
         private List<Message> messages;
 
-        private Dictionary<int, Connection> players;
+        private Dictionary<ushort, Connection> players;
 
         public Room(int roomId,string roomName,int maxCount)
         {
@@ -26,25 +21,55 @@ namespace NetWork
             this.roomName = roomName;
             this.maxCount = maxCount;
 
-            players = new Dictionary<int, Connection>();
+            players = new Dictionary<ushort, Connection>();
             messages = new List<Message>();
            
         }
 
+        public Room()
+        {
+            players = new Dictionary<ushort, Connection>();
+            messages = new List<Message>();
+        }
+
+        public void Init(int roomId, string roomName, int maxCount)
+        {
+            this.roomId = roomId;
+            this.roomName = roomName;
+            this.maxCount = maxCount;
+            messages.Clear();
+            players.Clear();
+
+        }
+        public void Init( string roomName, int maxCount)
+        {
+            this.roomName = roomName;
+            this.maxCount = maxCount;
+            messages.Clear();
+            players.Clear();
+        }
+
         public bool Join(ushort id,Connection connection)
         {
-
-            if(players.Count < maxCount)
+            if (!players.ContainsKey(id))
             {
-                players.Add(id, connection);
-                foreach (Message message in messages)
+                if (players.Count < maxCount)
                 {
-                    connection.Send(message);
+                    Console.WriteLine(id + ":加入了房间:" + roomId);
+                    players.Add(id, connection);
+                    foreach (Message message in messages)
+                    {
+                        connection.Send(message);
+                    }
+                    Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
+                    msg.AddUShort(id);
+                    SendAll(msg);
+                    return true;
                 }
-                Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
-                msg.AddUShort(id);
-                SendAll(msg);
-                return true;
+                else
+                {
+                    return false;
+                }
             }
             else
             {
@@ -52,6 +77,26 @@ namespace NetWork
             }
         }
 
+
+        public void Left(ushort id)
+        {
+            if (players.ContainsKey(id))
+            {
+                Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerLeftRoom);
+                msg.AddUShort(id);
+                SendAll(msg);
+
+                players.Remove(id);
+                Console.WriteLine(id + ":离开了房间:" + roomId);
+                if(players.Count == 0)
+                {
+                    Console.WriteLine(roomId+"房间空 回收房间");
+                    RoomSystem.EnQueue(this);
+                }
+            }
+
+            
+        }
 
 
         public void TransfromAll(Message message)
@@ -68,9 +113,9 @@ namespace NetWork
 
         public void SendAll(Message message)
         {
-            for(int i = 0; i < players.Count; i++)
+            foreach(var player in players)
             {
-                players[i].Send(message);
+                player.Value.Send(message);
             }
 
             messages.Add(message);
@@ -78,12 +123,11 @@ namespace NetWork
 
         public void SendOther(ushort id,Message message)
         {
-            for (int i = 0; i < players.Count; i++)
+            foreach (var player in players)
             {
-                var client = players[i];
-                if (client.Id != id)
+                if (player.Value.Id != id)
                 {
-                    client.Send(message);
+                    player.Value.Send(message);
                 }
             }
             messages.Add(message);

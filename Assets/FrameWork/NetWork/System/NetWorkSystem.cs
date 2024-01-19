@@ -63,12 +63,47 @@ namespace NetWork.System
             _client.Disconnect();
         }
 
+
+        public static void JoinRoom(int roomId)
+        {
+            Message msg = Message.Create(MessageSendMode.Reliable,ClientToServerMessageType.JoinRoom);
+            msg.AddInt(roomId);
+            Send(msg);
+        }
+        
+        
+        public static void CreateRoom(string roomName,int maxCount)
+        {
+            Message msg = Message.Create(MessageSendMode.Reliable,ClientToServerMessageType.CreateRoom);
+            
+            msg.AddString(roomName);
+            msg.AddInt(maxCount);
+            Send(msg);
+        }
+        
+        public static void MatchingRoom(string roomName,int maxCount)
+        {
+            Message msg = Message.Create(MessageSendMode.Reliable,ClientToServerMessageType.MatchingRoom);
+            msg.AddString(roomName);
+            msg.AddInt(maxCount);
+            Send(msg);
+        }
+        
+        public static void LeftRoom()
+        {
+            Message msg = Message.Create(MessageSendMode.Reliable,ClientToServerMessageType.LeftRoom);
+            Send(msg);
+        }
+        
+
         [MessageHandler((ushort)ServerToClientMessageType.SyncTick)]
         private static void SyncTick(Message message)
         {
             _serverTick = message.GetUShort();
-            Debug.Log(_serverTick);
         }
+        
+        
+        
         
     }
 }

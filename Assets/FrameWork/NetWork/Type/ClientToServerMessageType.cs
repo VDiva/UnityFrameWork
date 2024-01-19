@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetWork.Type
 {
-    public enum ClientToServerMessageType : ushort
+    public enum ClientToServerMessageType: ushort
     {
         Login = 1,
         Logout = 2,
@@ -14,7 +14,8 @@ namespace NetWork.Type
         CreateRoom = 4,
         JoinRoom = 5,
         Room=6,
-        TransfromAll,
-        TransfromOther,
+        TransfromAll=7,
+        TransfromOther=8,
+        LeftRoom=9,
     }
 }

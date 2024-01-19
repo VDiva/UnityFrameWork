@@ -15,9 +15,25 @@ namespace FrameWork.cs
 
         private void Update()
         {
-            // var message=NetWorkSystem.CreateMessage(MessageSendMode.Reliable, clien);
-            // message.AddString("消息:"+Random.Range(0, 100));
-            // NetWorkSystem.Send(message);
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                NetWorkSystem.CreateRoom("你好",10);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                NetWorkSystem.LeftRoom();
+            }
+            
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                NetWorkSystem.JoinRoom(1);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                NetWorkSystem.MatchingRoom("你好",10);
+            }
         }
     }
 }

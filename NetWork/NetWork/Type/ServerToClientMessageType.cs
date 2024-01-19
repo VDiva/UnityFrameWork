@@ -13,5 +13,7 @@ namespace NetWork.Type
         JoinError=4,
         PlayerJoinRoom=5,
         PlayerLeftRoom=6,
+        Information=7,
+        JoinRoomSuccess=8,
     }
 }

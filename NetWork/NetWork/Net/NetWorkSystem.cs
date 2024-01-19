@@ -3,7 +3,7 @@ using NetWork.Type;
 using Riptide;
 using Riptide.Utils;
 
-namespace NetWork.System
+namespace NetWork
 {
     public static class NetWorkSystem
     {
@@ -27,6 +27,7 @@ namespace NetWork.System
             if (clients.ContainsKey(e.Client.Id))
             {
                 clients.Remove(e.Client.Id);
+                RoomSystem.PlayerDisConnect(e.Client.Id);
             }
         }
 
@@ -107,6 +108,13 @@ namespace NetWork.System
         public static Connection GetClient(ushort id)
         {
             return clients[id];
+        }
+
+        public static void SendError(string info,ushort id)
+        {
+            Message msg=CreateMessage(MessageSendMode.Reliable,ServerToClientMessageType.Information);
+            msg.AddString(info);
+            Send(msg,id);
         }
 
     }
