@@ -58,17 +58,13 @@ namespace NetWork
                     Console.WriteLine(id + ":加入了房间:" + roomId);
                     players.Add(id, connection);
 
-                    SendHistoryInformation(connection);
-
-                   // Thread.Sleep(1000);
-                    Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
-
-                    //messages.Add(msg);
-                    msg.AddUShort(id);
-                    msg.AddInt(roomId);
-
-                    SendAll(msg);
-
+                    SendHistoryInformation(connection, () =>
+                    {
+                        Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
+                        msg.AddUShort(id);
+                        msg.AddInt(roomId);
+                        SendAll(msg);
+                    });
                     return true;
                 }
                 else
@@ -116,17 +112,19 @@ namespace NetWork
         }
 
 
-        private void SendHistoryInformation(Connection connection)
+        private void SendHistoryInformation(Connection connection,Action action=null)
         {
             foreach (Message message in messages)
             {
                 connection.Send(message);
             }
+
+            action?.Invoke();
         }
 
         public void SendAll(Message message)
         {
-            messages.Add(message);
+            AddMessage(message);
             foreach (var player in players)
             {
                 player.Value.Send(message);
@@ -137,7 +135,7 @@ namespace NetWork
 
         public void SendOther(ushort id,Message message)
         {
-            messages.Add(message);
+            AddMessage(message);
             foreach (var player in players)
             {
                 if (player.Value.Id != id)
@@ -145,12 +143,11 @@ namespace NetWork
                     player.Value.Send(message);
                 }
             }
-            
         }
 
         public void SendSelf(ushort id, Message message)
         {
-            messages.Add(message);
+            AddMessage(message);
             foreach (var player in players)
             {
                 if (player.Value.Id == id)
@@ -159,6 +156,12 @@ namespace NetWork
                 }
             }
             
+        }
+
+        private void AddMessage(Message message)
+        {
+           
+            messages.Add(Tool.Tool.CopyClass(message));
         }
 
 

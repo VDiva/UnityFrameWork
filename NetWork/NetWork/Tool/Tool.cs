@@ -11,7 +11,7 @@ namespace NetWork.Tool
     {
         public static T CopyClass<T>(T t)
         {
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(t));
+            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(t))));
         }  
     }
 }
