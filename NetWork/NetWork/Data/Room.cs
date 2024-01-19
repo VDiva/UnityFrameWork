@@ -57,13 +57,18 @@ namespace NetWork
                 {
                     Console.WriteLine(id + ":加入了房间:" + roomId);
                     players.Add(id, connection);
+
                     SendHistoryInformation(connection);
+
                    // Thread.Sleep(1000);
                     Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
+
                     //messages.Add(msg);
                     msg.AddUShort(id);
                     msg.AddInt(roomId);
+
                     SendAll(msg);
+
                     return true;
                 }
                 else
