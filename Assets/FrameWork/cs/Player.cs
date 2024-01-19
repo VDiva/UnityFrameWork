@@ -8,11 +8,13 @@ namespace FrameWork.cs
 {
     public class Player : MonoBehaviour
     {
-        private Vector3 selfLoc;
-        private Vector3 syncLoc;
-        private float l = 0;
-        private ushort id;
-        private bool isSync = false;
+        public int tick;
+        public Vector3 selfLoc;
+        public Vector3 syncLoc;
+        public float l = 0;
+        public float lp = 0;
+        public ushort id;
+        public bool isSync = false;
         public void Init(ushort id)
         {
             this.id = id;
@@ -21,8 +23,8 @@ namespace FrameWork.cs
         {
             if (NetWorkSystem.GetClientId()==id)
             {
-                var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.TransformOther);
-                msg.AddUShort(id);
+                var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
+                //msg.AddUShort(id);
                 msg.AddVector3(transform.position);
                 NetWorkSystem.Send(msg);
             }
@@ -38,19 +40,23 @@ namespace FrameWork.cs
                 transform.Translate(dir*Time.deltaTime*5,Space.World);
             }
 
-            if (!isSync)return;
-            transform.position = Vector3.Lerp(selfLoc, syncLoc, l);
-            l += Time.deltaTime;
+            if (!NetWorkSystem.GetClientId().Equals(id))
+            {
+                transform.position = Vector3.Lerp(selfLoc, syncLoc, l);
+                l += Time.deltaTime*10;
+            }
+            
         }
 
         public void SyncTransform(ushort tick,ushort id,Vector3 loc)
         {
             
-            if (this.id!=id)return;
+            if (NetWorkSystem.GetClientId().Equals(id))return;
+            
+            this.tick = tick;
             var ti = NetWorkSystem.serverTick;
-            if (ti>tick&& tick>ti-2)
+            if (ti>=tick&& tick>=ti-2)
             {
-                isSync = true;
                 selfLoc = transform.position;
                 syncLoc = loc;
                 l = 0;

@@ -54,7 +54,13 @@ namespace NetWork
             while (true)
             {
                 Thread.Sleep(20);
-                server.Update();
+                try
+                {
+                    server.Update();
+                }catch(Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
             }
         }
 
@@ -63,7 +69,7 @@ namespace NetWork
             while (true)
             {
                 Thread.Sleep(1000);
-                currentTick += 1;
+                currentTick += 1; 
                 SendTick();
             }
         }
@@ -100,7 +106,7 @@ namespace NetWork
             server.Send(message, id);
         }
 
-        public static long GetTick()
+        public static ushort GetTick()
         {
             return currentTick;
         }

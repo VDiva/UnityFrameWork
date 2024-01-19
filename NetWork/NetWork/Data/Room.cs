@@ -20,7 +20,7 @@ namespace NetWork
             this.roomId = roomId;
             this.roomName = roomName;
             this.maxCount = maxCount;
-
+            
             players = new Dictionary<ushort, Connection>();
             messages = new List<Message>();
            
@@ -37,6 +37,9 @@ namespace NetWork
             this.roomId = roomId;
             this.roomName = roomName;
             this.maxCount = maxCount;
+
+            ReleaseMessage();
+
             messages.Clear();
             players.Clear();
 
@@ -45,6 +48,7 @@ namespace NetWork
         {
             this.roomName = roomName;
             this.maxCount = maxCount;
+            ReleaseMessage();
             messages.Clear();
             players.Clear();
         }
@@ -95,64 +99,58 @@ namespace NetWork
                     RoomSystem.EnQueue(this);
                 }
             }
-
-            
         }
 
 
-        public void TransfromAll(Message message)
+        public void Transform(Message message)
         {
-           // SendAll(message);
+           SendAll(message,false);
         }
 
-
-        public void TransfromOther(ushort id, Message message)
-        {
-            //SendOther(id, message);
-        }
 
 
         private void SendHistoryInformation(Connection connection,Action action=null)
         {
+            
             foreach (Message message in messages)
             {
-                connection.Send(message);
+                connection.Send(message,false);
             }
 
             action?.Invoke();
         }
 
-        public void SendAll(Message message)
+        public void SendAll(Message message,bool isAdd=true)
         {
-            AddMessage(message);
+            if(isAdd) AddMessage(message);
             foreach (var player in players)
             {
-                player.Value.Send(message);
+                player.Value.Send(message,false);
             }
 
             
         }
 
-        public void SendOther(ushort id,Message message)
+        public void SendOther(ushort id,Message message, bool isAdd = true)
         {
-            AddMessage(message);
+            if (isAdd) AddMessage(message);
             foreach (var player in players)
             {
                 if (player.Value.Id != id)
                 {
-                    player.Value.Send(message);
+                    player.Value.Send(message, false);
                 }
             }
         }
 
-        public void SendSelf(ushort id, Message message)
+        public void SendSelf(ushort id, Message message, bool isAdd = true)
         {
-            AddMessage(message);
+            if (isAdd) AddMessage(message);
             foreach (var player in players)
             {
                 if (player.Value.Id == id)
                 {
-                    player.Value.Send(message);
+                    player.Value.Send(message, false);
                 }
             }
             
@@ -160,10 +158,17 @@ namespace NetWork
 
         private void AddMessage(Message message)
         {
-           
-            messages.Add(Tool.Tool.CopyClass(message));
+            messages.Add(message);
         }
 
+
+        private void ReleaseMessage()
+        {
+            for(var i=0; i<messages.Count; i++)
+            {
+                messages[i].Release();
+            }
+        }
 
     }
 }

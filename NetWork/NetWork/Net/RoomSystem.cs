@@ -123,35 +123,23 @@ namespace NetWork
 
 
 
-        [MessageHandler((ushort)ClientToServerMessageType.TransformmAll)]
+        [MessageHandler((ushort)ClientToServerMessageType.Transform)]
         private static void TransfromAll(ushort id,Message message)
         {
-            Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.Transform);
-            msg.AddUShort(id);
-            msg.AddFloat(message.GetFloat());
-            msg.AddFloat(message.GetFloat());
-            msg.AddFloat(message.GetFloat());
             if(playerIdGetRoom.TryGetValue(id, out var room))
             {
-                room.TransfromAll(msg);
-            }
-        }
+                //var tick = NetWorkSystem.GetTick();
+                //Console.WriteLine(tick.ToString());
+                Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable,ServerToClientMessageType.Transform);
+                var x = message.GetFloat();
+                var y = message.GetFloat();
+                var z = message.GetFloat();
 
-
-
-        [MessageHandler((ushort)ClientToServerMessageType.TransformOther)]
-        private static void TransfromOther(ushort id, Message message)
-        {
-            
-            if (playerIdGetRoom.TryGetValue(id, out var room))
-            {
-
-                Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.Transform);
                 msg.AddUShort(id);
-                msg.AddFloat(message.GetFloat());
-                msg.AddFloat(message.GetFloat());
-                msg.AddFloat(message.GetFloat());
-                room.TransfromOther(id, msg);
+                msg.AddFloat(x);
+                msg.AddFloat(y);
+                msg.AddFloat(z);
+                room.Transform(msg);
             }
         }
 
