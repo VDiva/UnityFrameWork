@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using NetWork.System;
 using Riptide;
 using UnityEngine;
@@ -8,31 +9,61 @@ namespace FrameWork.cs
 {
     public class cs : MonoBehaviour
     {
+        
+        private int roomId;
+        public GameObject prefab;
+        private ConcurrentDictionary<ushort, Player> player;
         private void Start()
         {
+            player = new ConcurrentDictionary<ushort, Player>();
             NetWorkSystem.Start("127.0.0.1:8888");
+        }
+
+        private void OnEnable()
+        {
+            NetWorkSystem.OnPlayerJoinRoom += OnJoin;
+            NetWorkSystem.OnPlayerLeftRoom += OnLeft;
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Q))
+            if (Input.GetKeyDown("1"))
             {
                 NetWorkSystem.CreateRoom("你好",10);
             }
             
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown("2"))
             {
                 NetWorkSystem.LeftRoom();
             }
             
-            if (Input.GetKeyDown(KeyCode.W))
+            if (Input.GetKeyDown("3"))
             {
                 NetWorkSystem.JoinRoom(1);
             }
             
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown("4"))
             {
                 NetWorkSystem.MatchingRoom("你好",10);
+            }
+        }
+        
+        private void OnJoin(ushort id,int roomId)
+        {
+            this.roomId = roomId;
+            var go=Instantiate(prefab, Vector3.zero, Quaternion.identity);
+            var p = go.AddComponent<Player>();
+            p.Init(id);
+            NetWorkSystem.OnTransform += p.SyncTransform;
+            player.TryAdd(id, p);
+        }
+        
+        private void OnLeft(ushort id)
+        {
+            if (player.TryRemove(id, out Player go))
+            {
+                NetWorkSystem.OnTransform -= go.SyncTransform;
+                Destroy(go.gameObject);
             }
         }
     }

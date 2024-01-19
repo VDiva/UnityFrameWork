@@ -1670,6 +1670,7 @@
      <Compile Include="Assets\FrameWork\NetWork\System\NetWork.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWorkSystem.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\RoomSystem.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\Tool\MessageExtensions.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Type\ClientToServerMessageType.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Type\ServerToClientMessageType.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
@@ -1680,6 +1681,7 @@
      <Compile Include="Assets\FrameWork\Tool\Configure.cs" />
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
+     <Compile Include="Assets\FrameWork\cs\Player.cs" />
      <Compile Include="Assets\FrameWork\cs\cs.cs" />
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />

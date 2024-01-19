@@ -11,9 +11,16 @@ namespace NetWork.System
 {
     public class NetWorkSystem
     {
+        public static Action<ushort,int> OnPlayerJoinRoom;
+        public static Action<ushort> OnPlayerLeftRoom;
+        public static Action<string> OnJoinError;
+        public static Action<string> OnInformation;
+        public static Action<ushort,ushort, Vector3> OnTransform;
+        
+        
         private static Client _client;
         private static ushort _id;
-        private static long _serverTick;
+        public static ushort serverTick;
         
         public static void Start(string address)
         {
@@ -94,12 +101,17 @@ namespace NetWork.System
             Message msg = Message.Create(MessageSendMode.Reliable,ClientToServerMessageType.LeftRoom);
             Send(msg);
         }
-        
 
+
+        public static ushort GetClientId()
+        {
+            return _client.Id;
+        }
+        
         [MessageHandler((ushort)ServerToClientMessageType.SyncTick)]
         private static void SyncTick(Message message)
         {
-            _serverTick = message.GetUShort();
+            serverTick = message.GetUShort();
         }
         
         

@@ -92,6 +92,7 @@ namespace NetWork
         public static void Send(Message message,Connection connection)
         {
             server.Send(message,connection);
+
         }
 
         public static void Send(Message message, ushort id)

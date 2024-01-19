@@ -15,5 +15,6 @@ namespace NetWork.Type
         PlayerLeftRoom=6,
         Information=7,
         JoinRoomSuccess=8,
+        Transform=9,
     }
 }

@@ -14,8 +14,8 @@ namespace NetWork.Type
         CreateRoom = 4,
         JoinRoom = 5,
         Room=6,
-        TransfromAll=7,
-        TransfromOther=8,
+        TransformmAll=7,
+        TransformOther=8,
         LeftRoom=9,
     }
 }

@@ -57,12 +57,12 @@ namespace NetWork
                 {
                     Console.WriteLine(id + ":加入了房间:" + roomId);
                     players.Add(id, connection);
-                    foreach (Message message in messages)
-                    {
-                        connection.Send(message);
-                    }
+                    SendHistoryInformation(connection);
+                   // Thread.Sleep(1000);
                     Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
+                    //messages.Add(msg);
                     msg.AddUShort(id);
+                    msg.AddInt(roomId);
                     SendAll(msg);
                     return true;
                 }
@@ -101,28 +101,38 @@ namespace NetWork
 
         public void TransfromAll(Message message)
         {
-            SendAll(message);
+           // SendAll(message);
         }
 
 
         public void TransfromOther(ushort id, Message message)
         {
-            SendOther(id, message);
+            //SendOther(id, message);
         }
 
 
+        private void SendHistoryInformation(Connection connection)
+        {
+            foreach (Message message in messages)
+            {
+                connection.Send(message);
+            }
+        }
+
         public void SendAll(Message message)
         {
-            foreach(var player in players)
+            messages.Add(message);
+            foreach (var player in players)
             {
                 player.Value.Send(message);
             }
 
-            messages.Add(message);
+            
         }
 
         public void SendOther(ushort id,Message message)
         {
+            messages.Add(message);
             foreach (var player in players)
             {
                 if (player.Value.Id != id)
@@ -130,7 +140,20 @@ namespace NetWork
                     player.Value.Send(message);
                 }
             }
-            messages.Add(message);
+            
+        }
+
+        public void SendSelf(ushort id, Message message)
+        {
+            messages.Add(me);
+            foreach (var player in players)
+            {
+                if (player.Value.Id == id)
+                {
+                    player.Value.Send(message);
+                }
+            }
+            
         }
 
 
