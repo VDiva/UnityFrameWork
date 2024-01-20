@@ -1686,6 +1686,7 @@
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
      <Compile Include="Assets\FrameWork\cs\Player.cs" />
+     <Compile Include="Assets\FrameWork\cs\TextManager.cs" />
      <Compile Include="Assets\FrameWork\cs\cs.cs" />
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />

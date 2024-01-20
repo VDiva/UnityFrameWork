@@ -183,6 +183,15 @@ namespace NetWork
             }
         }
 
+        [MessageHandler((ushort)ClientToServerMessageType.GetId)]
+        private static void GetId(ushort id, Message message)
+        {
+            if (playerIdGetRoom.TryGetValue(id, out var room))
+            {
+                room.Rpc(id, message);
+            }
+        }
+
 
 
         private static void SendJoinRoomSuccess(ushort id,Room room)

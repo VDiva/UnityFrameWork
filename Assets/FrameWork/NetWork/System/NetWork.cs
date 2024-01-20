@@ -53,11 +53,10 @@ namespace NetWork.System
                 _prefabs.TryAdd(spawnName, go);
                 prefab = go;
             }
-
-            var obj=Instantiate(prefab, position, Quaternion.Euler(rotation));
             
-            var identity=obj.AddComponent<Identity>();
+            var obj=Instantiate(prefab, position, Quaternion.Euler(rotation));
             var syncTransform=obj.AddComponent<SyncTransform>();
+            var identity=obj.GetComponent<Identity>();
             identity.SetId(objId);
 
 

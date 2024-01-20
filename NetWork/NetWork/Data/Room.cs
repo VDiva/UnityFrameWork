@@ -178,6 +178,12 @@ namespace NetWork
         }
 
 
+        public void GetId(ushort id, Message message)
+        {
+            
+        }
+
+
         private void SendHistoryInformation(Connection connection,Action action=null)
         {
             
