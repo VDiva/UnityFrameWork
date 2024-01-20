@@ -126,30 +126,39 @@ namespace NetWork
         [MessageHandler((ushort)ClientToServerMessageType.Transform)]
         private static void TransfromAll(ushort id,Message message)
         {
-            if(playerIdGetRoom.TryGetValue(id, out var room))
+            try
             {
-                //var tick = NetWorkSystem.GetTick();
-                //Console.WriteLine(tick.ToString());
-                Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable,ServerToClientMessageType.Transform);
-                var x = message.GetFloat();
-                var y = message.GetFloat();
-                var z = message.GetFloat();
+                if (playerIdGetRoom.TryGetValue(id, out var room))
+                {
+                    //var tick = NetWorkSystem.GetTick();
+                    //Console.WriteLine(tick.ToString());
+                    Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.Transform);
+
+                    var objId = message.GetUShort();
+
+                    var x = message.GetFloat();
+                    var y = message.GetFloat();
+                    var z = message.GetFloat();
 
 
-                var rx = message.GetFloat();
-                var ry = message.GetFloat();
-                var rz = message.GetFloat();
+                    var rx = message.GetFloat();
+                    var ry = message.GetFloat();
+                    var rz = message.GetFloat();
 
-                msg.AddUShort(id);
-                msg.AddFloat(x);
-                msg.AddFloat(y);
-                msg.AddFloat(z);
+                    msg.AddUShort(objId);
+                    msg.AddFloat(x);
+                    msg.AddFloat(y);
+                    msg.AddFloat(z);
 
-                msg.AddFloat(rx);
-                msg.AddFloat(ry);
-                msg.AddFloat(rz);
+                    msg.AddFloat(rx);
+                    msg.AddFloat(ry);
+                    msg.AddFloat(rz);
 
-                room.Transform(msg);
+                    room.Transform(msg);
+                }
+            }catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
         }
 

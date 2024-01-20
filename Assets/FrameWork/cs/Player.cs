@@ -27,7 +27,7 @@ namespace FrameWork.cs
                     transform.Rotate(Vector3.one);
                 }
 
-                if (Input.GetKeyDown(KeyCode.A))
+                if (Input.GetKeyDown(KeyCode.Q))
                 {
                     NetWorkSystem.Rpc("CS",this,Rpc.All,new object[]{Random.Range(0,100)+"字"});
                     //NetWorkSystem.Rpc();

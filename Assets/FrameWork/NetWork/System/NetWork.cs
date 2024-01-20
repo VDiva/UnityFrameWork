@@ -58,7 +58,7 @@ namespace NetWork.System
             var syncTransform=obj.AddComponent<SyncTransform>();
             var identity=obj.GetComponent<Identity>();
             identity.SetId(objId);
-
+            identity.SetSpawnId(clientId);
 
             _objects.TryAdd(objId, obj);
         }

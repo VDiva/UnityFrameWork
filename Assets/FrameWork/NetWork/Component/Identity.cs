@@ -5,6 +5,7 @@ namespace FrameWork.NetWork.Component
 {
     public class Identity : MonoBehaviour
     {
+        private ushort _clientSpawnId;
         public ushort _id;
 
         public void SetId(ushort id)
@@ -16,11 +17,26 @@ namespace FrameWork.NetWork.Component
         {
             return _id;
         }
-
+        
+        public void SetSpawnId(ushort id)
+        {
+            _clientSpawnId = id;
+        }
+        
+        public ushort GetSpawnId()
+        {
+            return _clientSpawnId;
+        }
+        
 
         public bool IsLocal()
         {
             return _id == NetWorkSystem.GetClientId();
+        }
+
+        public bool IsLocalSpawn()
+        {
+            return _clientSpawnId == NetWorkSystem.GetClientId();
         }
     }
 }
