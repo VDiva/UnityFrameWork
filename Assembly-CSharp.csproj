@@ -1671,9 +1671,11 @@
      <Compile Include="Assets\FrameWork\NetWork\System\MessageSystem.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWork.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\NetWorkSystem.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\System\NetWorkSystemMono.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\RoomSystem.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Tool\MessageExtensions.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Type\ClientToServerMessageType.cs" />
+     <Compile Include="Assets\FrameWork\NetWork\Type\Rpc.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Type\ServerToClientMessageType.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
@@ -1698,6 +1700,7 @@
      <None Include="Assets\FrameWork\Protobuf\System.Buffers.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Runtime.CompilerServices.Unsafe.xml" />
+     <None Include="Assets\FrameWork\NetWork\Dll\Newtonsoft.Json.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\ReleaseNotes.txt" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
@@ -1941,6 +1944,9 @@
  </Reference>
  <Reference Include="System.Runtime.CompilerServices.Unsafe">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+ </Reference>
+ <Reference Include="Newtonsoft.Json">
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="netstandard">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>

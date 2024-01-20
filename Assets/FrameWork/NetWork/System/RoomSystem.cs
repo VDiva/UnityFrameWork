@@ -1,4 +1,5 @@
 using NetWork.Type;
+using Newtonsoft.Json;
 using Riptide;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace NetWork.System
             var tick = message.GetUShort();
             var info = message.GetString();
             NetWorkSystem.OnJoinError?.Invoke(info);
-            Debug.Log("第"+tick+"帧"+info);
+            //Debug.Log("第"+tick+"帧"+info);
         }
         
         [MessageHandler((ushort)ServerToClientMessageType.PlayerJoinRoom)]
@@ -22,7 +23,7 @@ namespace NetWork.System
             var id = message.GetUShort();
             var roomId = message.GetInt();
             NetWorkSystem.OnPlayerJoinRoom?.Invoke(id,roomId);
-            Debug.Log("第"+tick+"帧"+id+"加入了房间");
+            //Debug.Log("第"+tick+"帧"+id+"加入了房间");
         }
         
         [MessageHandler((ushort)ServerToClientMessageType.PlayerLeftRoom)]
@@ -31,7 +32,7 @@ namespace NetWork.System
             var tick = message.GetUShort();
             var id = message.GetUShort();
             NetWorkSystem.OnPlayerLeftRoom?.Invoke(id);
-            Debug.Log("第"+tick+"帧"+id+"离开了房间");
+            //Debug.Log("第"+tick+"帧"+id+"离开了房间");
         }
         
         [MessageHandler((ushort)ServerToClientMessageType.Information)]
@@ -40,7 +41,7 @@ namespace NetWork.System
             var tick = message.GetUShort();
             var info = message.GetString();
             NetWorkSystem.OnJoinError?.Invoke(info);
-            Debug.Log("第"+tick+"帧"+info);
+            //Debug.Log("第"+tick+"帧"+info);
         }
         
         [MessageHandler((ushort)ServerToClientMessageType.Transform)]
@@ -51,7 +52,34 @@ namespace NetWork.System
             var loc = message.GetVector3();
             var ro = message.GetVector3();
             NetWorkSystem.OnTransform?.Invoke(tick,id,loc,ro);
-            Debug.Log(id+"-"+loc+"-"+tick);
+            //Debug.Log(id+"-"+loc+"-"+tick);
         }
+        
+        
+        [MessageHandler((ushort)ServerToClientMessageType.Instantiate)]
+        private static void Instantiate(Message message)
+        {
+            var tick = message.GetUShort();
+            var clientId = message.GetUShort();
+            var objId = message.GetUShort();
+            var spawnName = message.GetString();
+            var loc = message.GetVector3();
+            var ro = message.GetVector3();
+            NetWorkSystem.OnInstantiate?.Invoke(clientId,objId,spawnName,loc,ro);
+            //Debug.Log("生成玩家");
+        }
+        
+        [MessageHandler((ushort)ServerToClientMessageType.Rpc)]
+        private static void Rpc(Message message)
+        {
+            var tick = message.GetUShort();
+            var methodName = message.GetString();
+            var objId = message.GetUShort();
+            var param = message.GetString();
+            
+            NetWorkSystem.OnRpc?.Invoke(methodName,objId,JsonConvert.DeserializeObject<object[]>(param));
+            //Debug.Log("生成玩家");
+        }
+        
     }
 }

@@ -163,6 +163,28 @@ namespace NetWork
             }
         }
 
+
+        [MessageHandler((ushort)ClientToServerMessageType.Instantiate)]
+        private static void Instantiate(ushort id, Message message)
+        {
+            if (playerIdGetRoom.TryGetValue(id, out var room))
+            {
+                room.Instantiate(id,message);
+            }
+        }
+
+
+        [MessageHandler((ushort)ClientToServerMessageType.Rpc)]
+        private static void Rpc(ushort id, Message message)
+        {
+            if (playerIdGetRoom.TryGetValue(id, out var room))
+            {
+                room.Rpc(id,message);
+            }
+        }
+
+
+
         private static void SendJoinRoomSuccess(ushort id,Room room)
         {
             //Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.JoinRoomSuccess);
@@ -191,5 +213,8 @@ namespace NetWork
                 room.Left(id);
             }
         }
+
+
+
     }
 }

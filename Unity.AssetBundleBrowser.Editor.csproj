@@ -318,6 +318,9 @@
  <Reference Include="unityplastic">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.collab-proxy@1.14.18/Lib/Editor/PlasticSCM/unityplastic.dll</HintPath>
  </Reference>
+ <Reference Include="Newtonsoft.Json">
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/Newtonsoft.Json.dll</HintPath>
+ </Reference>
  <Reference Include="nunit.framework">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/PackageCache/com.unity.ext.nunit@1.0.6/net35/unity-custom/nunit.framework.dll</HintPath>
  </Reference>

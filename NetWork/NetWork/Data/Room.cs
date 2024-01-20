@@ -1,6 +1,10 @@
 ﻿
+using NetWork.Data;
+using NetWork.Tool;
 using NetWork.Type;
+using Newtonsoft.Json;
 using Riptide;
+using System.Reflection;
 
 namespace NetWork
 {
@@ -15,6 +19,12 @@ namespace NetWork
 
         private Dictionary<ushort, Connection> players;
 
+        private ObjectPool<ObjDate> objectPoolGameObject;
+
+        private Dictionary<ushort, ObjDate> gameObjects;
+
+        private ushort objIndex=2000;
+        
         public Room(int roomId,string roomName,int maxCount)
         {
             this.roomId = roomId;
@@ -23,13 +33,17 @@ namespace NetWork
             
             players = new Dictionary<ushort, Connection>();
             messages = new List<Message>();
-           
+            gameObjects=new Dictionary<ushort, ObjDate>();
+            objectPoolGameObject=new ObjectPool<ObjDate>();
+
         }
 
         public Room()
         {
             players = new Dictionary<ushort, Connection>();
             messages = new List<Message>();
+            gameObjects = new Dictionary<ushort, ObjDate>();
+            objectPoolGameObject = new ObjectPool<ObjDate>();
         }
 
         public void Init(int roomId, string roomName, int maxCount)
@@ -39,7 +53,7 @@ namespace NetWork
             this.maxCount = maxCount;
 
             ReleaseMessage();
-
+            objIndex = 2000;   
             messages.Clear();
             players.Clear();
 
@@ -49,6 +63,7 @@ namespace NetWork
             this.roomName = roomName;
             this.maxCount = maxCount;
             ReleaseMessage();
+            objIndex = 2000;
             messages.Clear();
             players.Clear();
         }
@@ -108,6 +123,60 @@ namespace NetWork
         }
 
 
+        public void Instantiate(ushort id,Message message)
+        {
+            Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Instantiate);
+            
+            var go=objectPoolGameObject.DeQueue();
+
+            go.SpawnName = message.GetString();
+            go.Position = message.GetVector3();
+            go.Rotation = message.GetVector3();
+            bool isPlayer=message.GetBool();
+
+            if (isPlayer)
+            {
+                msg.AddUShort(id);
+                msg.AddUShort(id);
+            }
+            else
+            {
+                msg.AddUShort(id);
+                msg.AddUShort(objIndex);
+                objIndex += 1;
+            }
+
+            msg.AddGameObject(go);
+
+            gameObjects.TryAdd(objIndex, go);
+
+            SendAll(msg);
+
+           
+        }
+
+        public void Rpc(ushort id, Message message)
+        {
+            Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
+
+            var methodName = message.GetString();
+            var objId = message.GetUShort();
+            var rpc = message.GetUShort();
+            var param = message.GetString();
+
+            msg.AddString(methodName);
+            msg.AddUShort(objId);
+            msg.AddString(param);
+            if (rpc == 0)
+            {
+                SendAll(msg);
+            }
+            else
+            {
+                SendOther(id, msg);
+            }
+        }
+
 
         private void SendHistoryInformation(Connection connection,Action action=null)
         {
@@ -127,8 +196,6 @@ namespace NetWork
             {
                 player.Value.Send(message,false);
             }
-
-            
         }
 
         public void SendOther(ushort id,Message message, bool isAdd = true)

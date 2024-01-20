@@ -1,19 +1,26 @@
+using NetWork.System;
 using UnityEngine;
 
 namespace FrameWork.NetWork.Component
 {
     public class Identity : MonoBehaviour
     {
-        private int _id;
+        public ushort _id;
 
-        public void SetId(int id)
+        public void SetId(ushort id)
         {
             _id = id;
         }
         
-        public int GetId()
+        public ushort GetId()
         {
             return _id;
+        }
+
+
+        public bool IsLocal()
+        {
+            return _id == NetWorkSystem.GetClientId();
         }
     }
 }

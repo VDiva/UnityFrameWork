@@ -56,7 +56,7 @@ namespace FrameWork.NetWork.Component
 
         private void Update()
         {
-            if (NetWorkSystem.GetClientId()!=_identity.GetId())
+            if (!_identity.IsLocal())
             {
                 transform.position = Vector3.Lerp(_curLoc, _syncLoc, _lerpPosition);
                 transform.eulerAngles = _syncRo;

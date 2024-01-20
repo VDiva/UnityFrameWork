@@ -1,4 +1,5 @@
 using System;
+using FrameWork.NetWork.Component;
 using NetWork.System;
 using NetWork.Type;
 using Riptide;
@@ -8,6 +9,7 @@ namespace FrameWork.cs
 {
     public class Player : MonoBehaviour
     {
+        private Identity _identity;
         // public int tick;
         // public Vector3 selfLoc;
         // public Vector3 syncLoc;
@@ -30,11 +32,15 @@ namespace FrameWork.cs
         //     }
         // }
 
-        
-        
+
+        private void Start()
+        {
+            _identity = GetComponent<Identity>();
+        }
+
         private void Update()
         {
-            if (id==NetWorkSystem.GetClientId())
+            if (_identity.IsLocal())
             {
                 var h = Input.GetAxis("Horizontal");
                 var v = Input.GetAxis("Vertical");
