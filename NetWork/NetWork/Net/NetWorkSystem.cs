@@ -53,7 +53,7 @@ namespace NetWork
         {
             while (true)
             {
-                Thread.Sleep(20);
+                Thread.Sleep(100);
                 try
                 {
                     server.Update();

@@ -24,6 +24,8 @@ namespace NetWork.Type
 
         Transform=100,
         Instantiate = 101,
-        Rpc=102
+        Rpc=102,
+        GetId=103,
+        SetBelongingClient=104
     }
 }

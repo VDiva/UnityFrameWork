@@ -8,6 +8,9 @@ namespace NetWork.Data
 {
     public class ObjDate
     {
+
+        public ushort BelongingClient;
+
         public string SpawnName;
 
         public Vector3 Position;

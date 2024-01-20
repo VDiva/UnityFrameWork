@@ -5,7 +5,7 @@ namespace FrameWork.NetWork.Component
 {
     public class Identity : MonoBehaviour
     {
-        private ushort _clientSpawnId;
+        public ushort _clientSpawnId;
         public ushort _id;
 
         public void SetId(ushort id)

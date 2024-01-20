@@ -64,7 +64,7 @@ namespace FrameWork.NetWork.Component
 
         private void Update()
         {
-            if (!_identity.IsLocal())
+            if (!_identity.IsLocalSpawn())
             {
                 if (((_curLoc-_syncLoc).normalized).sqrMagnitude>_sqRange)
                 {
@@ -86,6 +86,7 @@ namespace FrameWork.NetWork.Component
         {
             //if (NetWorkSystem.GetClientId().Equals(id))return;
             if(_identity.GetId()!=id)return;
+            if (_identity.IsLocalSpawn()) return;
             var ti = NetWorkSystem.serverTick;
             if (ti>=tick&& tick>=ti-2)
             {

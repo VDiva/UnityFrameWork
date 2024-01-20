@@ -25,6 +25,7 @@ namespace NetWork.System
             NetWorkSystem.OnInstantiate += Spawn;
             NetWorkSystem.OnPlayerLeftRoom += OnLeft;
             NetWorkSystem.OnRpc += Rpc;
+            NetWorkSystem.OnBelongingClient += SetBelongingClient;
         }
 
         private void OnDisable()
@@ -32,6 +33,7 @@ namespace NetWork.System
             NetWorkSystem.OnInstantiate -= Spawn;
             NetWorkSystem.OnPlayerLeftRoom -= OnLeft;
             NetWorkSystem.OnRpc -= Rpc;
+            NetWorkSystem.OnBelongingClient -= SetBelongingClient;
         }
 
         private void OnApplicationQuit()
@@ -82,6 +84,19 @@ namespace NetWork.System
             if (_objects.TryRemove(id,out GameObject obj))
             {
                 Destroy(obj);
+            }
+        }
+
+
+        private void SetBelongingClient(ushort newId, ushort[] ids)
+        {
+            for (int i = 0; i < ids.Length; i++)
+            {
+                if (_objects.ContainsKey(ids[i]))
+                {
+                    var identity=_objects[ids[i]].GetComponent<Identity>();
+                    identity.SetSpawnId(newId);
+                }
             }
         }
     }

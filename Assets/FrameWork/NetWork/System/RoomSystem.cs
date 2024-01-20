@@ -81,5 +81,16 @@ namespace NetWork.System
             //Debug.Log("生成玩家");
         }
         
+        [MessageHandler((ushort)ServerToClientMessageType.SetBelongingClient)]
+        private static void SetBelongingClient(Message message)
+        {
+            var tick = message.GetUShort();
+            var newId = message.GetUShort();
+            var count = message.GetInt();
+            var ids = message.GetUShorts(count);
+            NetWorkSystem.OnBelongingClient?.Invoke(newId,ids);
+            //Debug.Log("生成玩家");
+        }
+        
     }
 }

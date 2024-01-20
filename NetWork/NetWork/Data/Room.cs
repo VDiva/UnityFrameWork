@@ -56,6 +56,7 @@ namespace NetWork
             objIndex = 2000;   
             messages.Clear();
             players.Clear();
+            gameObjects.Clear();
 
         }
         public void Init( string roomName, int maxCount)
@@ -66,6 +67,7 @@ namespace NetWork
             objIndex = 2000;
             messages.Clear();
             players.Clear();
+            gameObjects.Clear();
         }
 
         public bool Join(ushort id,Connection connection)
@@ -105,13 +107,24 @@ namespace NetWork
                 Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerLeftRoom);
                 msg.AddUShort(id);
                 SendAll(msg);
-
+                gameObjects.Remove(id);
                 players.Remove(id);
+
+
+
                 Console.WriteLine(id + ":离开了房间:" + roomId);
                 if(players.Count == 0)
                 {
                     Console.WriteLine(roomId+"房间空 回收房间");
                     RoomSystem.EnQueue(this);
+                }
+                else
+                {
+                    foreach (var player in players)
+                    {
+                        SetBelongingClient(id, player.Value.Id);
+                        break;
+                    }
                 }
             }
         }
@@ -129,9 +142,11 @@ namespace NetWork
             
             var go=objectPoolGameObject.DeQueue();
 
+            go.BelongingClient = id;
             go.SpawnName = message.GetString();
             go.Position = message.GetVector3();
             go.Rotation = message.GetVector3();
+            
             bool isPlayer=message.GetBool();
 
             if (isPlayer)
@@ -175,6 +190,30 @@ namespace NetWork
             {
                 SendOther(id, msg);
             }
+        }
+
+        public void SetBelongingClient(ushort id,ushort newId)
+        {
+            List<ushort> ids = new List<ushort>();
+
+            foreach(var go in gameObjects)
+            {
+                if(go.Value.BelongingClient == id)
+                {
+                    ids.Add(go.Key);
+                    go.Value.BelongingClient = newId;
+                }
+            }
+
+            Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Reliable,ServerToClientMessageType.SetBelongingClient);
+            msg.AddUShort(newId);
+            msg.AddInt(ids.Count);
+            for(var i = 0; i < ids.Count; i++)
+            {
+                msg.AddUShort(ids[i]);
+            }
+
+            SendAll(msg);
         }
 
 

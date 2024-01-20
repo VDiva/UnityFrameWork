@@ -18,6 +18,7 @@ namespace NetWork.System
         public static Action<string> OnInformation;
         public static Action<ushort,ushort, Vector3,Vector3> OnTransform;
         public static Action<ushort, ushort, string, Vector3, Vector3> OnInstantiate;
+        public static Action<ushort, ushort[]> OnBelongingClient;
         
         public static Action<string,ushort,object[]> OnRpc;
 

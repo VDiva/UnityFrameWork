@@ -1,5 +1,6 @@
 using System;
 using FrameWork.NetWork.Component;
+using NetWork.Type;
 using UnityEngine;
 
 namespace NetWork.System
@@ -11,7 +12,7 @@ namespace NetWork.System
         
         protected bool IsLocal
         {
-            get => _identity.IsLocal();
+            get => _identity.IsLocalSpawn();
         }
         protected virtual void Start()
         {
@@ -40,6 +41,17 @@ namespace NetWork.System
             NetWorkSystem.OnInstantiate -= OnInstantiate;
             NetWorkSystem.OnConnectToServer -= OnConnected;
             NetWorkSystem.OnDisConnectToServer -= OnDisConnected;
+        }
+
+
+        protected void RpcMessage(string methodName,Rpc rpc,object[] param)
+        {
+            NetWorkSystem.Rpc(methodName,this,rpc,param);
+        }
+        
+        protected void RpcMessage(string methodName,NetWorkSystemMono netWorkSystemMono,Rpc rpc,object[] param)
+        {
+            NetWorkSystem.Rpc(methodName,netWorkSystemMono,rpc,param);
         }
 
 

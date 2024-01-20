@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace FrameWork.cs
 {
-    public class cs : NetWorkSystemMono
+    public class cs : MonoBehaviour
     {
 
         private void Start()

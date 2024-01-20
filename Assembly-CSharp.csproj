@@ -1686,6 +1686,7 @@
      <Compile Include="Assets\FrameWork\Tool\Configure.cs" />
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
+     <Compile Include="Assets\FrameWork\cs\CsMove.cs" />
      <Compile Include="Assets\FrameWork\cs\Player.cs" />
      <Compile Include="Assets\FrameWork\cs\TextManager.cs" />
      <Compile Include="Assets\FrameWork\cs\cs.cs" />
@@ -1923,6 +1924,9 @@
  <Reference Include="ICSharpCode.SharpZipLib">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/FlexReader/ICSharpCode.SharpZipLib.dll</HintPath>
  </Reference>
+ <Reference Include="Newtonsoft.Json">
+ <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/Newtonsoft.Json.dll</HintPath>
+ </Reference>
  <Reference Include="RiptideNetworking">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/RiptideNetworking.dll</HintPath>
  </Reference>
@@ -1946,9 +1950,6 @@
  </Reference>
  <Reference Include="System.Runtime.CompilerServices.Unsafe">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/Protobuf/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
- </Reference>
- <Reference Include="Newtonsoft.Json">
- <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Assets/FrameWork/NetWork/Dll/Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="netstandard">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.40f1c1/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>
