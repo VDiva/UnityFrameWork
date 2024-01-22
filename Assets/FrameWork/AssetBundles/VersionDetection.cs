@@ -10,7 +10,7 @@ namespace FrameWork
     public static class VersionDetection
     {
         /// <summary>
-        /// 版本检测并对比md5码检测是否需要更新并返回需要更新的字节数组
+        /// 版本检测并对比md5码检测那些ab包需要更新 并返回最新的版本文件自己数据
         /// </summary>
         /// <param name="versionInfo"></param>
         public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
