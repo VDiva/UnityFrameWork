@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Concurrent;
+using FrameWork.AssetBundles;
+using FrameWork.Global;
 using FrameWork.NetWork.Component;
 using FrameWork.Singleton;
 using Riptide;
 using UnityEditor;
 using UnityEngine;
+using BuildTarget = FrameWork.Type.BuildTarget;
 
 namespace NetWork.System
 {
@@ -26,6 +29,7 @@ namespace NetWork.System
             NetWorkSystem.OnPlayerLeftRoom += OnLeft;
             NetWorkSystem.OnRpc += Rpc;
             NetWorkSystem.OnBelongingClient += SetBelongingClient;
+            NetWorkSystem.OnDestroy += NetDestroy;
         }
 
         private void OnDisable()
@@ -34,6 +38,7 @@ namespace NetWork.System
             NetWorkSystem.OnPlayerLeftRoom -= OnLeft;
             NetWorkSystem.OnRpc -= Rpc;
             NetWorkSystem.OnBelongingClient -= SetBelongingClient;
+            NetWorkSystem.OnDestroy -= NetDestroy;
         }
 
         private void OnApplicationQuit()
@@ -46,14 +51,40 @@ namespace NetWork.System
             NetWorkSystem.UpdateMessage();
         }
         
-        private void Spawn(ushort clientId, ushort objId, string spawnName, Vector3 position, Vector3 rotation)
+        private void Spawn(ushort clientId, ushort objId, string spawnName, Vector3 position, Vector3 rotation,bool isAb)
         {
             GameObject prefab = null;
             if (!_prefabs.TryGetValue(spawnName,out prefab))
             {
-                var go = Resources.Load<GameObject>(spawnName);
-                _prefabs.TryAdd(spawnName, go);
-                prefab = go;
+                
+                if (!isAb)
+                {
+                    var go = Resources.Load<GameObject>(spawnName);
+                    _prefabs.TryAdd(spawnName, go);
+                    prefab = go;
+                }
+                else
+                {
+                    FrameWork.Type.BuildTarget buildTarget = BuildTarget.Windows;
+                    RuntimePlatform platform = Application.platform;
+                    
+                    switch (platform)
+                    {
+                        case RuntimePlatform.WindowsEditor:
+                            buildTarget = BuildTarget.Windows;
+                            break;
+                        case RuntimePlatform.WindowsPlayer:
+                            buildTarget = BuildTarget.Windows;
+                            break;
+                        case RuntimePlatform.Android:
+                            buildTarget = BuildTarget.Android;
+                            break;
+                        case RuntimePlatform.IPhonePlayer:
+                            buildTarget = BuildTarget.Ios;
+                            break;
+                    }
+                    prefab=AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, spawnName,buildTarget);
+                }
             }
             
             var obj=Instantiate(prefab, position, Quaternion.Euler(rotation));
@@ -97,6 +128,14 @@ namespace NetWork.System
                     var identity=_objects[ids[i]].GetComponent<Identity>();
                     identity.SetSpawnId(newId);
                 }
+            }
+        }
+        
+        private void NetDestroy(ushort objId)
+        {
+            if (_objects.TryRemove(objId,out GameObject obj))
+            {
+                Destroy(obj);
             }
         }
     }

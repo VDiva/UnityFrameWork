@@ -20,7 +20,7 @@ MonoBehaviour:
   AbIosPath: AssetBundles/StandaloneWindows
   AbEndName: info
   AbMaterialName: material
-  AbUiPrefabName: uiprefab
+  AbUiPrefabName: ui
   AbModePrefabName: mode
   AbScreenName: screen
   SpawnScriptPath: Assets/FrameWork/PrefabScript

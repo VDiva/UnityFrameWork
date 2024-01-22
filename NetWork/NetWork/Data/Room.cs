@@ -49,7 +49,7 @@ namespace NetWork
         public void Init(int roomId, string roomName, int maxCount)
         {
             this.roomId = roomId;
-            this.roomName = roomName;
+            this.roomName = "房间"+roomId+"-"+roomName;
             this.maxCount = maxCount;
 
             ReleaseMessage();
@@ -61,7 +61,7 @@ namespace NetWork
         }
         public void Init( string roomName, int maxCount)
         {
-            this.roomName = roomName;
+            this.roomName = "房间" + roomId + "-" + roomName;
             this.maxCount = maxCount;
             ReleaseMessage();
             objIndex = 2000;
@@ -84,6 +84,7 @@ namespace NetWork
                         Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
                         msg.AddUShort(id);
                         msg.AddInt(roomId);
+                        msg.AddString(roomName);
                         SendAll(msg);
                     });
                     return true;
@@ -146,9 +147,11 @@ namespace NetWork
             go.SpawnName = message.GetString();
             go.Position = message.GetVector3();
             go.Rotation = message.GetVector3();
+
+            
             
             bool isPlayer=message.GetBool();
-
+            var isAb = message.GetBool();
             if (isPlayer)
             {
                 msg.AddUShort(id);
@@ -161,8 +164,11 @@ namespace NetWork
                 objIndex += 1;
             }
 
+
+
             msg.AddGameObject(go);
 
+            msg.AddBool(isAb);
             gameObjects.TryAdd(objIndex, go);
 
             SendAll(msg);
@@ -232,6 +238,17 @@ namespace NetWork
             }
 
             action?.Invoke();
+        }
+
+
+        public void Destroy(ushort id)
+        {
+            gameObjects.Remove(id, out var go);
+
+            Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Destroy);
+            msg.AddUShort(id);
+            SendAll(msg);
+
         }
 
         public void SendAll(Message message,bool isAdd=true)

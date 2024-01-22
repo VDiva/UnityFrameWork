@@ -12,15 +12,18 @@ namespace NetWork.System
 {
     public class NetWorkSystem
     {
-        public static Action<ushort,int> OnPlayerJoinRoom;
+        public static Action<ushort,int,string> OnPlayerJoinRoom;
         public static Action<ushort> OnPlayerLeftRoom;
         public static Action<string> OnJoinError;
         public static Action<string> OnInformation;
         public static Action<ushort,ushort, Vector3,Vector3> OnTransform;
-        public static Action<ushort, ushort, string, Vector3, Vector3> OnInstantiate;
+        public static Action<ushort, ushort, string, Vector3, Vector3,bool> OnInstantiate;
         public static Action<ushort, ushort[]> OnBelongingClient;
         
         public static Action<string,ushort,object[]> OnRpc;
+        public static Action<ushort> OnDestroy;
+
+        public static Action<ushort, ushort> OnRoomInfo;
 
 
         public static Action OnConnectToServer;
@@ -120,7 +123,7 @@ namespace NetWork.System
             return _client.Id;
         }
         
-        public static void Instantiate(string spawnName,Vector3 position,Vector3 rotation,bool isPlayer)
+        public static void Instantiate(string spawnName,Vector3 position,Vector3 rotation,bool isPlayer,bool isAb=false)
         {
             
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Instantiate);
@@ -128,10 +131,11 @@ namespace NetWork.System
             msg.AddVector3(position);
             msg.AddVector3(rotation);
             msg.AddBool(isPlayer);
+            msg.AddBool(isAb);
             Send(msg);
         }
         
-        public static void Rpc(string methodName,NetWorkSystemMono netWorkSystemMono,Rpc rpc,object[] param)
+        public static void Rpc<T>(string methodName,T netWorkSystemMono,Rpc rpc,object[] param) where T: NetWorkSystemMono
         {
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
             msg.AddString(methodName);
@@ -140,6 +144,22 @@ namespace NetWork.System
             msg.AddString(JsonConvert.SerializeObject(param));
             Send(msg);
         }
+        
+        
+        
+        public static void Destroy<T>(T netWorkSystemMono) where T: NetWorkSystemMono
+        {
+            Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Destroy);
+            msg.AddUShort(netWorkSystemMono.GetId());
+            Send(msg);
+        }
+
+        public static void GetRoomInfo()
+        {
+            Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.GetRoomInfo);
+            Send(msg);
+        }
+        
         
         [MessageHandler((ushort)ServerToClientMessageType.SyncTick)]
         private static void SyncTick(Message message)

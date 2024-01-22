@@ -26,6 +26,8 @@ namespace NetWork.Type
         Instantiate = 101,
         Rpc=102,
         GetId=103,
-        SetBelongingClient=104
+        SetBelongingClient=104,
+        Destroy=115,
+        GetRoomInfo=116
     }
 }

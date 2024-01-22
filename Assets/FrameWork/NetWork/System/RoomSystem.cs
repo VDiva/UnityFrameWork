@@ -22,7 +22,8 @@ namespace NetWork.System
             var tick = message.GetUShort();
             var id = message.GetUShort();
             var roomId = message.GetInt();
-            NetWorkSystem.OnPlayerJoinRoom?.Invoke(id,roomId);
+            var roomName = message.GetString();
+            NetWorkSystem.OnPlayerJoinRoom?.Invoke(id,roomId,roomName);
             //Debug.Log("第"+tick+"帧"+id+"加入了房间");
         }
         
@@ -65,7 +66,8 @@ namespace NetWork.System
             var spawnName = message.GetString();
             var loc = message.GetVector3();
             var ro = message.GetVector3();
-            NetWorkSystem.OnInstantiate?.Invoke(clientId,objId,spawnName,loc,ro);
+            var isAb = message.GetBool();
+            NetWorkSystem.OnInstantiate?.Invoke(clientId,objId,spawnName,loc,ro,isAb);
             //Debug.Log("生成玩家");
         }
         
@@ -91,6 +93,26 @@ namespace NetWork.System
             NetWorkSystem.OnBelongingClient?.Invoke(newId,ids);
             //Debug.Log("生成玩家");
         }
+        
+        [MessageHandler((ushort)ServerToClientMessageType.Destroy)]
+        private static void Destroy(Message message)
+        {
+            var tick = message.GetUShort();
+            var objId = message.GetUShort();
+            NetWorkSystem.OnDestroy?.Invoke(objId);
+            //Debug.Log("生成玩家");
+        }
+        
+        [MessageHandler((ushort)ServerToClientMessageType.GetRoomInfo)]
+        private static void GetRoomInfo(Message message)
+        {
+            var tick = message.GetUShort();
+            var curCount = message.GetUShort();
+            var maxCount = message.GetUShort();
+            NetWorkSystem.OnRoomInfo?.Invoke(curCount,maxCount);
+            //Debug.Log("生成玩家");
+        }
+        
         
     }
 }

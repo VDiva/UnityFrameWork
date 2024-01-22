@@ -40,7 +40,7 @@ namespace FrameWork.AssetBundles
                 }
                 else
                 {
-                    assetBundle=AssetBundle.LoadFromFile(path+packName+".info");
+                    assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+".info");
                     Debug.Log("从旧包"+packName+"加载:"+name);
                 }
                 _assetBundles.TryAdd(packName, assetBundle);

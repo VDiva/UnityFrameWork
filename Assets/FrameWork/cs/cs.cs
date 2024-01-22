@@ -18,8 +18,7 @@ namespace FrameWork.cs
 
         private void OnEnable()
         {
-            NetWorkSystem.OnPlayerJoinRoom += OnJoin;
-         
+
         }
 
         private void Update()
@@ -47,14 +46,25 @@ namespace FrameWork.cs
 
             if (Input.GetKeyDown(KeyCode.P))
             {
-                NetWorkSystem.Instantiate("Cube",Vector3.zero,Vector3.zero,true);
+                NetWorkSystem.Instantiate("Cube",Vector3.zero,Vector3.zero,true,true);
             }
-        }
-        
-        private void OnJoin(ushort id,int roomId)
-        {
+
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                NetWorkSystem.Instantiate("C",new Vector3(5,0,0),Vector3.zero,false,true);
+                //NetWorkSystem.Rpc();
+            }
+
+
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                var net = FindObjectOfType<CsMove>();
+                NetWorkSystem.Destroy(net);
+            }
             
         }
+        
         
         
         

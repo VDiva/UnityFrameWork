@@ -201,7 +201,18 @@ namespace NetWork
             }
         }
 
-        
+
+        [MessageHandler((ushort)ClientToServerMessageType.Destroy)]
+        private static void Destroy(ushort id, Message message)
+        {
+            if (playerIdGetRoom.TryGetValue(id, out var room))
+            {
+                var objId = message.GetUShort();
+                room.Destroy(objId);
+            }
+        }
+
+
 
 
 

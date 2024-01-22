@@ -29,6 +29,7 @@ namespace NetWork.System
             NetWorkSystem.OnInstantiate += OnInstantiate;
             NetWorkSystem.OnConnectToServer += OnConnected;
             NetWorkSystem.OnDisConnectToServer += OnDisConnected;
+            NetWorkSystem.OnRoomInfo += OnRoomInfo;
         }
 
         protected virtual void OnDisable()
@@ -41,6 +42,7 @@ namespace NetWork.System
             NetWorkSystem.OnInstantiate -= OnInstantiate;
             NetWorkSystem.OnConnectToServer -= OnConnected;
             NetWorkSystem.OnDisConnectToServer -= OnDisConnected;
+            NetWorkSystem.OnRoomInfo -= OnRoomInfo;
         }
 
 
@@ -55,7 +57,7 @@ namespace NetWork.System
         }
 
 
-        protected virtual void OnPlayerJoin(ushort id, int roomId){}
+        protected virtual void OnPlayerJoin(ushort id, int roomId,string roomName){}
 
         protected virtual void OnPlayerLeft(ushort id){}
         protected virtual void OnJoinError(string info){}
@@ -64,11 +66,15 @@ namespace NetWork.System
 
         protected virtual void OnTransform(ushort tick, ushort id, Vector3 position, Vector3 rotation){}
 
+        
+        protected virtual void OnRoomInfo(ushort currentCount,ushort maxCount){}
+        
         protected virtual void OnConnected(){}
+        
         
         protected virtual void OnDisConnected(){}
         
-        protected virtual void OnInstantiate(ushort id,ushort objId,string spawnName,Vector3 position,Vector3 rotation){}
+        protected virtual void OnInstantiate(ushort id,ushort objId,string spawnName,Vector3 position,Vector3 rotation,bool isAb){}
 
         public ushort GetId()
         {

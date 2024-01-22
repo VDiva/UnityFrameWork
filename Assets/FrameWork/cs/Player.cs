@@ -32,11 +32,7 @@ namespace FrameWork.cs
                 //NetWorkSystem.Rpc();
             }
 
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                NetWorkSystem.Instantiate("C",new Vector3(5,0,0),Vector3.zero,false);
-                //NetWorkSystem.Rpc();
-            }
+            
         }
 
         private void CS(object param)
