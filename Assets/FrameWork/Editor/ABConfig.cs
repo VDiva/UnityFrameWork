@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FrameWork.Global;
 using UnityEditor;
@@ -44,6 +45,83 @@ namespace FrameWork.Editor
             
             Debug.Log("AB包对比文件生成成功");
             AssetDatabase.Refresh();
+        }
+
+
+        [MenuItem("FrameWork/AssetPackaged")]
+        public static void AssetPackaged()
+        {
+            if (!Directory.Exists(GlobalVariables.Configure.AbAssetPath))
+            {
+                Directory.CreateDirectory(GlobalVariables.Configure.AbAssetPath);
+            }
+            
+            DirectoryInfo directoryInfo = new DirectoryInfo(GlobalVariables.Configure.AbAssetPath);
+            CheckDirectory(directoryInfo);
+            AssetDatabase.Refresh();
+        }
+
+
+        private static void CheckFileInfo(FileInfo fileInfo)
+        {
+            var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
+            var unityPath=path.Split(new string[]{"Assets"},StringSplitOptions.None);
+            AssetImporter ai=AssetImporter.GetAtPath("Assets\\"+unityPath[unityPath.Length-1]);
+            //Debug.Log(path);
+            
+            if (fileInfo.Extension.Equals(".prefab"))
+            {
+                ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
+                ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            }
+            else if (fileInfo.Extension.Equals(".mat"))
+            {
+                ai.assetBundleName = GlobalVariables.Configure.AbMaterialName;
+                ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            }else if (fileInfo.Extension.Equals(".unity"))
+            {
+                ai.assetBundleName = GlobalVariables.Configure.AbScreenName;
+                ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            }
+            
+            
+            // //FrameWork.Type.BuildTarget buildTarget = FrameWork.Type.BuildTarget.Windows;
+            // RuntimePlatform platform = Application.platform;
+            //         
+            // switch (platform)
+            // {
+            //     case RuntimePlatform.WindowsEditor:
+            //         //buildTarget = FrameWork.Type.BuildTarget.Windows;
+            //         AssetBundle.CreatPCAssetBundleAsWindows();
+            //         break;
+            //     case RuntimePlatform.WindowsPlayer:
+            //         //buildTarget = FrameWork.Type.BuildTarget.Windows;
+            //         AssetBundle.CreatPCAssetBundleAsWindows();
+            //         break;
+            //     case RuntimePlatform.Android:
+            //         //buildTarget = FrameWork.Type.BuildTarget.Android;
+            //         AssetBundle.a();
+            //         break;
+            //     case RuntimePlatform.IPhonePlayer:
+            //         //buildTarget = FrameWork.Type.BuildTarget.Windows;
+            //         break;
+            // }
+            
+        }
+
+        private static void CheckDirectory(DirectoryInfo directoryInfo)
+        {
+            var fileInfos = directoryInfo.GetFiles();
+            var directoryInfos=directoryInfo.GetDirectories();
+            foreach (var item in directoryInfos)
+            {
+                CheckDirectory(item);
+            }
+            
+            foreach (var item in fileInfos)
+            {
+                CheckFileInfo(item);
+            }
         }
     }
 }

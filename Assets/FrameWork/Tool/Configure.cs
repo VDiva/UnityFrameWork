@@ -8,7 +8,9 @@ namespace FrameWork.Tool
         public string DownLoadUrl;
         public string ConfigName;
         public string ConfigPath;
-
+        
+        public string AbAssetPath;
+        
         public string AbAndroidPath;
         public string AbWindowsPath;
         public string AbIosPath;
