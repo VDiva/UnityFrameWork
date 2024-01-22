@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class SingletonAsMono<T> : MonoBehaviour where T: Component
+    public class SingletonAsNetMono<T> : NetWorkSystemMono where T: Component
     {
         private static T _instance;
 
@@ -29,8 +29,6 @@ namespace FrameWork
                 return _instance;
             }
         }
-
-        
     }
         
     

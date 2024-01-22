@@ -1,4 +1,4 @@
-namespace FrameWork.Singleton
+namespace FrameWork
 {
     public class SingletonAsClass<T> where T: class, new()
     {

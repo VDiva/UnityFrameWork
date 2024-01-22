@@ -1,15 +1,10 @@
-using System;
+
 using System.Collections.Concurrent;
 using FrameWork.AssetBundles;
-using FrameWork.Global;
-using FrameWork.NetWork.Component;
-using FrameWork.Singleton;
-using Riptide;
-using UnityEditor;
 using UnityEngine;
-using BuildTarget = FrameWork.Type.BuildTarget;
 
-namespace NetWork.System
+
+namespace FrameWork
 {
     public class NetWork : SingletonAsMono<NetWork>
     {
@@ -65,7 +60,7 @@ namespace NetWork.System
                 }
                 else
                 {
-                    FrameWork.Type.BuildTarget buildTarget = BuildTarget.Windows;
+                    FrameWork.BuildTarget buildTarget = BuildTarget.Windows;
                     RuntimePlatform platform = Application.platform;
                     
                     switch (platform)

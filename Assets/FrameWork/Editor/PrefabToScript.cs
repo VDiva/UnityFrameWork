@@ -1,6 +1,5 @@
-using System;
+
 using System.IO;
-using FrameWork.Global;
 using UnityEditor;
 using UnityEngine;
 
@@ -45,7 +44,8 @@ namespace FrameWork.Editor
                     using (StreamWriter sw = new StreamWriter( path+"/"+name + "//" + name + ".cs", false))
                     {
                         sw.WriteLine("using UnityEngine;");
-                        sw.WriteLine("namespace Prefab.Script\n{");
+                        sw.WriteLine("using FrameWork;");
+                        sw.WriteLine("namespace FrameWork\n{");
                         sw.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
                         sw.WriteLine("\t{");
                         sw.WriteLine("\t}");
@@ -62,12 +62,14 @@ namespace FrameWork.Editor
                     // }
 
                     swMode.WriteLine("using UnityEngine;");
-                    swMode.WriteLine("namespace Prefab.Script\n{");
+                    swMode.WriteLine("using FrameWork;");
+                    swMode.WriteLine("namespace FrameWork\n{");
                     swMode.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
                     swMode.WriteLine("\t{");
                     
                     swView.WriteLine("using UnityEngine;");
-                    swView.WriteLine("namespace Prefab.Script\n{");
+                    swView.WriteLine("using FrameWork;");
+                    swView.WriteLine("namespace FrameWork\n{");
                     swView.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
                     swView.WriteLine("\t{");
                     swView.WriteLine("\t\tprivate void Awake()\n\t\t{");
@@ -90,9 +92,9 @@ namespace FrameWork.Editor
             AssetBundle.CreatPCAssetBundleAsWindows();
         
             AssetDatabase.Refresh();
-            if (Selection.activeGameObject.GetComponent("Prefab.Script."+Selection.activeGameObject.name)==null)
+            if (Selection.activeGameObject.GetComponent("FrameWork."+Selection.activeGameObject.name)==null)
             {
-                System.Type type = typeof(AssemblyType).Assembly.GetType("Prefab.Script." + Selection.activeGameObject.name);
+                System.Type type = typeof(AssemblyType).Assembly.GetType("FrameWork." + Selection.activeGameObject.name);
                 Selection.activeGameObject.AddComponent(type);
             }
         }

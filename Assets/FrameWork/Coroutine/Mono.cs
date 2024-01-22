@@ -1,7 +1,6 @@
-using FrameWork.Singleton;
-using UnityEngine;
 
-namespace FrameWork.Coroutine
+
+namespace FrameWork
 {
     public class Mono : SingletonAsMono<Mono>
     {

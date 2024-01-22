@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 
-namespace FrameWork.AssetBundles
+
+namespace FrameWork
 {
     public class AbPackDate
     {

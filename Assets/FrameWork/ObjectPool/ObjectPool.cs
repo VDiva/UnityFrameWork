@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace FrameWork.ObjectPool
+namespace FrameWork
 {
     public class ObjectPool<T> where T: class, new()
     {

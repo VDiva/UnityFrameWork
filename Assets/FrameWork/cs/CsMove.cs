@@ -1,7 +1,7 @@
-using NetWork.System;
+
 using UnityEngine;
 
-namespace FrameWork.cs
+namespace FrameWork
 {
     public class CsMove : NetWorkSystemMono
     {

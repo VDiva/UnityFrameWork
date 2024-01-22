@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using FrameWork.Global;
+
 using UnityEngine;
 
-namespace FrameWork.AssetBundles
+namespace FrameWork
 {
     public static class VersionDetection
     {

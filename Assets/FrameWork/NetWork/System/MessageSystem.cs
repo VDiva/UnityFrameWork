@@ -1,7 +1,6 @@
-using NetWork.Type;
-using Riptide;
 
-namespace NetWork.System
+
+namespace FrameWork
 {
     public class MessageSystem
     {

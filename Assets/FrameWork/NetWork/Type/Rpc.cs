@@ -1,4 +1,4 @@
-namespace NetWork.Type
+namespace FrameWork
 {
     public enum Rpc
     {

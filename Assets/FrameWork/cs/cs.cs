@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Concurrent;
-using FrameWork.NetWork.Component;
-using NetWork.System;
-using Riptide;
-using UnityEngine;
-using Random = UnityEngine.Random;
 
-namespace FrameWork.cs
+using UnityEngine;
+
+
+namespace FrameWork
 {
     public class cs : MonoBehaviour
     {

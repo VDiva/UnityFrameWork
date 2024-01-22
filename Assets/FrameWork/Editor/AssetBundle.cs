@@ -1,12 +1,9 @@
-using System.Collections;
-using System.IO;
-using FrameWork.Coroutine;
-using FrameWork.Global;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.Networking;
 
-namespace FrameWork.Editor
+using System.IO;
+using UnityEditor;
+
+
+namespace FrameWork
 {
     public class AssetBundle: UnityEditor.Editor
     {
@@ -14,11 +11,13 @@ namespace FrameWork.Editor
         [MenuItem("FrameWork/AB/CreatAssetBundle for Android")]
         public static void CreatAssetBundleAsAndroid()
         {
+            
             if (!Directory.Exists("AssetBundles/Android"))
             {
                 Directory.CreateDirectory("AssetBundles/Android");
             }
-            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbAndroidPath, BuildAssetBundleOptions.UncompressedAssetBundle, BuildTarget.Android);
+            
+            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbAndroidPath, BuildAssetBundleOptions.UncompressedAssetBundle, UnityEditor.BuildTarget.Android);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Android Finish!");
         }
@@ -31,7 +30,9 @@ namespace FrameWork.Editor
             {
                 Directory.CreateDirectory("AssetBundles/Ios");
             }
-            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbIosPath, BuildAssetBundleOptions.CollectDependencies, BuildTarget.iOS);
+            
+            
+            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbIosPath, BuildAssetBundleOptions.CollectDependencies, UnityEditor.BuildTarget.iOS);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("IOS Finish!");
 
@@ -46,7 +47,8 @@ namespace FrameWork.Editor
             {
                 Directory.CreateDirectory("AssetBundles/StandaloneWindows");
             }
-            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbWindowsPath, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows64);
+            
+            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbWindowsPath, BuildAssetBundleOptions.None, UnityEditor.BuildTarget.StandaloneWindows64);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Windows Finish!");
         }

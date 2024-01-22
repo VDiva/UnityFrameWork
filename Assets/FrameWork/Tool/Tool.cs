@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 
-namespace FrameWork.Tool
+namespace FrameWork
 {
     public class Tool
     {

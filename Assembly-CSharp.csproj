@@ -1680,8 +1680,12 @@
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.H.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
+     <Compile Include="Assets\FrameWork\Singleton\SingletonAsNetMono.cs" />
      <Compile Include="Assets\FrameWork\Tool\Configure.cs" />
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace FrameWork.ExtendFunctions
+namespace FrameWork
 {
     public static class ExtendClass
     {

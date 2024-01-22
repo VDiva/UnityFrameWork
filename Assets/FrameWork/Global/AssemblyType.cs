@@ -1,4 +1,4 @@
-namespace FrameWork.Global
+namespace FrameWork
 {
     public class AssemblyType
     {

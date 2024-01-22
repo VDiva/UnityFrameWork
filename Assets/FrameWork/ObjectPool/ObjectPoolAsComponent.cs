@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using UnityEngine;
 
-namespace FrameWork.ObjectPool
+namespace FrameWork
 {
     public class ObjectPoolAsComponent<T> where T: Component
     {

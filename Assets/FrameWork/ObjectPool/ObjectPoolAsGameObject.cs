@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using UnityEngine;
 
-namespace FrameWork.ObjectPool
+namespace FrameWork
 {
     public class ObjectPoolAsGameObject
     {

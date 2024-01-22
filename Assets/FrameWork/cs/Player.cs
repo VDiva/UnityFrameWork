@@ -1,12 +1,9 @@
-using System;
-using FrameWork.NetWork.Component;
-using NetWork.System;
-using NetWork.Type;
+
 using Riptide;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace FrameWork.cs
+namespace FrameWork
 {
     public class Player : NetWorkSystemMono
     {

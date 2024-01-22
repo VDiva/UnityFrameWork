@@ -1,7 +1,6 @@
-using NetWork.System;
 using UnityEngine;
 
-namespace FrameWork.NetWork.Component
+namespace FrameWork
 {
     public class Identity : MonoBehaviour
     {

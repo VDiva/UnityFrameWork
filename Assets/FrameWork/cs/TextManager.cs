@@ -1,8 +1,7 @@
-using FrameWork.Singleton;
-using UnityEngine;
+
 using UnityEngine.UI;
 
-namespace FrameWork.cs
+namespace FrameWork
 {
     public class TextManager : SingletonAsMono<TextManager>
     {

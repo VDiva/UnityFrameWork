@@ -1,9 +1,8 @@
-using NetWork.Type;
+
 using Newtonsoft.Json;
 using Riptide;
-using UnityEngine;
 
-namespace NetWork.System
+namespace FrameWork
 {
     public static class RoomSystem
     {

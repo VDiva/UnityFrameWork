@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using FrameWork.Global;
-using FrameWork.Type;
 using UnityEngine;
 using Object = UnityEngine.Object;
 

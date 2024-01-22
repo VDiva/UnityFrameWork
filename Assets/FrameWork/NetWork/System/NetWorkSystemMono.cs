@@ -1,9 +1,6 @@
-using System;
-using FrameWork.NetWork.Component;
-using NetWork.Type;
-using UnityEngine;
 
-namespace NetWork.System
+using UnityEngine;
+namespace FrameWork
 {
     [RequireComponent(typeof(Identity))]
     public class NetWorkSystemMono : MonoBehaviour

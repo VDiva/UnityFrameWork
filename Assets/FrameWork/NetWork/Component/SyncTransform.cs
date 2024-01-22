@@ -1,11 +1,8 @@
-using System;
-using NetWork.System;
-using NetWork.Type;
+
 using Riptide;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace FrameWork.NetWork.Component
+namespace FrameWork
 {
     [RequireComponent(typeof(Identity))]
     public class SyncTransform : MonoBehaviour

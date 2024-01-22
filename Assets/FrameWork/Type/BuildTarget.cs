@@ -1,4 +1,4 @@
-namespace FrameWork.Type
+namespace FrameWork
 {
     public enum BuildTarget
     {

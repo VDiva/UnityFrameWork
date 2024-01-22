@@ -2,12 +2,10 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net;
-using System.Text;
-using FrameWork.Coroutine;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace FrameWork.AssetBundles
+namespace FrameWork
 {
     public class DownLoad
     {
@@ -42,11 +40,11 @@ namespace FrameWork.AssetBundles
                     Debug.Log(uwr.error);
                     yield break;
                 }
-                long statrTime = Tool.Tool.ConvertDateTimep(DateTime.Now);
+                long statrTime = Tool.ConvertDateTimep(DateTime.Now);
                 
                 while (!uwr.isDone)
                 {
-                    long curTime = Tool.Tool.ConvertDateTimep(DateTime.Now)-statrTime;
+                    long curTime = Tool.ConvertDateTimep(DateTime.Now)-statrTime;
                     float prog = uwr.downloadProgress;
                     
                     progress(prog,prog/curTime*1000,GetFileSize((long)(prog*lenght)),fileSize);

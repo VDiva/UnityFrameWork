@@ -1,10 +1,9 @@
 using System;
 using System.IO;
-using FrameWork.Global;
 using UnityEditor;
 using UnityEngine;
 
-namespace FrameWork.Editor
+namespace FrameWork
 {
     public class ABConfig : UnityEditor.Editor 
     {
@@ -25,7 +24,7 @@ namespace FrameWork.Editor
             {
                 if (item.Extension.Equals("."+GlobalVariables.Configure.AbEndName))
                 {
-                    info += item.Name + " "+item.Length+" "+ Tool.Tool.GetMd5(item.FullName);
+                    info += item.Name + " "+item.Length+" "+ Tool.GetMd5(item.FullName);
                     info += "|";
                 }
             }

@@ -1,14 +1,11 @@
 ﻿
 using System;
-using System.Reflection;
-using FrameWork.Tool;
-using NetWork.Type;
 using Riptide;
 using Riptide.Utils;
 using UnityEngine;
 using Newtonsoft.Json;
 
-namespace NetWork.System
+namespace FrameWork
 {
     public class NetWorkSystem
     {

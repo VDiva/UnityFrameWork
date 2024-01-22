@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace FrameWork.Tool
+namespace FrameWork
 {
     [CreateAssetMenu(fileName = "Configure", menuName = "FrameWork/CreateConfigure", order = 0)]
     public class Configure : ScriptableObject

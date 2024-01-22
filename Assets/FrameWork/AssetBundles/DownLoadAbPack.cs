@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using FrameWork.Global;
 
-namespace FrameWork.AssetBundles
+
+namespace FrameWork
 {
     public static class DownLoadAbPack
     {

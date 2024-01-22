@@ -10,7 +10,7 @@ using FlexFramework.Excel;
 
 using Object = UnityEngine.Object;
 
-namespace FlexReader.Editor
+namespace FrameWork
 {
     public class SpawnScriptWindows : EditorWindow
     {
@@ -112,6 +112,7 @@ namespace FlexReader.Editor
                             
                             sw.WriteLine("using System.Collections.Generic;");
                             sw.WriteLine("using UnityEngine;");
+                            sw.WriteLine("using FrameWork;");
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             sw.WriteLine("\tpublic class "+fileName);
@@ -171,6 +172,7 @@ namespace FlexReader.Editor
                         {
                             sw.WriteLine("using System.Collections.Generic;");
                             sw.WriteLine("using Xlsx;");
+                            sw.WriteLine("using FrameWork;");
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             

@@ -1,8 +1,7 @@
-using FrameWork.Tool;
-using UnityEditor;
+
 using UnityEngine;
 
-namespace FrameWork.Global
+namespace FrameWork
 {
     public static class GlobalVariables
     {
