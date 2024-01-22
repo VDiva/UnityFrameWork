@@ -9,6 +9,9 @@ namespace FrameWork.AssetBundles
     public static class AssetBundlesLoad
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
+        
+        
+        
         public static T LoadAsset<T>(string packName,string name,BuildTarget buildTarget) where T : Object
         {
             AssetBundle assetBundle;

@@ -8,6 +8,13 @@ namespace FrameWork
     public static class DownLoadAbPack
     {
         private static ConcurrentQueue<AbPackDate> _abPackDates = new ConcurrentQueue<AbPackDate>();
+        
+        /// <summary>
+        /// 下载ab包任务
+        /// </summary>
+        /// <param name="abPackDates"></param>
+        /// <param name="progress"></param>
+        /// <param name="end"></param>
         public static void AddPackDownTack(List<AbPackDate> abPackDates,Action<float,float,string,string> progress,Action<List<AbPackDate>> end)
         {
             
@@ -24,6 +31,14 @@ namespace FrameWork
             }));
         }
 
+        
+        /// <summary>
+        /// 下载资源并提供下载速度和进度
+        /// </summary>
+        /// <param name="lenght"></param>
+        /// <param name="abPackDates"></param>
+        /// <param name="progress"></param>
+        /// <param name="end"></param>
         private static void DownLoadAsset(long lenght,List<AbPackDate> abPackDates,Action<float,float,string,string> progress,Action end)
         {
             if (_abPackDates.TryDequeue(out AbPackDate abPackDate))

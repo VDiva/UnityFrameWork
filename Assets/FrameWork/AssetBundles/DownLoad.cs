@@ -10,6 +10,15 @@ namespace FrameWork
     public class DownLoad
     {
         static int num = 1024; //byte
+        
+        
+        
+        /// <summary>
+        /// 下载数据并提供下载速度和下载大小
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="progress"></param>
+        /// <param name="data"></param>
         public static void DownLoadAsset(string path,Action<float,float,string,string> progress,Action<byte[],string> data)
         {
             Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data));
@@ -46,8 +55,9 @@ namespace FrameWork
                 {
                     long curTime = Tool.ConvertDateTimep(DateTime.Now)-statrTime;
                     float prog = uwr.downloadProgress;
-                    
-                    progress(prog,prog/curTime*1000,GetFileSize((long)(prog*lenght)),fileSize);
+
+                    float speed = GetFileSize(prog * lenght / curTime);
+                    progress(prog,(int)speed,GetFileSize((long)(prog*lenght)),fileSize);
                     yield return null;
                 }
 
@@ -71,6 +81,20 @@ namespace FrameWork
             if (size < Math.Pow(num, 4))
                 return (size / Math.Pow(num, 3)).ToString("f2") + "G"; //G
             return (size / Math.Pow(num, 4)).ToString("f2") + "T"; //T
+        }
+        
+        
+        public static float GetFileSize(float size)
+        {
+            if (size < num)
+                return size;
+            if (size < Math.Pow(num, 2))
+                return (size / num);
+            if (size < Math.Pow(num, 3))
+                return (float)(size / Math.Pow(num, 2));
+            if (size < Math.Pow(num, 4))
+                return (float)(size / Math.Pow(num, 3));
+            return (float)(size / Math.Pow(num, 4));
         }
 
 

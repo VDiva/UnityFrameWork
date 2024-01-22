@@ -9,6 +9,10 @@ namespace FrameWork
 {
     public static class VersionDetection
     {
+        /// <summary>
+        /// 版本检测并对比md5码检测是否需要更新并返回需要更新的字节数组
+        /// </summary>
+        /// <param name="versionInfo"></param>
         public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
         {
             DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+GlobalVariables.Configure.ConfigName,(
@@ -73,7 +77,13 @@ namespace FrameWork
             
         }
 
-        public static bool ListHasValue(List<AbPackDate> da1, string da2)
+        /// <summary>
+        /// 对比md5码
+        /// </summary>
+        /// <param name="da1"></param>
+        /// <param name="da2"></param>
+        /// <returns></returns>
+        private static bool ListHasValue(List<AbPackDate> da1, string da2)
         {
             foreach (var item in da1)
             {

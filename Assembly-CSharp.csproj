@@ -1690,6 +1690,7 @@
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
      <Compile Include="Assets\FrameWork\cs\CsMove.cs" />
+     <Compile Include="Assets\FrameWork\cs\Load.cs" />
      <Compile Include="Assets\FrameWork\cs\Player.cs" />
      <Compile Include="Assets\FrameWork\cs\TextManager.cs" />
      <Compile Include="Assets\FrameWork\cs\cs.cs" />
@@ -1703,6 +1704,7 @@
      <None Include="Assets\FrameWork\Protobuf\protobuf-net.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Memory.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\SecureProtocol\License.txt" />
+     <None Include="Assets\FrameWork\Config\ABConfig.txt" />
      <None Include="Assets\FrameWork\Protobuf\System.Buffers.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Runtime.CompilerServices.Unsafe.xml" />
