@@ -7,15 +7,46 @@ namespace FrameWork
 {
     public class ABConfig : UnityEditor.Editor 
     {
-        [MenuItem("FrameWork/CreateConfig")]
-        public static void CreateAbConfig()
+        [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
+        public static void CreateAbAndroidConfig()
         {
-            string path = "";
-            if (Application.platform == RuntimePlatform.Android) path = GlobalVariables.Configure.AbAndroidPath;
-            if (Application.platform == RuntimePlatform.WindowsPlayer) path =GlobalVariables.Configure.AbWindowsPath;
-            if (Application.platform == RuntimePlatform.IPhonePlayer) path = GlobalVariables.Configure.AbIosPath;
-            if (Application.platform == RuntimePlatform.WindowsEditor) path = GlobalVariables.Configure.AbWindowsPath;
+            // string path = Application.dataPath+"/FrameWork/Config";
+            // if (Application.platform == RuntimePlatform.Android) path = GlobalVariables.Configure.AbAndroidPath;
+            // if (Application.platform == RuntimePlatform.WindowsPlayer) path =GlobalVariables.Configure.AbWindowsPath;
+            // if (Application.platform == RuntimePlatform.IPhonePlayer) path = GlobalVariables.Configure.AbIosPath;
+            // if (Application.platform == RuntimePlatform.WindowsEditor) path = GlobalVariables.Configure.AbWindowsPath;
+            CreateConfig(Application.streamingAssetsPath+"/Android");
             
+        }
+        
+        [MenuItem("FrameWork/CreateConfig/CreateAbWindowsConfig")]
+        public static void CreateAbWindowsConfig()
+        {
+            // string path = Application.dataPath+"/FrameWork/Config";
+            // if (Application.platform == RuntimePlatform.Android) path = GlobalVariables.Configure.AbAndroidPath;
+            // if (Application.platform == RuntimePlatform.WindowsPlayer) path =GlobalVariables.Configure.AbWindowsPath;
+            // if (Application.platform == RuntimePlatform.IPhonePlayer) path = GlobalVariables.Configure.AbIosPath;
+            // if (Application.platform == RuntimePlatform.WindowsEditor) path = GlobalVariables.Configure.AbWindowsPath;
+            CreateConfig(Application.streamingAssetsPath+"/StandaloneWindows");
+            
+        }
+
+        
+        [MenuItem("FrameWork/CreateConfig/CreateAbIosConfig")]
+        public static void CreateAbIosConfig()
+        {
+            // string path = Application.dataPath+"/FrameWork/Config";
+            // if (Application.platform == RuntimePlatform.Android) path = GlobalVariables.Configure.AbAndroidPath;
+            // if (Application.platform == RuntimePlatform.WindowsPlayer) path =GlobalVariables.Configure.AbWindowsPath;
+            // if (Application.platform == RuntimePlatform.IPhonePlayer) path = GlobalVariables.Configure.AbIosPath;
+            // if (Application.platform == RuntimePlatform.WindowsEditor) path = GlobalVariables.Configure.AbWindowsPath;
+            CreateConfig(Application.streamingAssetsPath+"/StandaloneWindows");
+            
+        }
+        
+
+        private static void CreateConfig(string path)
+        {
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
             FileInfo[] fileInfos = directoryInfo.GetFiles();
             
@@ -30,12 +61,12 @@ namespace FrameWork
             }
             info = info.Substring(0, info.Length - 1);
             
-            if (!Directory.Exists(GlobalVariables.Configure.ConfigPath))
-            {
-                Directory.CreateDirectory(GlobalVariables.Configure.ConfigPath);
-            }
+            // if (!Directory.Exists(GlobalVariables.Configure.ConfigPath))
+            // {
+            //     Directory.CreateDirectory(GlobalVariables.Configure.ConfigPath);
+            // }
             
-            using (StreamWriter sw=new StreamWriter(GlobalVariables.Configure.ConfigPath+"/"+GlobalVariables.Configure.ConfigName,false))
+            using (StreamWriter sw=new StreamWriter(path+"/"+GlobalVariables.Configure.ConfigName,false))
             {
                 sw.Write(info);
             }

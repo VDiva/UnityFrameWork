@@ -1,6 +1,7 @@
 
 using System.IO;
 using UnityEditor;
+using UnityEngine;
 
 
 namespace FrameWork
@@ -12,12 +13,12 @@ namespace FrameWork
         public static void CreatAssetBundleAsAndroid()
         {
             
-            if (!Directory.Exists("AssetBundles/Android"))
+            if (!Directory.Exists(Application.streamingAssetsPath+"/Android"))
             {
-                Directory.CreateDirectory("AssetBundles/Android");
+                Directory.CreateDirectory(Application.streamingAssetsPath+"/Android");
             }
             
-            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbAndroidPath, BuildAssetBundleOptions.UncompressedAssetBundle, UnityEditor.BuildTarget.Android);
+            BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/Android", BuildAssetBundleOptions.UncompressedAssetBundle, UnityEditor.BuildTarget.Android);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Android Finish!");
         }
@@ -26,13 +27,13 @@ namespace FrameWork
         public static void BuildAllAssetBundlesAsIOS()
         {
            
-            if (!Directory.Exists("AssetBundles/Ios"))
+            if (!Directory.Exists(Application.streamingAssetsPath+"/Ios"))
             {
-                Directory.CreateDirectory("AssetBundles/Ios");
+                Directory.CreateDirectory(Application.streamingAssetsPath+"/Ios");
             }
             
             
-            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbIosPath, BuildAssetBundleOptions.CollectDependencies, UnityEditor.BuildTarget.iOS);
+            BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/Ios", BuildAssetBundleOptions.CollectDependencies, UnityEditor.BuildTarget.iOS);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("IOS Finish!");
 
@@ -43,12 +44,12 @@ namespace FrameWork
         public static void CreatPCAssetBundleAsWindows()
         {
             
-            if (!Directory.Exists("AssetBundles/StandaloneWindows"))
+            if (!Directory.Exists(Application.streamingAssetsPath+"/StandaloneWindows"))
             {
-                Directory.CreateDirectory("AssetBundles/StandaloneWindows");
+                Directory.CreateDirectory(Application.streamingAssetsPath+"/StandaloneWindows");
             }
             
-            BuildPipeline.BuildAssetBundles(GlobalVariables.Configure.AbWindowsPath, BuildAssetBundleOptions.None, UnityEditor.BuildTarget.StandaloneWindows64);
+            BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/StandaloneWindows", BuildAssetBundleOptions.None, UnityEditor.BuildTarget.StandaloneWindows64);
             AssetDatabase.Refresh();
             UnityEngine.Debug.Log("Windows Finish!");
         }

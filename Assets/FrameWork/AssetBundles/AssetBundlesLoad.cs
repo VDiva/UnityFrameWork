@@ -20,13 +20,13 @@ namespace FrameWork.AssetBundles
             switch (buildTarget)
             {
                 case BuildTarget.Windows:
-                    path = GlobalVariables.Configure.AbWindowsPath;
+                    path = Application.streamingAssetsPath+"/StandaloneWindows";
                     break;
                 case BuildTarget.Android:
-                    path = GlobalVariables.Configure.AbAndroidPath;
+                    path = Application.streamingAssetsPath+"/Android";
                     break;
                 case BuildTarget.Ios:
-                    path = GlobalVariables.Configure.AbIosPath;
+                    path = Application.streamingAssetsPath+"/Ios";
                     break;
             }
             
@@ -42,6 +42,7 @@ namespace FrameWork.AssetBundles
                 else
                 {
                     assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
+                    //assetBundle=AssetBundle.LoadFromFile(Application.streamingAssetsPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
                     Debug.Log("从旧包"+packName+"加载:"+name);
                 }
                 _assetBundles.TryAdd(packName, assetBundle);
@@ -64,13 +65,13 @@ namespace FrameWork.AssetBundles
             switch (buildTarget)
             {
                 case BuildTarget.Windows:
-                    path = GlobalVariables.Configure.AbWindowsPath;
+                    path = Application.dataPath+"/AssetBundles/StandaloneWindows";
                     break;
                 case BuildTarget.Android:
-                    path = GlobalVariables.Configure.AbAndroidPath;
+                    path = Application.dataPath+"/AssetBundles/Android";
                     break;
                 case BuildTarget.Ios:
-                    path = GlobalVariables.Configure.AbIosPath;
+                    path = Application.dataPath+"/AssetBundles/Ios";
                     break;
             }
             

@@ -16,9 +16,6 @@ MonoBehaviour:
   ConfigName: ABConfig.txt
   ConfigPath: Assets/FrameWork/Config
   AbAssetPath: Assets/FrameWork/Asset
-  AbAndroidPath: AssetBundles/Android
-  AbWindowsPath: AssetBundles/StandaloneWindows
-  AbIosPath: AssetBundles/StandaloneWindows
   AbEndName: info
   AbMaterialName: material
   AbUiPrefabName: ui

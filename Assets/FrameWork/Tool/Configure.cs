@@ -7,13 +7,11 @@ namespace FrameWork
     {
         public string DownLoadUrl;
         public string ConfigName;
-        public string ConfigPath;
-        
+        //public string ConfigPath;
         public string AbAssetPath;
-        
-        public string AbAndroidPath;
-        public string AbWindowsPath;
-        public string AbIosPath;
+        // public string AbAndroidPath;
+        // public string AbWindowsPath;
+        // public string AbIosPath;
         public string AbEndName;
         public string AbMaterialName;
         public string AbUiPrefabName;
