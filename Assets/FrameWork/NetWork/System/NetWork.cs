@@ -1,6 +1,5 @@
 
 using System.Collections.Concurrent;
-using FrameWork.AssetBundles;
 using UnityEngine;
 
 
@@ -60,25 +59,25 @@ namespace FrameWork
                 }
                 else
                 {
-                    FrameWork.BuildTarget buildTarget = BuildTarget.Windows;
-                    RuntimePlatform platform = Application.platform;
-                    
-                    switch (platform)
-                    {
-                        case RuntimePlatform.WindowsEditor:
-                            buildTarget = BuildTarget.Windows;
-                            break;
-                        case RuntimePlatform.WindowsPlayer:
-                            buildTarget = BuildTarget.Windows;
-                            break;
-                        case RuntimePlatform.Android:
-                            buildTarget = BuildTarget.Android;
-                            break;
-                        case RuntimePlatform.IPhonePlayer:
-                            buildTarget = BuildTarget.Ios;
-                            break;
-                    }
-                    prefab=AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, spawnName,buildTarget);
+                    // FrameWork.BuildTarget buildTarget = BuildTarget.Windows;
+                    // RuntimePlatform platform = Application.platform;
+                    //
+                    // switch (platform)
+                    // {
+                    //     case RuntimePlatform.WindowsEditor:
+                    //         buildTarget = BuildTarget.Windows;
+                    //         break;
+                    //     case RuntimePlatform.WindowsPlayer:
+                    //         buildTarget = BuildTarget.Windows;
+                    //         break;
+                    //     case RuntimePlatform.Android:
+                    //         buildTarget = BuildTarget.Android;
+                    //         break;
+                    //     case RuntimePlatform.IPhonePlayer:
+                    //         buildTarget = BuildTarget.Ios;
+                    //         break;
+                    // }
+                    prefab=AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, spawnName);
                 }
             }
             

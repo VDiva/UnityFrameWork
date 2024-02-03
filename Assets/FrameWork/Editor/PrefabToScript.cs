@@ -17,7 +17,7 @@ namespace FrameWork.Editor
             
             
             
-            string path = GlobalVariables.Configure.SpawnScriptPath;
+            string path = GlobalVariables.Configure.SpawnPrefabScriptPath;
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;
@@ -32,9 +32,6 @@ namespace FrameWork.Editor
             {
                 Directory.CreateDirectory(path+"/"+name);
             }
-
-            
-            
             
             
             using (StreamWriter swMode=new StreamWriter(path+"/"+name+"//"+name+".H.cs",false))

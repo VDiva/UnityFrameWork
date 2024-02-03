@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 3243427370
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: mode.info
+      Dependencies: {}

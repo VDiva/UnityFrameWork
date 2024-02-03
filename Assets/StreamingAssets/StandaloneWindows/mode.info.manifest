@@ -1,0 +1,55 @@
+ManifestFileVersion: 0
+CRC: 192428102
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 82e2ac746df52d43ad27dafb9f22aa8f
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 0ec93b4a2aa40bc907e503d02d41b56a
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 65
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 062654f4dd499ef4c89226b03c720e01, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 52c53c3592244329a3dae4ba2f712939, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 24f7bfe56245428ebfa35b8ce11c11f8, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 1758e7d7711940b0ab19a993891659e0, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 128
+  Script: {instanceID: 0}
+- Class: 136
+  Script: {instanceID: 0}
+- Class: 222
+  Script: {instanceID: 0}
+- Class: 224
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/FrameWork/Asset/C.prefab
+- Assets/FrameWork/Asset/Cube.prefab
+- Assets/FrameWork/Asset/Textcs.prefab
+Dependencies: []

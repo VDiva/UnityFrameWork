@@ -4,19 +4,39 @@ using System.IO;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace FrameWork.AssetBundles
+namespace FrameWork
 {
     public static class AssetBundlesLoad
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
+
+        private static FrameWork.BuildTarget buildTarget;
+        static AssetBundlesLoad()
+        {
+            RuntimePlatform platform = Application.platform;
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                    buildTarget = BuildTarget.Windows;
+                    break;
+                case RuntimePlatform.WindowsPlayer:
+                    buildTarget = BuildTarget.Windows;
+                    break;
+                case RuntimePlatform.Android:
+                    buildTarget = BuildTarget.Android;
+                    break;
+                case RuntimePlatform.IPhonePlayer:
+                    buildTarget = BuildTarget.Ios;
+                    break;
+            }
+        }
         
         
-        
-        public static T LoadAsset<T>(string packName,string name,BuildTarget buildTarget) where T : Object
+        public static T LoadAsset<T>(string packName,string name) where T : Object
         {
             AssetBundle assetBundle;
             string path = "";
-
+            
             switch (buildTarget)
             {
                 case BuildTarget.Windows:

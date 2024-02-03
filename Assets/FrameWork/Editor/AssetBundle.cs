@@ -17,6 +17,11 @@ namespace FrameWork
             {
                 Directory.CreateDirectory(Application.streamingAssetsPath+"/Android");
             }
+            else
+            {
+                Directory.Delete(Application.streamingAssetsPath+"/Android",true);
+                Directory.CreateDirectory(Application.streamingAssetsPath+"/Android");
+            }
             
             BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/Android", BuildAssetBundleOptions.UncompressedAssetBundle, UnityEditor.BuildTarget.Android);
             AssetDatabase.Refresh();
@@ -29,6 +34,10 @@ namespace FrameWork
            
             if (!Directory.Exists(Application.streamingAssetsPath+"/Ios"))
             {
+                Directory.CreateDirectory(Application.streamingAssetsPath+"/Ios");
+            }else
+            {
+                Directory.Delete(Application.streamingAssetsPath+"/Ios",true);
                 Directory.CreateDirectory(Application.streamingAssetsPath+"/Ios");
             }
             
@@ -46,6 +55,10 @@ namespace FrameWork
             
             if (!Directory.Exists(Application.streamingAssetsPath+"/StandaloneWindows"))
             {
+                Directory.CreateDirectory(Application.streamingAssetsPath+"/StandaloneWindows");
+            }else
+            {
+                Directory.Delete(Application.streamingAssetsPath+"/StandaloneWindows",true);
                 Directory.CreateDirectory(Application.streamingAssetsPath+"/StandaloneWindows");
             }
             

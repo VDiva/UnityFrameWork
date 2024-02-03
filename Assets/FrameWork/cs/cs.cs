@@ -9,7 +9,8 @@ namespace FrameWork
 
         private void Start()
         {
-            NetWorkSystem.Start("127.0.0.1:8888");
+            
+            //NetWorkSystem.Start("127.0.0.1:8888");
         }
 
         private void OnEnable()
@@ -19,6 +20,17 @@ namespace FrameWork
 
         private void Update()
         {
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                UiManager.Instance.ShowUi<Textcs>();
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                UiManager.Instance.RemoveUi<Textcs>();
+            }
+            
             if (Input.GetKeyDown("1"))
             {
                 NetWorkSystem.CreateRoom("你好",10);

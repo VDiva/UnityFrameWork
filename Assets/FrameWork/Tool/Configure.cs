@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FrameWork
 {
@@ -17,6 +18,7 @@ namespace FrameWork
         public string AbUiPrefabName;
         public string AbModePrefabName;
         public string AbScreenName;
-        public string SpawnScriptPath;
+        public string SpawnPrefabScriptPath;
+        public string SpawnUiScriptPath;
     }
 }
