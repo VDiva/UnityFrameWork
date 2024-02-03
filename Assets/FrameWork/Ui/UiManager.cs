@@ -18,6 +18,8 @@ namespace FrameWork
         
         private Transform PopupTransform = null;
         
+        private Transform ControlTransform = null;
+        
         
         
         private Stack<UiBase> _uiStack;
@@ -38,6 +40,7 @@ namespace FrameWork
                 BackgroundTransform =CanvasTransform.Find("Background");
                 NormalTransform =CanvasTransform.Find("Normal");
                 PopupTransform =CanvasTransform.Find("Popup");
+                ControlTransform =CanvasTransform.Find("Control");
             }
         }
 
@@ -45,10 +48,11 @@ namespace FrameWork
         {
             Type t = typeof(T);
             string fullName = t.Name;
-        
+
             if (UiDic.ContainsKey(fullName))
             {
-                Debug.Log("当前界面已经显示了,名字:"+fullName);
+                UiDic[fullName].UiGameObject.SetActive(true);
+                //Debug.Log("当前界面已经显示了,名字:"+fullName);
                 return UiDic[fullName];
             }
 
@@ -66,10 +70,10 @@ namespace FrameWork
                 Debug.LogError("找不到需要生成的预制体");
                 return null;
             }
-            
             UiBase uiBase=Activator.CreateInstance<UiBase>();
 
             var uiMode=t.GetCustomAttribute<UiModeAttribute>();
+            
             Transform tran=null;
             switch (uiMode.UiType)
             {
@@ -82,6 +86,9 @@ namespace FrameWork
                 case UiType.Popup:
                     tran = PopupTransform;
                     break;
+                case UiType.Control:
+                    tran = ControlTransform;
+                    break;
             }
             
             GameObject go = Instantiate(prefab,tran==null? CanvasTransform: tran);
@@ -92,8 +99,21 @@ namespace FrameWork
             return uiBase;
         }
 
+        
+        public void HideUi<T>()
+        {
+            string fullName = typeof(T).Name;
+            if (UiDic.TryGetValue(fullName,out UiBase uiBase))
+            {
+                //UiDic.Remove(uiBase.Name);
+                //GameObject.Destroy(uiBase.UiGameObject);
+                uiBase.UiGameObject.SetActive(false);
+            }
+        }
+        
         public void RemoveUi<T>()
         {
+           
             string fullName = typeof(T).Name;
             if (UiDic.TryGetValue(fullName,out UiBase uiBase))
             {
@@ -102,6 +122,19 @@ namespace FrameWork
             }
         }
 
+        
+        public void RemoveUi(GameObject go)
+        {
+            //string fullName = typeof(T).Name;
+            foreach (var item in UiDic.Values)
+            {
+                if (go.Equals(item.UiGameObject))
+                {
+                    UiDic.Remove(item.Name);
+                    GameObject.Destroy(item.UiGameObject);
+                }
+            }
+        }
 
         public void Back()
         {
@@ -112,6 +145,10 @@ namespace FrameWork
                 {
                     UiDic.Remove(uiBase.Name);
                     GameObject.Destroy(uiBase.UiGameObject);
+                }
+                else
+                {
+                    Back();
                 }
             }
         }

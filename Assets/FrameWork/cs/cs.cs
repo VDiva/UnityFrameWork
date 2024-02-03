@@ -1,4 +1,5 @@
 
+using FrameWork.Attribute;
 using UnityEngine;
 
 
@@ -20,6 +21,7 @@ namespace FrameWork
 
         private void Update()
         {
+
 
             if (Input.GetKeyDown(KeyCode.Q))
             {

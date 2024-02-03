@@ -5,6 +5,7 @@ namespace FrameWork
         Background,
         Normal,
         Popup,
+        Control
     }
     
     
