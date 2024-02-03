@@ -2,13 +2,11 @@ using UnityEngine;
 using FrameWork;
 namespace FrameWork
 {
-	public partial class Cube : MonoBehaviour
+	public partial class Cube
 	{
-		private Transform TransformCube;
-		private MeshFilter MeshFilterCube;
-		private MeshRenderer MeshRendererCube;
-		private BoxCollider BoxColliderCube;
-		private Identity IdentityCube;
-		private Player PlayerCube;
+		protected Transform TransformCube;
+		protected MeshFilter MeshFilterCube;
+		protected MeshRenderer MeshRendererCube;
+		protected BoxCollider BoxColliderCube;
 	}
 }

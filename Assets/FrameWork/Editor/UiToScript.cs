@@ -22,9 +22,9 @@ namespace FrameWork
                 swMode.WriteLine("using UnityEngine;");
                 swMode.WriteLine("using FrameWork;");
                 
-                swMode.WriteLine("\tpublic partial class "+name+": UiBase");
-                swMode.WriteLine("\t{");
-                swMode.WriteLine("\t}");
+                swMode.WriteLine("public partial class "+name+": UiBase");
+                swMode.WriteLine("{");
+                swMode.WriteLine("}");
             }
             
             AssetBundle.CreatPCAssetBundleAsWindows();

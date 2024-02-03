@@ -55,6 +55,7 @@
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoad.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoadAbPack.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\VersionDetection.cs" />
+     <Compile Include="Assets\FrameWork\Attribute\UiModeAttribute.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Credentials.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Digest.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\DigestStore.cs" />
@@ -1683,6 +1684,10 @@
      <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.Awake.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.H.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.Attr.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.H.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsNetMono.cs" />
@@ -1692,7 +1697,6 @@
      <Compile Include="Assets\FrameWork\Type\UiType.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiBase.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiManager.cs" />
-     <Compile Include="Assets\FrameWork\UiScript\Textcs\Textcs.Init.cs" />
      <Compile Include="Assets\FrameWork\cs\CsMove.cs" />
      <Compile Include="Assets\FrameWork\cs\Load.cs" />
      <Compile Include="Assets\FrameWork\cs\Player.cs" />

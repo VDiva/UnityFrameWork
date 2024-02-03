@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using FrameWork.Attribute;
 using UnityEngine;
 
 namespace FrameWork
@@ -9,8 +11,16 @@ namespace FrameWork
         private Dictionary<string, UiBase> UiDic;
 
         private Transform CanvasTransform = null;
+
+        private Transform BackgroundTransform = null;
+        
+        private Transform NormalTransform = null;
+        
+        private Transform PopupTransform = null;
         
         
+        
+        private Stack<UiBase> _uiStack;
         public int UiCount
         {
             get { return UiDic.Count; }
@@ -19,33 +29,26 @@ namespace FrameWork
         private void Awake()
         {
             UiDic = new Dictionary<string, UiBase>();
-            CanvasTransform= FindObjectOfType<Canvas>()?.transform;
+            _uiStack = new Stack<UiBase>();
+            var prefab = AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, "UiRoot");
             
-        }
-
-        private void Update()
-        {
-            if (UiCount>0)
+            CanvasTransform= GameObject.Instantiate(prefab)?.transform;
+            if (CanvasTransform!=null)
             {
-                foreach (var item in UiDic.Keys)
-                {
-                    if (UiDic[item]!=null)
-                    {
-                        UiDic[item].Update();
-                    }
-                }
+                BackgroundTransform =CanvasTransform.Find("Background");
+                NormalTransform =CanvasTransform.Find("Normal");
+                PopupTransform =CanvasTransform.Find("Popup");
             }
         }
 
-
-        public UiBase ShowUi<T>() where T: UiBase
+        public UiBase ShowUi<T>()
         {
             Type t = typeof(T);
-            string fullName = t.FullName;
+            string fullName = t.Name;
         
             if (UiDic.ContainsKey(fullName))
             {
-                Debug.Log("当前面包已经显示了,名字:"+fullName);
+                Debug.Log("当前界面已经显示了,名字:"+fullName);
                 return UiDic[fullName];
             }
 
@@ -55,7 +58,7 @@ namespace FrameWork
                 return null;
             }
             
-            UiBase uiBase = Activator.CreateInstance(t) as UiBase;
+            //UiBase uiBase = Activator.CreateInstance(t);
             
             GameObject prefab = AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, fullName);
             if (prefab==null)
@@ -64,41 +67,76 @@ namespace FrameWork
                 return null;
             }
             
-            GameObject go = Instantiate(prefab,CanvasTransform);
+            UiBase uiBase=Activator.CreateInstance<UiBase>();
+
+            var uiMode=t.GetCustomAttribute<UiModeAttribute>();
+            Transform tran=null;
+            switch (uiMode.UiType)
+            {
+                case UiType.Background:
+                    tran = BackgroundTransform;
+                    break;
+                case UiType.Normal:
+                    tran = NormalTransform;
+                    break;
+                case UiType.Popup:
+                    tran = PopupTransform;
+                    break;
+            }
+            
+            GameObject go = Instantiate(prefab,tran==null? CanvasTransform: tran);
             uiBase.UiGameObject = go;
-            uiBase.Start();
+            uiBase.Name = fullName;
+            _uiStack.Push(uiBase);
             UiDic.Add(fullName,uiBase);
             return uiBase;
         }
 
-        public UiBase RemoveUi<T>() where T : UiBase
+        public void RemoveUi<T>()
         {
-            string fullName = typeof(T).FullName;
+            string fullName = typeof(T).Name;
             if (UiDic.TryGetValue(fullName,out UiBase uiBase))
             {
-                uiBase.Destroy();
-                UiDic.Remove(fullName);
+                UiDic.Remove(uiBase.Name);
                 GameObject.Destroy(uiBase.UiGameObject);
-                return uiBase;
             }
-
-            return null;
         }
-        
+
+
+        public void Back()
+        {
+            if (_uiStack.Count>0)
+            {
+                var uiBase=_uiStack.Pop();
+                if (uiBase!=null)
+                {
+                    UiDic.Remove(uiBase.Name);
+                    GameObject.Destroy(uiBase.UiGameObject);
+                }
+            }
+        }
         
         public void ClearAllPanel()
         {
             foreach (var key in UiDic.Keys)
             {
-                UiBase uIBase = UiDic[key];
-                if (uIBase != null)
+                UiBase uiBase = UiDic[key];
+                if (uiBase != null)
                 {
-                    uIBase.Destroy();
-                    GameObject.Destroy(uIBase.UiGameObject);
+                    GameObject.Destroy(uiBase.UiGameObject);
                 }
             }
- 
             UiDic.Clear();
+        }
+        
+        
+        void SetRectTransAsFullScreen(RectTransform rectTrans)
+        {
+            rectTrans.localPosition = Vector3.zero;
+            rectTrans.sizeDelta = Vector2.zero;
+            rectTrans.localScale = Vector3.one;
+            rectTrans.anchorMin = Vector2.zero;
+            rectTrans.anchorMax = Vector2.one;
         }
 
     }

@@ -2,8 +2,10 @@ namespace FrameWork
 {
     public enum UiType
     {
-        Back,
-        Nor,
-        Pop
+        Background,
+        Normal,
+        Popup,
     }
+    
+    
 }

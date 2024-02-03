@@ -31,6 +31,11 @@ namespace FrameWork
                 UiManager.Instance.RemoveUi<Textcs>();
             }
             
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                UiManager.Instance.Back();
+            }
+            
             if (Input.GetKeyDown("1"))
             {
                 NetWorkSystem.CreateRoom("你好",10);

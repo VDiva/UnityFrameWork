@@ -42,6 +42,7 @@ namespace FrameWork.Editor
                     {
                         sw.WriteLine("using UnityEngine;");
                         sw.WriteLine("using FrameWork;");
+                        sw.WriteLine("using UnityEngine.UI;");
                         sw.WriteLine("namespace FrameWork\n{");
                         sw.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
                         sw.WriteLine("\t{");
@@ -53,6 +54,7 @@ namespace FrameWork.Editor
                     // using (StreamWriter swSystem = new StreamWriter( path+"/"+name + "//" + name + ".System.cs", false))
                     // {
                     //     swSystem.WriteLine("using UnityEngine;");
+                    //     swSystem.WriteLine("using UnityEngine;");
                     //     swSystem.WriteLine("public partial class "+name+" : MonoBehaviour");
                     //     swSystem.WriteLine("{");
                     //     swSystem.WriteLine("}");
@@ -60,16 +62,18 @@ namespace FrameWork.Editor
 
                     swMode.WriteLine("using UnityEngine;");
                     swMode.WriteLine("using FrameWork;");
+                    swMode.WriteLine("using UnityEngine.UI;");
                     swMode.WriteLine("namespace FrameWork\n{");
-                    swMode.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
+                    swMode.WriteLine("\tpublic partial class "+name+"");
                     swMode.WriteLine("\t{");
                     
                     swView.WriteLine("using UnityEngine;");
                     swView.WriteLine("using FrameWork;");
+                    swView.WriteLine("using UnityEngine.UI;");
                     swView.WriteLine("namespace FrameWork\n{");
-                    swView.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
+                    swView.WriteLine("\tpublic partial class "+name+"");
                     swView.WriteLine("\t{");
-                    swView.WriteLine("\t\tprivate void Awake()\n\t\t{");
+                    swView.WriteLine("\t\tprotected virtual void Awake()\n\t\t{");
                     
                     Writer(swMode,swView,"",trans,true);
                     
@@ -101,7 +105,7 @@ namespace FrameWork.Editor
         {
             foreach (var item in trans.GetComponents<Component>())
             {
-                swMode.WriteLine("\t\tprivate "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
+                swMode.WriteLine("\t\tprotected "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
 
                 if (isRoot)
                 {
