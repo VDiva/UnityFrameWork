@@ -99,12 +99,12 @@ namespace FrameWork
             
             GameObject go = Instantiate(prefab,tran==null? CanvasTransform: tran);
             var actor=go.AddComponent<T>();
-            actor.Index = _index;
+            actor.SetIndex(_index);
             _index += 1;
             
             _uiStack.Push(actor);
             
-            UiDic.Add(actor.Index,actor);
+            UiDic.Add(actor.GetIndex(),actor);
             return actor;
         }
 
@@ -125,7 +125,7 @@ namespace FrameWork
             //string fullName = typeof(T).Name;
             if (UiDic.TryGetValue(index,out Actor actor))
             {
-                UiDic.Remove(actor.Index);
+                UiDic.Remove(actor.GetIndex());
                 GameObject.Destroy(actor.gameObject);
             }
         }
@@ -136,7 +136,7 @@ namespace FrameWork
             var actor = go.GetComponent<Actor>();
             if (actor!=null)
             {
-                UiDic.Remove(actor.Index);
+                UiDic.Remove(actor.GetIndex());
                 GameObject.Destroy(actor.gameObject);
             }
         }
@@ -148,7 +148,7 @@ namespace FrameWork
                 var actor=_uiStack.Pop();
                 if (actor!=null)
                 {
-                    UiDic.Remove(actor.Index);
+                    UiDic.Remove(actor.GetIndex());
                     GameObject.Destroy(actor.gameObject);
                 }
                 else

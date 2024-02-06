@@ -50,6 +50,7 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Assets\FrameWork\Anim\StateMachine.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\AbPackDate.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\AssetBundlesLoad.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoad.cs" />
@@ -1668,6 +1669,7 @@
      <Compile Include="Assets\FrameWork\FlexReader\Mapping\TableMapperBase.cs" />
      <Compile Include="Assets\FrameWork\Global\AssemblyType.cs" />
      <Compile Include="Assets\FrameWork\Global\GlobalVariables.cs" />
+     <Compile Include="Assets\FrameWork\Interface\IAnim.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Component\Identity.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Component\SyncTransform.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\MessageSystem.cs" />
