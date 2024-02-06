@@ -56,6 +56,7 @@
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoadAbPack.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\VersionDetection.cs" />
      <Compile Include="Assets\FrameWork\Attribute\UiModeAttribute.cs" />
+     <Compile Include="Assets\FrameWork\Base\Actor.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Credentials.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Digest.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\DigestStore.cs" />
@@ -1681,13 +1682,6 @@
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.Awake.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.H.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Cube\Cube.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.Attr.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.Awake.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.H.cs" />
-     <Compile Include="Assets\FrameWork\PrefabScript\Textcs\Textcs.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsNetMono.cs" />
@@ -1697,12 +1691,6 @@
      <Compile Include="Assets\FrameWork\Type\UiType.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiBase.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiManager.cs" />
-     <Compile Include="Assets\FrameWork\cs\CsMove.cs" />
-     <Compile Include="Assets\FrameWork\cs\Load.cs" />
-     <Compile Include="Assets\FrameWork\cs\Player.cs" />
-     <Compile Include="Assets\FrameWork\cs\TextManager.cs" />
-     <Compile Include="Assets\FrameWork\cs\cs.cs" />
-     <Compile Include="Assets\FrameWork\cs\uics.cs" />
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
@@ -1718,6 +1706,7 @@
      <None Include="Assets\FrameWork\Protobuf\System.Runtime.CompilerServices.Unsafe.xml" />
      <None Include="Assets\FrameWork\NetWork\Dll\Newtonsoft.Json.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\ReleaseNotes.txt" />
+     <None Include="Assets\FrameWork\Md\ff.txt" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/smr/Documents/GitHub/Game-FrameWork/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>

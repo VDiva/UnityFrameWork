@@ -53,7 +53,6 @@
      <Compile Include="Assets\FrameWork\Editor\ABConfig.cs" />
      <Compile Include="Assets\FrameWork\Editor\AssetBundle.cs" />
      <Compile Include="Assets\FrameWork\Editor\PrefabToScript.cs" />
-     <Compile Include="Assets\FrameWork\Editor\UiToScript.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\Editor\SpawnScriptWindows.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\Tests\Editor\CSVTests.cs" />
      <Compile Include="Assets\FrameWork\FlexReader\Tests\Editor\Excel2007Tests.cs" />

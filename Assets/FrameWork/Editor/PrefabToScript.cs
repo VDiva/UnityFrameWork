@@ -44,7 +44,7 @@ namespace FrameWork.Editor
                         sw.WriteLine("using FrameWork;");
                         sw.WriteLine("using UnityEngine.UI;");
                         sw.WriteLine("namespace FrameWork\n{");
-                        sw.WriteLine("\tpublic partial class "+name+" : MonoBehaviour");
+                        sw.WriteLine("\tpublic partial class "+name+" : Actor");
                         sw.WriteLine("\t{");
                         sw.WriteLine("\t}");
                         sw.WriteLine("}");
@@ -55,7 +55,7 @@ namespace FrameWork.Editor
                     // {
                     //     swSystem.WriteLine("using UnityEngine;");
                     //     swSystem.WriteLine("using UnityEngine;");
-                    //     swSystem.WriteLine("public partial class "+name+" : MonoBehaviour");
+                    //     swSystem.WriteLine("public partial class "+name+" : Actor");
                     //     swSystem.WriteLine("{");
                     //     swSystem.WriteLine("}");
                     // }
@@ -64,14 +64,14 @@ namespace FrameWork.Editor
                     swMode.WriteLine("using FrameWork;");
                     swMode.WriteLine("using UnityEngine.UI;");
                     swMode.WriteLine("namespace FrameWork\n{");
-                    swMode.WriteLine("\tpublic partial class "+name+"");
+                    swMode.WriteLine("\tpublic partial class "+name+" :Actor");
                     swMode.WriteLine("\t{");
                     
                     swView.WriteLine("using UnityEngine;");
                     swView.WriteLine("using FrameWork;");
                     swView.WriteLine("using UnityEngine.UI;");
                     swView.WriteLine("namespace FrameWork\n{");
-                    swView.WriteLine("\tpublic partial class "+name+"");
+                    swView.WriteLine("\tpublic partial class "+name+" :Actor");
                     swView.WriteLine("\t{");
                     swView.WriteLine("\t\tprotected virtual void Awake()\n\t\t{");
                     
@@ -95,7 +95,8 @@ namespace FrameWork.Editor
             AssetDatabase.Refresh();
             if (Selection.activeGameObject.GetComponent("FrameWork."+Selection.activeGameObject.name)==null)
             {
-                System.Type type = typeof(AssemblyType).Assembly.GetType("FrameWork." + Selection.activeGameObject.name);
+                string typeName = "FrameWork." + Selection.activeGameObject.name;
+                System.Type type = typeof(AssemblyType).Assembly.GetType(typeName);
                 Selection.activeGameObject.AddComponent(type);
             }
         }

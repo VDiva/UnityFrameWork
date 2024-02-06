@@ -1,25 +1,5 @@
-using System;
-using System.IO;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
-namespace FrameWork
-{
-    public class Load : MonoBehaviour
-    {
-        private void Start()
-        {
-            
-            // DownLoad.DownLoadAsset("https://download-cdn.jetbrains.com.cn/rider/JetBrains.Rider-2023.3.2.exe",((f, f1, arg3, arg4) =>
-            // {
-            //     Debug.Log("进度:"+f+"-"+"速度:"+f1+"/s"+"-"+arg3+"/"+arg4);
-            // }),((bytes, s) =>
-            // {
-            //     
-            // } ));
-            
-
-            VersionDetection.Detection(((list, bytes) =>
+检查ab包md5
+VersionDetection.Detection(((list, bytes) =>
             {
                 if (list.Count>0)
                 {
@@ -46,6 +26,3 @@ namespace FrameWork
                     SceneManager.LoadScene("Scenes/SampleScene");
                 }
             } ));
-        }
-    }
-}
