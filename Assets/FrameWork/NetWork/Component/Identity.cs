@@ -4,8 +4,8 @@ namespace FrameWork
 {
     public class Identity : MonoBehaviour
     {
-        public ushort _clientSpawnId;
-        public ushort _id;
+        private ushort _clientSpawnId;
+        private ushort _id;
 
         public void SetId(ushort id)
         {

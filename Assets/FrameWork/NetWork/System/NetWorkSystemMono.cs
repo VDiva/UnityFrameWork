@@ -27,6 +27,7 @@ namespace FrameWork
             NetWorkSystem.OnConnectToServer += OnConnected;
             NetWorkSystem.OnDisConnectToServer += OnDisConnected;
             NetWorkSystem.OnRoomInfo += OnRoomInfo;
+            NetWorkSystem.OnInstantiateEnd += OnInstantiateEnd;
         }
 
         protected virtual void OnDisable()
@@ -40,15 +41,16 @@ namespace FrameWork
             NetWorkSystem.OnConnectToServer -= OnConnected;
             NetWorkSystem.OnDisConnectToServer -= OnDisConnected;
             NetWorkSystem.OnRoomInfo -= OnRoomInfo;
+            NetWorkSystem.OnInstantiateEnd -= OnInstantiateEnd;
         }
 
 
-        protected void RpcMessage(string methodName,Rpc rpc,object[] param)
+        protected void RpcMessage(string methodName,Rpc rpc,object[] param=null)
         {
             NetWorkSystem.Rpc(methodName,this,rpc,param);
         }
         
-        protected void RpcMessage(string methodName,NetWorkSystemMono netWorkSystemMono,Rpc rpc,object[] param)
+        protected void RpcMessage(string methodName,NetWorkSystemMono netWorkSystemMono,Rpc rpc,object[] param=null)
         {
             NetWorkSystem.Rpc(methodName,netWorkSystemMono,rpc,param);
         }
@@ -73,6 +75,8 @@ namespace FrameWork
         
         protected virtual void OnInstantiate(ushort id,ushort objId,string spawnName,Vector3 position,Vector3 rotation,bool isAb){}
 
+        protected virtual void OnInstantiateEnd(GameObject go){}
+        
         public ushort GetId()
         {
             return _identity.GetId();

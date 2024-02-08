@@ -1691,7 +1691,6 @@
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
      <Compile Include="Assets\FrameWork\Type\UiType.cs" />
-     <Compile Include="Assets\FrameWork\Ui\UiBase.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiManager.cs" />
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />

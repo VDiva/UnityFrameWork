@@ -79,6 +79,7 @@ namespace FrameWork
             var ti = NetWorkSystem.serverTick;
             if (ti>=tick&& tick>=ti-2)
             {
+                //Debug.Log("同步位置事件");
                 _curLoc = transform.position;
                 _syncLoc = loc;
 

@@ -50,7 +50,6 @@ namespace FrameWork
             GameObject prefab = null;
             if (!_prefabs.TryGetValue(spawnName,out prefab))
             {
-                
                 if (!isAb)
                 {
                     var go = Resources.Load<GameObject>(spawnName);
@@ -86,13 +85,14 @@ namespace FrameWork
             var identity=obj.GetComponent<Identity>();
             identity.SetId(objId);
             identity.SetSpawnId(clientId);
-
+            NetWorkSystem.OnInstantiateEnd?.Invoke(obj);
             _objects.TryAdd(objId, obj);
         }
 
 
         private void Rpc(string methodName, ushort id, object[] param)
         {
+            Debug.Log("有rpc进来");
             if (_objects.TryGetValue(id,out GameObject obj))
             {
                 obj.SendMessage(methodName,param);

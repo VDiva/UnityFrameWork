@@ -16,6 +16,8 @@ namespace FrameWork
         public static Action<ushort,ushort, Vector3,Vector3> OnTransform;
         public static Action<ushort, ushort, string, Vector3, Vector3,bool> OnInstantiate;
         public static Action<ushort, ushort[]> OnBelongingClient;
+
+        public static Action<GameObject> OnInstantiateEnd;
         
         public static Action<string,ushort,object[]> OnRpc;
         public static Action<ushort> OnDestroy;
@@ -73,7 +75,7 @@ namespace FrameWork
 
         public static void Send(Message message)
         {
-            _client.Send(message);
+            if (_client.IsConnected)_client.Send(message);
         }
 
 
@@ -132,7 +134,7 @@ namespace FrameWork
             Send(msg);
         }
         
-        public static void Rpc<T>(string methodName,T netWorkSystemMono,Rpc rpc,object[] param) where T: NetWorkSystemMono
+        public static void Rpc<T>(string methodName,T netWorkSystemMono,Rpc rpc,object[] param=null) where T: NetWorkSystemMono
         {
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
             msg.AddString(methodName);
