@@ -32,7 +32,8 @@ namespace FrameWork
         public void Init()
         {
             _index = 0;
-            _uiStack.Clear();
+            //_uiStack.Clear();
+            ClearAllPanel();
         }
         
         private void Awake()
@@ -53,6 +54,9 @@ namespace FrameWork
 
         public Actor ShowUi<T>(int index=-1) where T: Actor
         {
+
+            if (index == -1) return null;
+            
             Type t = typeof(T);
             string fullName = t.Name;
             

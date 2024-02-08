@@ -63,18 +63,10 @@ namespace FrameWork
         {
             if (!_identity.IsLocalSpawn())
             {
-                if (((_curLoc-_syncLoc).normalized).sqrMagnitude>_sqRange)
-                {
-                    transform.position = Vector3.Lerp(_curLoc, _syncLoc, _lerpPosition);
-                    
-                    _lerpPosition += Time.deltaTime*positionSyncSpeed;
-                    //_lerpRotation += Time.deltaTime * rotationSyncSpeed;
-                }
-
-                if (((_curRo-_syncRo).normalized).sqrMagnitude>_sqRange)
-                {
-                    transform.eulerAngles = _syncRo;
-                }
+                transform.position = Vector3.Lerp(_curLoc, _syncLoc, _lerpPosition);
+                transform.rotation=Quaternion.Lerp(Quaternion.Euler(_curRo), Quaternion.Euler(_syncRo), _lerpRotation);
+                _lerpPosition += Time.deltaTime*positionSyncSpeed;
+                _lerpRotation += Time.deltaTime * rotationSyncSpeed;
             }
         }
         

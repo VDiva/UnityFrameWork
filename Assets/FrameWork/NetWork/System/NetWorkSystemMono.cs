@@ -3,7 +3,7 @@ using UnityEngine;
 namespace FrameWork
 {
     [RequireComponent(typeof(Identity))]
-    public class NetWorkSystemMono : MonoBehaviour
+    public class NetWorkSystemMono : Actor
     {
         private Identity _identity;
         
