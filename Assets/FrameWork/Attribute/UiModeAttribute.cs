@@ -1,10 +1,11 @@
 using System;
 
-namespace FrameWork.Attribute
+namespace FrameWork
 {
     [AttributeUsage(AttributeTargets.Class,AllowMultiple = true,Inherited = true)]
     public class UiModeAttribute: System.Attribute
     {
+        public Mode Mode;
         public UiType UiType;
     }
 }

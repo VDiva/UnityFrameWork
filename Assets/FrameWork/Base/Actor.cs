@@ -6,6 +6,7 @@ namespace FrameWork
     {
         //public string ActorName;
         private int Index;
+        private string ActorName;
 
         public int GetIndex()
         {
@@ -17,6 +18,16 @@ namespace FrameWork
             Index = index;
             //return Index;
         }
-
+        
+        public string GetActorName()
+        {
+            return ActorName;
+        }
+        
+        public void SetActorName(string name)
+        {
+            ActorName = name;
+            //return Index;
+        }
     }
 }
