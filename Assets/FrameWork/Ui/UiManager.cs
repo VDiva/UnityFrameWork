@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class UiManager : SingletonAsMono<UiManager>
+    public class UiManager : SingletonAsClass<UiManager>
     {
         private Dictionary<int, Actor> UiDic;
 
@@ -22,6 +22,11 @@ namespace FrameWork
         private Transform ControlTransform = null;
 
         private int _index;
+
+
+        public Action<int> ShowUiAction;
+        public Action<int> HideUiAction;
+        public Action<int> RemoveUiAction;
         
         private Stack<Actor> _uiStack;
         public int UiCount
@@ -36,14 +41,13 @@ namespace FrameWork
             //_uiStack.Clear();
             ClearAllPanel();
         }
-        
-        private void Awake()
+
+        public UiManager()
         {
             UiDic = new Dictionary<int, Actor>();
             SingleUiDic = new Dictionary<string, Actor>();
             _uiStack = new Stack<Actor>();
-            var prefab = AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, "UiRoot");
-            
+            var prefab = AssetBundlesLoad.LoadAsset<GameObject>(AssetType.Ui.ToString(), "UiRoot");
             CanvasTransform= GameObject.Instantiate(prefab)?.transform;
             if (CanvasTransform!=null)
             {
@@ -55,13 +59,19 @@ namespace FrameWork
         }
 
 
-        public Actor ShowUi<T>(int index=-1) where T: Actor
+        public void ShowUi(int index)
+        {
+            ShowUiAction?.Invoke(index);
+        }
+
+
+        public void ShowUi<T>() where T: Actor
         {
 
             if (CanvasTransform==null)
             {
                 Debug.LogError("场景中没有Canvas组件,无法显示Ui物体");
-                return null;
+                return;
             }
             
             Type t = typeof(T);
@@ -71,45 +81,33 @@ namespace FrameWork
             if (uiMode==null)
             {
                 Debug.LogError("类不具备UiModeAttribute");
-                return null;
+                return;
             }
 
-            if (index!=-1)
+            if (uiMode.UiType.Equals(UiType.Single))
             {
-                if (UiDic.ContainsKey(index))
+                var ui =GameObject.FindObjectOfType<T>();
+                if (ui!=null)
                 {
-                    UiDic[index].SetActive(true);
-                    //Debug.Log("当前界面已经显示了,名字:"+fullName);
-                    return UiDic[index];
+                    Debug.LogWarning("尝试显示多个单一ui 但不会起到效果");
+                    return;
                 }
-            }
-            else
-            {
-                if (uiMode.UiType.Equals(UiType.Single))
+                else
                 {
-                    var ui = FindObjectOfType<T>();
-                    if (ui!=null)
+                    if (SingleUiDic.TryGetValue(fullName,out Actor showUi))
                     {
-                        Debug.LogWarning("尝试显示多个单一ui 但不会起到效果");
-                        return null;
-                    }
-                    else
-                    {
-                        if (SingleUiDic.TryGetValue(fullName,out Actor showUi))
-                        {
-                            showUi.SetActive(true);
-                            return showUi;
-                        }
+                        showUi.SetActive(true);
+                        return;
                     }
                 }
             }
 
 
-            GameObject prefab = AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, fullName);
+            GameObject prefab = AssetBundlesLoad.LoadAsset<GameObject>(AssetType.Ui, fullName);
             if (prefab==null)
             {
                 Debug.LogError("找不到需要生成的预制体");
-                return null;
+                return ;
             }
 
             
@@ -118,6 +116,7 @@ namespace FrameWork
             switch (uiMode.Mode)
             {
                 case Mode.Background:
+
                     tran = BackgroundTransform;
                     break;
                 case Mode.Normal:
@@ -131,7 +130,7 @@ namespace FrameWork
                     break;
             }
             
-            GameObject go = Instantiate(prefab,tran==null? CanvasTransform: tran);
+            GameObject go =GameObject.Instantiate(prefab,tran==null? CanvasTransform: tran);
             var actor=go.AddComponent<T>();
             actor.SetIndex(_index);
             actor.SetActorName(fullName);
@@ -139,24 +138,27 @@ namespace FrameWork
             
             _uiStack.Push(actor);
             
-            UiDic.Add(actor.GetIndex(),actor);
+            //UiDic.Add(actor.GetIndex(),actor);    
+            
             if (uiMode.UiType.Equals(UiType.Single))SingleUiDic.Add(fullName,actor);
-            return actor;
+            return;
         }
 
         
         public void HideUi(int index)
         {
             //string fullName = typeof(T).Name;
-            if (UiDic.TryGetValue(index,out Actor actor))
-            {
-                //UiDic.Remove(uiBase.Name);
-                //GameObject.Destroy(uiBase.UiGameObject);
-                actor.SetActive(false);
-            }
+            // if (UiDic.TryGetValue(index,out Actor actor))
+            // {
+            //     //UiDic.Remove(uiBase.Name);
+            //     //GameObject.Destroy(uiBase.UiGameObject);
+            //     actor.SetActive(false);
+            // }
+            
+            HideUiAction?.Invoke(index);
         }
 
-        public void HideUi<T>() where T : Actor
+        public void HideUi<T>() where T : UiActor
         {
             Type t = typeof(T);
             string fullName = t.Name;
@@ -165,7 +167,7 @@ namespace FrameWork
             {
                 if (uiMode.UiType.Equals(UiType.Single))
                 {
-                    var ui=FindObjectOfType<T>();
+                    var ui=GameObject.FindObjectOfType<T>();
                     if (ui!=null)
                     {
                         ui.SetActive(false);
@@ -189,7 +191,7 @@ namespace FrameWork
         
         
         
-        public void RemoveUi<T>() where T : Actor
+        public void RemoveUi<T>() where T : UiActor
         {
             Type t = typeof(T);
             string fullName = t.Name;
@@ -198,7 +200,7 @@ namespace FrameWork
             {
                 if (uiMode.UiType.Equals(UiType.Single))
                 {
-                    var ui=FindObjectOfType<T>();
+                    var ui=GameObject.FindObjectOfType<T>();
                     if (ui!=null)
                     {
                         RemoveUi(ui.GetIndex());
@@ -230,26 +232,25 @@ namespace FrameWork
         
         public void RemoveUi(int index)
         {
-            //string fullName = typeof(T).Name;
-            if (UiDic.TryGetValue(index,out Actor actor))
-            {
-                UiDic.Remove(actor.GetIndex());
-                if (SingleUiDic.ContainsKey(actor.GetActorName())) SingleUiDic.Remove(actor.GetActorName());
-                GameObject.Destroy(actor.gameObject);
-            }
+            RemoveUiAction?.Invoke(index);
         }
 
-        
-        public void RemoveUi(GameObject go)
+        public void RemoveSu(string name)
         {
-            var actor = go.GetComponent<Actor>();
-            if (actor!=null)
-            {
-                UiDic.Remove(actor.GetIndex());
-                if (SingleUiDic.ContainsKey(actor.GetActorName())) SingleUiDic.Remove(actor.GetActorName());
-                GameObject.Destroy(actor.gameObject);
-            }
+            SingleUiDic.Remove(name);
+
         }
+        
+        // public void RemoveUi(GameObject go)
+        // {
+        //     var actor = go.GetComponent<Actor>();
+        //     if (actor!=null)
+        //     {
+        //         UiDic.Remove(actor.GetIndex());
+        //         if (SingleUiDic.ContainsKey(actor.GetActorName())) SingleUiDic.Remove(actor.GetActorName());
+        //         GameObject.Destroy(actor.gameObject);
+        //     }
+        // }
 
         public void Back()
         {
@@ -272,10 +273,10 @@ namespace FrameWork
         {
             foreach (var key in UiDic.Keys)
             {
-                Actor actor = UiDic[key];
-                if (actor != null)
+                Actor uiActor = UiDic[key];
+                if (uiActor != null)
                 {
-                    GameObject.Destroy(actor.gameObject);
+                    GameObject.Destroy(uiActor.gameObject);
                 }
             }
             UiDic.Clear();

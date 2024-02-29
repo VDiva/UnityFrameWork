@@ -71,8 +71,12 @@ namespace FrameWork
             var obj=assetBundle.LoadAsset<T>(name);
             return obj;
         }
-        
-        
+
+        public static T LoadAsset<T>(AssetType assetType, string name) where T : Object
+        {
+            return LoadAsset<T>(assetType.ToString(), name);
+        }
+
         public static GameObject LoadAssetAsGameObject(string name)
         {
             string packName = GlobalVariables.Configure.AbModePrefabName;

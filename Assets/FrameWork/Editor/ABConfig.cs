@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -65,6 +66,11 @@ namespace FrameWork
             // {
             //     Directory.CreateDirectory(GlobalVariables.Configure.ConfigPath);
             // }
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             
             using (StreamWriter sw=new StreamWriter(path+"/"+GlobalVariables.Configure.ConfigName,false))
             {
@@ -78,6 +84,8 @@ namespace FrameWork
         }
 
 
+        private static StringBuilder _stringBuilder = new StringBuilder();
+        private static string _path = "Assets/FrameWork/Ui/Type/";
         [MenuItem("FrameWork/AssetPackaged")]
         public static void AssetPackaged()
         {
@@ -86,33 +94,55 @@ namespace FrameWork
                 Directory.CreateDirectory(GlobalVariables.Configure.AbAssetPath);
             }
             
+            _stringBuilder.Clear();
+            _stringBuilder.AppendLine("using System.Collections.Generic;");
+            _stringBuilder.AppendLine("using UnityEngine;");
+            _stringBuilder.AppendLine("using FrameWork;");
+            _stringBuilder.AppendLine("namespace FrameWork");
+            _stringBuilder.AppendLine("{");
+            _stringBuilder.AppendLine("\tpublic enum "+"AssetType");
+            _stringBuilder.AppendLine("\t{");
+            
             DirectoryInfo directoryInfo = new DirectoryInfo(GlobalVariables.Configure.AbAssetPath);
             CheckDirectory(directoryInfo);
+            
+            _stringBuilder.AppendLine("\t}");
+            _stringBuilder.AppendLine("}");
+
+            if (!Directory.Exists(_path))
+            {
+                Directory.CreateDirectory(_path);
+            }
+            
+            File.WriteAllText(_path+"AssetType.cs",_stringBuilder.ToString());
             AssetDatabase.Refresh();
         }
 
 
-        private static void CheckFileInfo(FileInfo fileInfo)
+        private static void CheckFileInfo(FileInfo fileInfo,string abName="other")
         {
             var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
             var unityPath=path.Split(new string[]{"Assets"},StringSplitOptions.None);
             AssetImporter ai=AssetImporter.GetAtPath("Assets\\"+unityPath[unityPath.Length-1]);
             //Debug.Log(path);
             
-            if (fileInfo.Extension.Equals(".prefab"))
-            {
-                ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
-                ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-            }
-            else if (fileInfo.Extension.Equals(".mat"))
-            {
-                ai.assetBundleName = GlobalVariables.Configure.AbMaterialName;
-                ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-            }else if (fileInfo.Extension.Equals(".unity"))
-            {
-                ai.assetBundleName = GlobalVariables.Configure.AbScreenName;
-                ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-            }
+            ai.assetBundleName = abName;
+            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            
+            // if (fileInfo.Extension.Equals(".prefab"))
+            // {
+            //     ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
+            //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            // }
+            // else if (fileInfo.Extension.Equals(".mat"))
+            // {
+            //     ai.assetBundleName = GlobalVariables.Configure.AbMaterialName;
+            //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            // }else if (fileInfo.Extension.Equals(".unity"))
+            // {
+            //     ai.assetBundleName = GlobalVariables.Configure.AbScreenName;
+            //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            // }
             
             
             // //FrameWork.Type.BuildTarget buildTarget = FrameWork.Type.BuildTarget.Windows;
@@ -139,18 +169,23 @@ namespace FrameWork
             
         }
 
-        private static void CheckDirectory(DirectoryInfo directoryInfo)
+        private static void CheckDirectory(DirectoryInfo directoryInfo,string abName="")
         {
             var fileInfos = directoryInfo.GetFiles();
             var directoryInfos=directoryInfo.GetDirectories();
             foreach (var item in directoryInfos)
             {
-                CheckDirectory(item);
+                var str = item.FullName.Split(new string[] { "Asset\\" }, StringSplitOptions.None)[1].Replace("\\","_");
+                _stringBuilder.AppendLine("\t\t"+str+",");
+                CheckDirectory(item,str);
             }
             
             foreach (var item in fileInfos)
             {
-                CheckFileInfo(item);
+                if (item.Extension!=".meta")
+                {
+                    CheckFileInfo(item,abName);
+                }
             }
         }
     }

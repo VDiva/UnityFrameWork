@@ -5,7 +5,7 @@ namespace FrameWork
     public class Actor : MonoBehaviour
     {
         //public string ActorName;
-        private int Index;
+        private int Index=-999999;
         private string ActorName;
 
         public int GetIndex()

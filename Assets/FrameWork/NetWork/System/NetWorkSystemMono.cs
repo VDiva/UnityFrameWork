@@ -1,9 +1,11 @@
 
+using System;
+using System.Reflection;
 using UnityEngine;
 namespace FrameWork
 {
     [RequireComponent(typeof(Identity))]
-    public class NetWorkSystemMono : Actor
+    public class NetWorkSystemMono : UiActor
     {
         private Identity _identity;
         
@@ -55,6 +57,16 @@ namespace FrameWork
             NetWorkSystem.Rpc(methodName,netWorkSystemMono,rpc,param);
         }
 
+        protected void RpcMessage(Action<object[]> methodInfo,object[] param=null)
+        {
+            var methodName=methodInfo.Method.Name;
+            var mAttribute=methodInfo.Method.GetCustomAttribute<NetTypeAttribute>();
+            if (mAttribute!=null)
+            {
+                NetWorkSystem.Rpc(methodName,this,mAttribute.Rpc,param);
+            }
+        }
+        
 
         protected virtual void OnPlayerJoin(ushort id, int roomId,string roomName){}
 

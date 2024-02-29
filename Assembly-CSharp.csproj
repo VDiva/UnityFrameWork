@@ -56,8 +56,12 @@
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoad.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoadAbPack.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\VersionDetection.cs" />
+     <Compile Include="Assets\FrameWork\Attribute\NetTypeAttribute.cs" />
      <Compile Include="Assets\FrameWork\Attribute\UiModeAttribute.cs" />
      <Compile Include="Assets\FrameWork\Base\Actor.cs" />
+     <Compile Include="Assets\FrameWork\Base\NetActor.cs" />
+     <Compile Include="Assets\FrameWork\Base\NetUiActor.cs" />
+     <Compile Include="Assets\FrameWork\Base\UiActor.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Credentials.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\Digest.cs" />
      <Compile Include="Assets\FrameWork\Best HTTP (Pro)\BestHTTP\Authentication\DigestStore.cs" />
@@ -1691,7 +1695,9 @@
      <Compile Include="Assets\FrameWork\Tool\Tool.cs" />
      <Compile Include="Assets\FrameWork\Type\BuildTarget.cs" />
      <Compile Include="Assets\FrameWork\Type\Mode.cs" />
+     <Compile Include="Assets\FrameWork\Type\NetType.cs" />
      <Compile Include="Assets\FrameWork\Type\UiType.cs" />
+     <Compile Include="Assets\FrameWork\Ui\Type\AssetType.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiManager.cs" />
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />

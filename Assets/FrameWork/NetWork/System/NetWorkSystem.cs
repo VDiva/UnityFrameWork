@@ -136,6 +136,7 @@ namespace FrameWork
         
         public static void Rpc<T>(string methodName,T netWorkSystemMono,Rpc rpc,object[] param=null) where T: NetWorkSystemMono
         {
+            if (_client==null||!_client.IsConnected)return;
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
             msg.AddString(methodName);
             msg.AddUShort(netWorkSystemMono.GetId());
