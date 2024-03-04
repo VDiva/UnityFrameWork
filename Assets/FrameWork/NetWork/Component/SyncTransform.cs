@@ -8,28 +8,27 @@ namespace FrameWork
     public class SyncTransform : MonoBehaviour
     { 
         public float positionSyncSpeed=10;
-        public float rotationSyncSpeed = 1;
-        public float range=0.05f;
+        public float rotationSyncSpeed = 10;
         
         
         private Identity _identity;
+        
         private Vector3 _curLoc;
         private Vector3 _syncLoc;
 
         private Vector3 _curRo;
         private Vector3 _syncRo;
+        
         private float _lerpPosition;
         private float _lerpRotation;
 
+        private Vector3 _dir;
 
-        private Vector3 _loc;
-        
-        private float _sqRange;
+
         
         private void Awake()
         {
             _identity = GetComponent<Identity>();
-            _sqRange = range * range;
         }
 
         private void OnEnable()
@@ -63,6 +62,8 @@ namespace FrameWork
         {
             if (!_identity.IsLocalSpawn())
             {
+                _dir = (transform.position - _syncLoc).normalized;
+                transform.Translate(_dir*Time.deltaTime*positionSyncSpeed);
                 transform.position = Vector3.Lerp(_curLoc, _syncLoc, _lerpPosition);
                 transform.rotation=Quaternion.Lerp(Quaternion.Euler(_curRo), Quaternion.Euler(_syncRo), _lerpRotation);
                 _lerpPosition += Time.deltaTime*positionSyncSpeed;

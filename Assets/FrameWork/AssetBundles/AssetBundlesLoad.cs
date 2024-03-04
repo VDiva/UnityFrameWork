@@ -77,45 +77,45 @@ namespace FrameWork
             return LoadAsset<T>(assetType.ToString(), name);
         }
 
-        public static GameObject LoadAssetAsGameObject(string name)
-        {
-            string packName = GlobalVariables.Configure.AbModePrefabName;
-            AssetBundle assetBundle;
-            string path = "";
-            
-            switch (buildTarget)
-            {
-                case BuildTarget.Windows:
-                    path = Application.streamingAssetsPath+"/StandaloneWindows";
-                    break;
-                case BuildTarget.Android:
-                    path = Application.streamingAssetsPath+"/Android";
-                    break;
-                case BuildTarget.Ios:
-                    path = Application.streamingAssetsPath+"/Ios";
-                    break;
-            }
-            
-            if (!_assetBundles.TryGetValue(packName,out assetBundle))
-            {
-                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
-                Debug.Log(Application.persistentDataPath+"/"+packName);
-                if (fileInfo.Exists)
-                {
-                    assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
-                    Debug.Log("从新包"+packName+"加载:"+name);
-                }
-                else
-                {
-                    assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
-                    //assetBundle=AssetBundle.LoadFromFile(Application.streamingAssetsPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
-                    Debug.Log("从旧包"+packName+"加载:"+name);
-                }
-                _assetBundles.TryAdd(packName, assetBundle);
-            }
-            var obj=assetBundle.LoadAsset<GameObject>(name);
-            return obj;
-        }
+        // public static GameObject LoadAssetAsGameObject(string name)
+        // {
+        //     string packName = GlobalVariables.Configure.AbModePrefabName;
+        //     AssetBundle assetBundle;
+        //     string path = "";
+        //     
+        //     switch (buildTarget)
+        //     {
+        //         case BuildTarget.Windows:
+        //             path = Application.streamingAssetsPath+"/StandaloneWindows";
+        //             break;
+        //         case BuildTarget.Android:
+        //             path = Application.streamingAssetsPath+"/Android";
+        //             break;
+        //         case BuildTarget.Ios:
+        //             path = Application.streamingAssetsPath+"/Ios";
+        //             break;
+        //     }
+        //     
+        //     if (!_assetBundles.TryGetValue(packName,out assetBundle))
+        //     {
+        //         FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
+        //         Debug.Log(Application.persistentDataPath+"/"+packName);
+        //         if (fileInfo.Exists)
+        //         {
+        //             assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
+        //             Debug.Log("从新包"+packName+"加载:"+name);
+        //         }
+        //         else
+        //         {
+        //             assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
+        //             //assetBundle=AssetBundle.LoadFromFile(Application.streamingAssetsPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
+        //             Debug.Log("从旧包"+packName+"加载:"+name);
+        //         }
+        //         _assetBundles.TryAdd(packName, assetBundle);
+        //     }
+        //     var obj=assetBundle.LoadAsset<GameObject>(name);
+        //     return obj;
+        // }
         
         
         

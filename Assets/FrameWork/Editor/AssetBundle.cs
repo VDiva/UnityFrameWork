@@ -68,37 +68,37 @@ namespace FrameWork
         }
 
 
-        [MenuItem("Assets/FrameWork/SetAB/Material")]
-        public static void SetMaterialAb()
-        {
-            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.Configure.AbMaterialName;
-            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-        }
-        
-        [MenuItem("Assets/FrameWork/SetAB/UiPrefab")]
-        public static void SetUiPrefabAb()
-        {
-            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.Configure.AbUiPrefabName;
-            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-        }
-        
-        [MenuItem("Assets/FrameWork/SetAB/Mode")]
-        public static void SetModePrefabAb()
-        {
-            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
-            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-        }
-        
-        [MenuItem("Assets/FrameWork/SetAB/Screen")]
-        public static void SetScreen()
-        {
-            AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            ai.assetBundleName = GlobalVariables.Configure.AbScreenName;
-            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-        }
+        // [MenuItem("Assets/FrameWork/SetAB/Material")]
+        // public static void SetMaterialAb()
+        // {
+        //     AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+        //     ai.assetBundleName = GlobalVariables.Configure.AbMaterialName;
+        //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+        // }
+        //
+        // [MenuItem("Assets/FrameWork/SetAB/UiPrefab")]
+        // public static void SetUiPrefabAb()
+        // {
+        //     AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+        //     ai.assetBundleName = GlobalVariables.Configure.AbUiPrefabName;
+        //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+        // }
+        //
+        // [MenuItem("Assets/FrameWork/SetAB/Mode")]
+        // public static void SetModePrefabAb()
+        // {
+        //     AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+        //     ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
+        //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+        // }
+        //
+        // [MenuItem("Assets/FrameWork/SetAB/Screen")]
+        // public static void SetScreen()
+        // {
+        //     AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+        //     ai.assetBundleName = GlobalVariables.Configure.AbScreenName;
+        //     ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+        // }
 
 
         

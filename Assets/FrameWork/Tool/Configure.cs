@@ -14,10 +14,10 @@ namespace FrameWork
         // public string AbWindowsPath;
         // public string AbIosPath;
         public string AbEndName;
-        public string AbMaterialName;
-        public string AbUiPrefabName;
-        public string AbModePrefabName;
-        public string AbScreenName;
+        // public string AbMaterialName;
+        // public string AbUiPrefabName;
+        // public string AbModePrefabName;
+        // public string AbScreenName;
         public string SpawnPrefabScriptPath;
         public string SpawnUiScriptPath;
     }

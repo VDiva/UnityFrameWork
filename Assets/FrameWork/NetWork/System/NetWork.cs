@@ -19,7 +19,7 @@ namespace FrameWork
         
         private void OnEnable()
         {
-            NetWorkSystem.OnInstantiate += Spawn;
+            //NetWorkSystem.OnInstantiate += Spawn;
             NetWorkSystem.OnPlayerLeftRoom += OnLeft;
             NetWorkSystem.OnRpc += Rpc;
             NetWorkSystem.OnBelongingClient += SetBelongingClient;
@@ -28,7 +28,7 @@ namespace FrameWork
 
         private void OnDisable()
         {
-            NetWorkSystem.OnInstantiate -= Spawn;
+            //NetWorkSystem.OnInstantiate -= Spawn;
             NetWorkSystem.OnPlayerLeftRoom -= OnLeft;
             NetWorkSystem.OnRpc -= Rpc;
             NetWorkSystem.OnBelongingClient -= SetBelongingClient;
@@ -45,49 +45,49 @@ namespace FrameWork
             NetWorkSystem.UpdateMessage();
         }
         
-        private void Spawn(ushort clientId, ushort objId, string spawnName, Vector3 position, Vector3 rotation,bool isAb)
-        {
-            GameObject prefab = null;
-            if (!_prefabs.TryGetValue(spawnName,out prefab))
-            {
-                if (!isAb)
-                {
-                    var go = Resources.Load<GameObject>(spawnName);
-                    _prefabs.TryAdd(spawnName, go);
-                    prefab = go;
-                }
-                else
-                {
-                    // FrameWork.BuildTarget buildTarget = BuildTarget.Windows;
-                    // RuntimePlatform platform = Application.platform;
-                    //
-                    // switch (platform)
-                    // {
-                    //     case RuntimePlatform.WindowsEditor:
-                    //         buildTarget = BuildTarget.Windows;
-                    //         break;
-                    //     case RuntimePlatform.WindowsPlayer:
-                    //         buildTarget = BuildTarget.Windows;
-                    //         break;
-                    //     case RuntimePlatform.Android:
-                    //         buildTarget = BuildTarget.Android;
-                    //         break;
-                    //     case RuntimePlatform.IPhonePlayer:
-                    //         buildTarget = BuildTarget.Ios;
-                    //         break;
-                    // }
-                    prefab=AssetBundlesLoad.LoadAsset<GameObject>(GlobalVariables.Configure.AbModePrefabName, spawnName);
-                }
-            }
-            
-            var obj=Instantiate(prefab, position, Quaternion.Euler(rotation));
-            var syncTransform=obj.AddComponent<SyncTransform>();
-            var identity=obj.GetComponent<Identity>();
-            identity.SetId(objId);
-            identity.SetSpawnId(clientId);
-            NetWorkSystem.OnInstantiateEnd?.Invoke(obj);
-            _objects.TryAdd(objId, obj);
-        }
+        // private void Spawn(ushort clientId, ushort objId, string spawnName, Vector3 position, Vector3 rotation,bool isAb)
+        // {
+        //     GameObject prefab = null;
+        //     if (!_prefabs.TryGetValue(spawnName,out prefab))
+        //     {
+        //         if (!isAb)
+        //         {
+        //             var go = Resources.Load<GameObject>(spawnName);
+        //             _prefabs.TryAdd(spawnName, go);
+        //             prefab = go;
+        //         }
+        //         else
+        //         {
+        //             // FrameWork.BuildTarget buildTarget = BuildTarget.Windows;
+        //             // RuntimePlatform platform = Application.platform;
+        //             //
+        //             // switch (platform)
+        //             // {
+        //             //     case RuntimePlatform.WindowsEditor:
+        //             //         buildTarget = BuildTarget.Windows;
+        //             //         break;
+        //             //     case RuntimePlatform.WindowsPlayer:
+        //             //         buildTarget = BuildTarget.Windows;
+        //             //         break;
+        //             //     case RuntimePlatform.Android:
+        //             //         buildTarget = BuildTarget.Android;
+        //             //         break;
+        //             //     case RuntimePlatform.IPhonePlayer:
+        //             //         buildTarget = BuildTarget.Ios;
+        //             //         break;
+        //             // }
+        //             //prefab=AssetBundlesLoad.LoadAsset<GameObject>(, spawnName);
+        //         }
+        //     }
+        //     
+        //     var obj=Instantiate(prefab, position, Quaternion.Euler(rotation));
+        //     var syncTransform=obj.AddComponent<SyncTransform>();
+        //     var identity=obj.GetComponent<Identity>();
+        //     identity.SetId(objId);
+        //     identity.SetSpawnId(clientId);
+        //     NetWorkSystem.OnInstantiateEnd?.Invoke(obj);
+        //     _objects.TryAdd(objId, obj);
+        // }
 
 
         private void Rpc(string methodName, ushort id, object[] param)

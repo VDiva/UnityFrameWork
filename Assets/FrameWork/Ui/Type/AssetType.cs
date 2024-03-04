@@ -5,8 +5,7 @@ namespace FrameWork
 {
 	public enum AssetType
 	{
-		cs,
-		cs_dd,
+		Prefab,
 		Ui,
 	}
 }

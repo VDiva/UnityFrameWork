@@ -1,0 +1,27 @@
+ManifestFileVersion: 0
+CRC: 653637266
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 9a198bef9b32db78dc8b1ee1a3bce496
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: ebf9fbb216707248228dcd0a58846d03
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 223
+  Script: {instanceID: 0}
+- Class: 224
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/FrameWork/Asset/Ui/UiRoot.prefab
+Dependencies: []

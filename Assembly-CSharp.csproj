@@ -1687,6 +1687,9 @@
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.H.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsMono.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsNetMono.cs" />
@@ -1699,6 +1702,9 @@
      <Compile Include="Assets\FrameWork\Type\UiType.cs" />
      <Compile Include="Assets\FrameWork\Ui\Type\AssetType.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiManager.cs" />
+     <Compile Include="Assets\cs\Manager.cs" />
+     <Compile Include="Assets\cs\Move.cs" />
+     <Compile Include="Assets\cs\cs.cs" />
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
