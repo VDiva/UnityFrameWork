@@ -25,6 +25,8 @@ namespace FrameWork
         private Vector3 _dir;
 
 
+        private Vector3 _loc;
+        private Vector3 _rot;
         
         private void Awake()
         {
@@ -48,12 +50,22 @@ namespace FrameWork
             
             if (_identity.IsLocalSpawn())
             {
-                var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
-                msg.AddUShort(_identity.GetObjId());
-                msg.AddVector3(transform.position);
-                msg.AddVector3(transform.eulerAngles);
-                //_loc = loc;
-                NetWorkSystem.Send(msg);
+                var loc = transform.position;
+                var rot = transform.eulerAngles;
+                var locDis = Vector3.Distance(loc, _loc);
+                var rotDis = Vector3.Distance(rot,_rot);
+                
+                if (locDis>0.1f||rotDis >0.1f)
+                {
+                    Debug.Log("发送");
+                    var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
+                    msg.AddUShort(_identity.GetObjId());
+                    msg.AddVector3(loc);
+                    msg.AddVector3(rot);
+                    _loc =loc;
+                    _rot = rot;
+                    NetWorkSystem.Send(msg);
+                }
             }
         }
 

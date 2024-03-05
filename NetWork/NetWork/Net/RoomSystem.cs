@@ -1,4 +1,5 @@
-﻿using NetWork.Type;
+﻿using NetWork.Tool;
+using NetWork.Type;
 using Riptide;
 
 
@@ -136,25 +137,30 @@ namespace NetWork
 
                     var objId = message.GetUShort();
 
-                    var x = message.GetFloat();
-                    var y = message.GetFloat();
-                    var z = message.GetFloat();
+                    var pos = message.GetVector3();
+                    //var x = message.GetVector3();
+                    //var y = message.GetFloat();
+                    //var z = message.GetFloat();
 
 
-                    var rx = message.GetFloat();
-                    var ry = message.GetFloat();
-                    var rz = message.GetFloat();
+                    var rot = message.GetVector3();
+                    //var rx = message.GetFloat();
+                    //var ry = message.GetFloat();
+                    //var rz = message.GetFloat();
+
 
                     msg.AddUShort(objId);
-                    msg.AddFloat(x);
-                    msg.AddFloat(y);
-                    msg.AddFloat(z);
+                    msg.AddVector3(pos);
+                    //msg.AddFloat(x);
+                    //msg.AddFloat(y);
+                    //msg.AddFloat(z);
 
-                    msg.AddFloat(rx);
-                    msg.AddFloat(ry);
-                    msg.AddFloat(rz);
-
-                    room.Transform(msg);
+                    msg.AddVector3(rot);
+                    //msg.AddFloat(rx);
+                    //msg.AddFloat(ry);
+                    //msg.AddFloat(rz);
+                    
+                    room.Transform(id,msg,objId,pos,rot);
                 }
             }catch (Exception ex)
             {

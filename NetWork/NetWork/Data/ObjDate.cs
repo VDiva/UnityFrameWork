@@ -19,6 +19,7 @@ namespace NetWork.Data
 
         public bool isPlayer;
 
+        public ushort objId;
         public ObjDate() 
         { 
             SpawnName = string.Empty;

@@ -85,7 +85,10 @@ namespace NetWork
                         msg.AddUShort(id);
                         msg.AddInt(roomId);
                         msg.AddString(roomName);
-                        SendAll(msg);
+                        SendOther(id,msg);
+
+                        SendTmpTransfrom(id);
+
                     });
                     return true;
                 }
@@ -131,11 +134,15 @@ namespace NetWork
         }
 
 
-        public void Transform(Message message)
+        public void Transform(ushort id,Message message,ushort objId,Vector3 pos,Vector3 rot)
         {
-           SendAll(message,false);
+           SendOther(id,message,false);
+           if(gameObjects.TryGetValue(objId,out var objDate))
+            {
+                objDate.Position = pos;
+                objDate.Rotation = rot;
+            }
         }
-
 
         public void Instantiate(ushort id,Message message)
         {
@@ -152,24 +159,24 @@ namespace NetWork
             
             bool isPlayer=message.GetBool();
             var isAb = message.GetBool();
+            msg.AddUShort(id);
+            ushort objId;
             if (isPlayer)
             {
-                msg.AddUShort(id);
-                msg.AddUShort(id);
+                objId = id;
             }
             else
             {
-                msg.AddUShort(id);
-                msg.AddUShort(objIndex);
+                objId = objIndex;
                 objIndex += 1;
             }
 
 
-
+            msg.AddUShort(objId);
             msg.AddGameObject(go);
 
             msg.AddBool(isAb);
-            gameObjects.TryAdd(objIndex, go);
+            gameObjects.TryAdd(objId, go);
 
             SendAll(msg);
 
@@ -240,6 +247,19 @@ namespace NetWork
             action?.Invoke();
         }
 
+        private void SendTmpTransfrom(ushort id)
+        {
+            foreach(var item in gameObjects)
+            {
+                var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Transform);
+                msg.AddUShort(item.Key);
+                msg.AddVector3(item.Value.Position);
+                msg.AddVector3(item.Value.Rotation);
+                SendSelf(id,msg);
+                
+            }
+        }
+
 
         public void Destroy(ushort id)
         {
@@ -256,7 +276,7 @@ namespace NetWork
             if(isAdd) AddMessage(message);
             foreach (var player in players)
             {
-                player.Value.Send(message,false);
+                player.Value.Send(message, !isAdd);
             }
         }
 
@@ -267,7 +287,7 @@ namespace NetWork
             {
                 if (player.Value.Id != id)
                 {
-                    player.Value.Send(message, false);
+                    player.Value.Send(message, !isAdd);
                 }
             }
         }
@@ -279,7 +299,7 @@ namespace NetWork
             {
                 if (player.Value.Id == id)
                 {
-                    player.Value.Send(message, false);
+                    player.Value.Send(message, !isAdd);
                 }
             }
             
