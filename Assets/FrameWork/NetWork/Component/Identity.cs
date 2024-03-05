@@ -7,22 +7,22 @@ namespace FrameWork
         private ushort _clientSpawnId;
         private ushort _id;
 
-        public void SetId(ushort id)
+        public void SetObjId(ushort id)
         {
             _id = id;
         }
         
-        public ushort GetId()
+        public ushort GetObjId()
         {
             return _id;
         }
         
-        public void SetSpawnId(ushort id)
+        public void SetClientId(ushort id)
         {
             _clientSpawnId = id;
         }
         
-        public ushort GetSpawnId()
+        public ushort GetClientId()
         {
             return _clientSpawnId;
         }

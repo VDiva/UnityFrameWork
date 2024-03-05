@@ -14,8 +14,8 @@ namespace cs
             cube.AddComponent<Move>();
             cube.AddComponent<SyncTransform>();
             var identity=cube.GetComponent<Identity>();
-            identity.SetId(id);
-            identity.SetSpawnId(objId);
+            identity.SetObjId(objId);
+            identity.SetClientId(id);
         }
 
         protected override void OnPlayerLeft(ushort id)

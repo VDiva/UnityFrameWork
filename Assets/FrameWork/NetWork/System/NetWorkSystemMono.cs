@@ -91,7 +91,7 @@ namespace FrameWork
         
         public ushort GetId()
         {
-            return _identity.GetId();
+            return _identity.GetObjId();
         }
         
     }

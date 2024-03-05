@@ -120,7 +120,7 @@ namespace FrameWork
                 if (_objects.ContainsKey(ids[i]))
                 {
                     var identity=_objects[ids[i]].GetComponent<Identity>();
-                    identity.SetSpawnId(newId);
+                    identity.SetClientId(newId);
                 }
             }
         }

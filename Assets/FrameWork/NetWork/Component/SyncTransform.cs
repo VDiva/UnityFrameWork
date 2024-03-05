@@ -49,7 +49,7 @@ namespace FrameWork
             if (_identity.IsLocalSpawn())
             {
                 var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
-                msg.AddUShort(_identity.GetId());
+                msg.AddUShort(_identity.GetObjId());
                 msg.AddVector3(transform.position);
                 msg.AddVector3(transform.eulerAngles);
                 //_loc = loc;
@@ -75,7 +75,7 @@ namespace FrameWork
         private void SyncLoc(ushort tick,ushort id,Vector3 loc,Vector3 ro)
         {
             //if (NetWorkSystem.GetClientId().Equals(id))return;
-            if(_identity.GetId()!=id)return;
+            if(_identity.GetObjId()!=id)return;
             if (_identity.IsLocalSpawn()) return;
             var ti = NetWorkSystem.serverTick;
             if (ti>=tick&& tick>=ti-2)
