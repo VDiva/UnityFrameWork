@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1498123378
+CRC: 3726569205
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: abfa7f9621e6913d8897724f55bcee3b
+    Hash: d27fa672b5f2927176d5934da79eb584
   TypeTreeHash:
     serializedVersion: 2
     Hash: f84699563d2dd09d978bf6c2e03adf13
@@ -27,5 +27,5 @@ ClassTypes:
   Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
-- Assets/FrameWork/Asset/Prefab/CsCube.prefab
+- Assets/FrameWork/Asset/uuut/fCube.prefab
 Dependencies: []

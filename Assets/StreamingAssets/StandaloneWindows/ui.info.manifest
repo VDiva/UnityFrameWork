@@ -1,21 +1,39 @@
 ManifestFileVersion: 0
-CRC: 653637266
+CRC: 4198245908
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 9a198bef9b32db78dc8b1ee1a3bce496
+    Hash: 572e0aa9bea2b6d508fc17a8c7706290
   TypeTreeHash:
     serializedVersion: 2
-    Hash: ebf9fbb216707248228dcd0a58846d03
+    Hash: 35610c98c811fa475b60bc8b032b6028
 HashAppended: 0
 ClassTypes:
 - Class: 1
   Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
 - Class: 114
   Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
 - Class: 114
+  Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+- Class: 114
   Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
 - Class: 115
+  Script: {instanceID: 0}
+- Class: 128
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+- Class: 222
   Script: {instanceID: 0}
 - Class: 223
   Script: {instanceID: 0}
@@ -24,4 +42,5 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/FrameWork/Asset/Ui/UiRoot.prefab
+- Assets/FrameWork/Asset/Ui/CsText.prefab
 Dependencies: []

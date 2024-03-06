@@ -153,6 +153,13 @@ namespace FrameWork
             msg.AddUShort(netWorkSystemMono.GetId());
             Send(msg);
         }
+        
+        public static void Destroy(ushort id)
+        {
+            Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Destroy);
+            msg.AddUShort(id);
+            Send(msg);
+        }
 
         public static void GetRoomInfo()
         {

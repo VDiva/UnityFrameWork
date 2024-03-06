@@ -43,5 +43,15 @@ namespace FrameWork
                 UiManager.Instance.RemoveSu(GetActorName());
             }
         }
+
+        public void ShowUi()
+        {
+            UiManager.Instance.ShowUi(GetIndex());
+        }
+
+        public void HideUi()
+        {
+            UiManager.Instance.HideUi(GetIndex());
+        }
     }
 }

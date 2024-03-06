@@ -7,5 +7,6 @@ namespace FrameWork
 	{
 		Prefab,
 		Ui,
+		uuut,
 	}
 }

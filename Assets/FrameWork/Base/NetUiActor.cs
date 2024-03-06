@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class NetUiActor : NetWorkSystemMono
+    public class NetUiActor : NetActor
     {
         
     }

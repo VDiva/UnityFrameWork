@@ -1,6 +1,7 @@
 using System;
 using FrameWork;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace cs
 {
@@ -20,8 +21,14 @@ namespace cs
 
                 if (Input.GetKeyDown(KeyCode.F))
                 {
-                   RpcMessage(cs);
+                   RpcMessage(cs,new object[]{"随机到"+Random.Range(1,1000)});
                 }
+                
+                if (Input.GetKeyDown(KeyCode.G))
+                {
+                    NetWorkSystem.Destroy(this);
+                }
+                
             }
         }
 
@@ -29,7 +36,7 @@ namespace cs
         [NetType(Rpc.All)]
         private void cs(object[] param)
         {
-            Debug.Log("dddddddddddddddddddddddddddddddddddddddddd");
+            FindObjectOfType<CsText>().SetText(param[0] as string);
         }
 
     }

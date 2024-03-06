@@ -1,5 +1,6 @@
 
 using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 namespace FrameWork
@@ -17,7 +18,7 @@ namespace FrameWork
         {
             _identity = GetComponent<Identity>();
         }
-
+        
         protected virtual void OnEnable()
         {
             NetWorkSystem.OnPlayerJoinRoom += OnPlayerJoin;
@@ -31,6 +32,9 @@ namespace FrameWork
             NetWorkSystem.OnRoomInfo += OnRoomInfo;
             NetWorkSystem.OnInstantiateEnd += OnInstantiateEnd;
             NetWorkSystem.OnRpc += OnRpc;
+            NetWorkSystem.OnBelongingClient += SetBelongingClient;
+            NetWorkSystem.OnDestroy += OnNetDestroy;
+            
         }
 
         protected virtual void OnDisable()
@@ -46,6 +50,8 @@ namespace FrameWork
             NetWorkSystem.OnRoomInfo -= OnRoomInfo;
             NetWorkSystem.OnInstantiateEnd -= OnInstantiateEnd;
             NetWorkSystem.OnRpc -= OnRpc;
+            NetWorkSystem.OnBelongingClient -= SetBelongingClient;
+            NetWorkSystem.OnDestroy -= OnNetDestroy;
         }
         
         protected void RpcMessage(Action<object[]> methodInfo,object[] param=null)
@@ -68,21 +74,19 @@ namespace FrameWork
             }
         }
         
-
         protected virtual void OnPlayerJoin(ushort id, int roomId,string roomName){}
 
         protected virtual void OnPlayerLeft(ushort id){}
+        
         protected virtual void OnJoinError(string info){}
 
         protected virtual void OnInformation(string info){}
 
         protected virtual void OnTransform(ushort tick, ushort id, Vector3 position, Vector3 rotation){}
-
         
         protected virtual void OnRoomInfo(ushort currentCount,ushort maxCount){}
         
         protected virtual void OnConnected(){}
-        
         
         protected virtual void OnDisConnected(){}
         
@@ -90,18 +94,14 @@ namespace FrameWork
 
         protected virtual void OnInstantiateEnd(GameObject go){}
         
-        public ushort GetId()
-        {
-            return _identity.GetObjId();
-        }
-
-        protected virtual void OnRpc(string methodName, ushort id, object[] param)
-        {
-            if (GetId().Equals(id))
-            {
-                gameObject.SendMessage(methodName,param==null? new object[1]: param);
-            }
-        }
+        public ushort GetId() {return _identity.GetObjId();}
+        
+        private void OnRpc(string methodName, ushort id, object[] param) {if (GetId().Equals(id))gameObject.SendMessage(methodName,param==null? new object[1]: param); }
+        
+        private void SetBelongingClient(ushort newId, ushort[] ids) {if (ids.Contains(GetId()))_identity.SetClientId(newId); }
+        
+        protected virtual void OnNetDestroy(ushort objId) {if (GetId().Equals(objId))Destroy(gameObject);}
+        
         
     }
 }

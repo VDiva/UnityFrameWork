@@ -7,5 +7,10 @@ namespace FrameWork
     {
         public Mode Mode;
         public UiType UiType;
+
+        public UiModeAttribute(Mode mode,UiType uiType)
+        {
+            
+        }
     }
 }

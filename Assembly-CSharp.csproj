@@ -1688,6 +1688,10 @@
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPool.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsComponent.cs" />
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.Fun.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.H.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Awake.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.H.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.cs" />

@@ -9,6 +9,7 @@ namespace cs
         private void Start()
         {
             NetWorkSystem.Start("127.0.0.1:8888");
+            UiManager.Instance.ShowUi<CsText>();
         }
 
         private void Update()
