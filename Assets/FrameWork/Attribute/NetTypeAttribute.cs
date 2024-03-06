@@ -6,5 +6,10 @@ namespace FrameWork
     public class NetTypeAttribute: Attribute
     {
         public Rpc Rpc;
+
+        public NetTypeAttribute(Rpc rpc)
+        {
+            Rpc = rpc;
+        }
     }
 }

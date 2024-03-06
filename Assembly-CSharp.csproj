@@ -56,6 +56,7 @@
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoad.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\DownLoadAbPack.cs" />
      <Compile Include="Assets\FrameWork\AssetBundles\VersionDetection.cs" />
+     <Compile Include="Assets\FrameWork\Attribute\NetAttribute.cs" />
      <Compile Include="Assets\FrameWork\Attribute\NetTypeAttribute.cs" />
      <Compile Include="Assets\FrameWork\Attribute\UiModeAttribute.cs" />
      <Compile Include="Assets\FrameWork\Base\Actor.cs" />

@@ -17,7 +17,20 @@ namespace cs
                 
                 
                 transform.Rotate(new Vector3(h,v));
+
+                if (Input.GetKeyDown(KeyCode.F))
+                {
+                   RpcMessage(cs);
+                }
             }
         }
+
+
+        [NetType(Rpc.All)]
+        private void cs(object[] param)
+        {
+            Debug.Log("dddddddddddddddddddddddddddddddddddddddddd");
+        }
+
     }
 }

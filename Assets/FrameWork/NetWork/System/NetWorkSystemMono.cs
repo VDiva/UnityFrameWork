@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FrameWork
 {
     [RequireComponent(typeof(Identity))]
-    public class NetWorkSystemMono : UiActor
+    public class NetWorkSystemMono : MonoBehaviour
     {
         private Identity _identity;
         
@@ -30,6 +30,7 @@ namespace FrameWork
             NetWorkSystem.OnDisConnectToServer += OnDisConnected;
             NetWorkSystem.OnRoomInfo += OnRoomInfo;
             NetWorkSystem.OnInstantiateEnd += OnInstantiateEnd;
+            NetWorkSystem.OnRpc += OnRpc;
         }
 
         protected virtual void OnDisable()
@@ -44,19 +45,9 @@ namespace FrameWork
             NetWorkSystem.OnDisConnectToServer -= OnDisConnected;
             NetWorkSystem.OnRoomInfo -= OnRoomInfo;
             NetWorkSystem.OnInstantiateEnd -= OnInstantiateEnd;
-        }
-
-
-        protected void RpcMessage(string methodName,Rpc rpc,object[] param=null)
-        {
-            NetWorkSystem.Rpc(methodName,this,rpc,param);
+            NetWorkSystem.OnRpc -= OnRpc;
         }
         
-        protected void RpcMessage(string methodName,NetWorkSystemMono netWorkSystemMono,Rpc rpc,object[] param=null)
-        {
-            NetWorkSystem.Rpc(methodName,netWorkSystemMono,rpc,param);
-        }
-
         protected void RpcMessage(Action<object[]> methodInfo,object[] param=null)
         {
             var methodName=methodInfo.Method.Name;
@@ -64,6 +55,16 @@ namespace FrameWork
             if (mAttribute!=null)
             {
                 NetWorkSystem.Rpc(methodName,this,mAttribute.Rpc,param);
+            }
+        }
+        
+        protected void RpcMessage(Action<object[]> methodInfo,NetWorkSystemMono netWorkSystemMono,object[] param=null)
+        {
+            var methodName=methodInfo.Method.Name;
+            var mAttribute=methodInfo.Method.GetCustomAttribute<NetTypeAttribute>();
+            if (mAttribute!=null)
+            {
+                NetWorkSystem.Rpc(methodName,netWorkSystemMono,mAttribute.Rpc,param);
             }
         }
         
@@ -92,6 +93,14 @@ namespace FrameWork
         public ushort GetId()
         {
             return _identity.GetObjId();
+        }
+
+        protected virtual void OnRpc(string methodName, ushort id, object[] param)
+        {
+            if (GetId().Equals(id))
+            {
+                gameObject.SendMessage(methodName,param==null? new object[1]: param);
+            }
         }
         
     }
