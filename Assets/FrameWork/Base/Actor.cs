@@ -1,13 +1,49 @@
+using System.Reflection;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class Actor : MonoBehaviour
+    public class Actor
     {
         //public string ActorName;
         private int Index=-999999;
-        private string ActorName;
+        private GameObject _gameObject;
 
+        private Identity _identity;
+        
+        protected Transform transform => _gameObject.transform;
+        
+        protected Actor()
+        {
+            var type=GetType();
+            var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
+            if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
+            var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+            _gameObject = GameObject.Instantiate(go, Vector3.zero, Quaternion.identity);
+            _identity = _gameObject.AddComponent<Identity>();
+            var actorMono=_gameObject.AddComponent<ActorMono>();
+            
+            actorMono.SetActor(this);
+        }
+
+
+        public Identity GetIdentity()
+        {
+            return _identity;
+        }
+        
+        
+        public GameObject GetGameObject()
+        {
+            return _gameObject;
+        }
+
+        public T AddComponent<T>() where T: Component
+        {
+            return _gameObject.AddComponent<T>();
+        }
+        
+        
         public int GetIndex()
         {
             return Index;
@@ -19,15 +55,42 @@ namespace FrameWork
             //return Index;
         }
         
-        public string GetActorName()
-        {
-            return ActorName;
-        }
         
-        public void SetActorName(string name)
+
+        public virtual void Start()
         {
-            ActorName = name;
-            //return Index;
+            
         }
+
+        public virtual void OnEnable()
+        {
+            
+        }
+
+        public virtual void OnDisable()
+        {
+            
+        }
+
+        public virtual void Update()
+        {
+            
+        }
+
+        public virtual void FixedUpdate()
+        {
+            
+        }
+
+        public virtual void LateUpdate()
+        {
+            
+        }
+
+        public virtual void OnDestroy()
+        {
+            
+        }
+
     }
 }

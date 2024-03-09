@@ -151,7 +151,9 @@ namespace NetWork
             var go=objectPoolGameObject.DeQueue();
 
             go.BelongingClient = id;
+            go.PackName = message.GetString();
             go.SpawnName = message.GetString();
+            go.TypeName = message.GetString();
             go.Position = message.GetVector3();
             go.Rotation = message.GetVector3();
 

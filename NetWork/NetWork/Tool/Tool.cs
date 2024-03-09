@@ -19,7 +19,9 @@ namespace NetWork.Tool
 
         public static void AddGameObject(this Message message,ObjDate gameObject)
         {
+            message.AddString(gameObject.PackName);
             message.AddString(gameObject.SpawnName);
+            message.AddString(gameObject.TypeName);
             message.AddVector3(gameObject.Position);
             message.AddVector3(gameObject.Rotation);
             

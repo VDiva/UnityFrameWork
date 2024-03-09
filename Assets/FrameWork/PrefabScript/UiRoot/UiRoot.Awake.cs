@@ -3,18 +3,19 @@ using FrameWork;
 using UnityEngine.UI;
 namespace FrameWork
 {
-	public partial class UiRoot : UiActor
+	public partial class UiRoot : Actor
 	{
-		protected virtual void Awake()
+		public override void Start()
 		{
-			RectTransformUiRoot = transform.GetComponent<RectTransform>();
-			CanvasUiRoot = transform.GetComponent<Canvas>();
-			CanvasScalerUiRoot = transform.GetComponent<CanvasScaler>();
-			GraphicRaycasterUiRoot = transform.GetComponent<GraphicRaycaster>();
-			RectTransformPopup = transform.Find("Popup/").GetComponent<RectTransform>();
-			RectTransformNormal = transform.Find("Normal/").GetComponent<RectTransform>();
-			RectTransformControl = transform.Find("Control/").GetComponent<RectTransform>();
-			RectTransformBackground = transform.Find("Background/").GetComponent<RectTransform>();
+			base.Start();
+			RectTransformUiRoot = GetGameObject().transform.GetComponent<RectTransform>();
+			CanvasUiRoot = GetGameObject().transform.GetComponent<Canvas>();
+			CanvasScalerUiRoot = GetGameObject().transform.GetComponent<CanvasScaler>();
+			GraphicRaycasterUiRoot = GetGameObject().transform.GetComponent<GraphicRaycaster>();
+			RectTransformPopup = GetGameObject().transform.Find("Popup/").GetComponent<RectTransform>();
+			RectTransformNormal = GetGameObject().transform.Find("Normal/").GetComponent<RectTransform>();
+			RectTransformControl = GetGameObject().transform.Find("Control/").GetComponent<RectTransform>();
+			RectTransformBackground = GetGameObject().transform.Find("Background/").GetComponent<RectTransform>();
 		}
 	}
 }

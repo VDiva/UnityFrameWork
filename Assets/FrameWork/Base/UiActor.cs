@@ -1,19 +1,20 @@
-using System;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class UiActor : Actor
+    public class UiActor: Actor
     {
-        protected virtual void Start()
+        public override void Start()
         {
+            base.Start();
             UiManager.Instance.ShowUiAction += ShowUi;
             UiManager.Instance.HideUiAction += HideUi;
             UiManager.Instance.RemoveUiAction += RemoveUi;
         }
 
-        protected virtual void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             UiManager.Instance.ShowUiAction -= ShowUi;
             UiManager.Instance.HideUiAction -= HideUi;
             UiManager.Instance.RemoveUiAction -= RemoveUi;
@@ -23,35 +24,24 @@ namespace FrameWork
         {
             if (index.Equals(GetIndex()))
             {
-                gameObject.SetActive(true);
+                GetGameObject().SetActive(true);
             }
         }
-        
+
         private void HideUi(int index)
         {
             if (index.Equals(GetIndex()))
             {
-                gameObject.SetActive(false);
+                GetGameObject().SetActive(false);
             }
         }
 
         private void RemoveUi(int index)
         {
-            if (index.Equals(GetIndex()))
+            if (index.Equals(GetIndex())||index==-1)
             {
-                Destroy(gameObject);
-                UiManager.Instance.RemoveSu(GetActorName());
+                GameObject.Destroy(GetGameObject());
             }
-        }
-
-        public void ShowUi()
-        {
-            UiManager.Instance.ShowUi(GetIndex());
-        }
-
-        public void HideUi()
-        {
-            UiManager.Instance.HideUi(GetIndex());
         }
     }
 }

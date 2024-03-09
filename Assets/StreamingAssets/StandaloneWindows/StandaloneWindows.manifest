@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 2732033774
+CRC: 712138698
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -7,7 +7,4 @@ AssetBundleManifest:
       Dependencies: {}
     Info_1:
       Name: prefab.info
-      Dependencies: {}
-    Info_2:
-      Name: uuut.info
       Dependencies: {}

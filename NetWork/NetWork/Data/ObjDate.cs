@@ -12,6 +12,8 @@ namespace NetWork.Data
         public ushort BelongingClient;
 
         public string SpawnName;
+        public string PackName;
+        public string TypeName;
 
         public Vector3 Position;
 

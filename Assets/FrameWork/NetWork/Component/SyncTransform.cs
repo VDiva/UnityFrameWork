@@ -4,14 +4,13 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    [RequireComponent(typeof(Identity))]
-    public class SyncTransform : MonoBehaviour
+    public class SyncTransform : NetWorkSystemMono
     { 
         public float positionSyncSpeed=10;
         public float rotationSyncSpeed = 10;
         
         
-        private Identity _identity;
+        //private Identity _identity;
         
         private Vector3 _curLoc;
         private Vector3 _syncLoc;
@@ -28,51 +27,33 @@ namespace FrameWork
         private Vector3 _loc;
         private Vector3 _rot;
         
-        private void Awake()
-        {
-            _identity = GetComponent<Identity>();
-        }
-
-        private void OnEnable()
-        {
-            NetWorkSystem.OnTransform += SyncLoc;
-        }
-
-
-        private void OnDisable()
-        {
-            NetWorkSystem.OnTransform -= SyncLoc;
-        }
-        
-
         private void FixedUpdate()
         {
+            if (!IsLocal)return;
             
-            if (_identity.IsLocalSpawn())
+            var loc = transform.position;
+            var rot = transform.eulerAngles;
+            var locDis = Vector3.Distance(loc, _loc);
+            var rotDis = Vector3.Distance(rot,_rot);
+            
+            if (locDis>0.1f||rotDis >0.1f)
             {
-                var loc = transform.position;
-                var rot = transform.eulerAngles;
-                var locDis = Vector3.Distance(loc, _loc);
-                var rotDis = Vector3.Distance(rot,_rot);
-                
-                if (locDis>0.1f||rotDis >0.1f)
-                {
-                    Debug.Log("发送");
-                    var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
-                    msg.AddUShort(_identity.GetObjId());
-                    msg.AddVector3(loc);
-                    msg.AddVector3(rot);
-                    _loc =loc;
-                    _rot = rot;
-                    NetWorkSystem.Send(msg);
-                }
+                Debug.Log("发送");
+                var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
+                msg.AddUShort(GetId());
+                msg.AddVector3(loc);
+                msg.AddVector3(rot);
+                _loc =loc;
+                _rot = rot;
+                NetWorkSystem.Send(msg);
             }
+            
         }
 
 
         private void Update()
         {
-            if (!_identity.IsLocalSpawn())
+            if (!IsLocal)
             {
                 _dir = (transform.position - _syncLoc).normalized;
                 transform.Translate(_dir*Time.deltaTime*positionSyncSpeed);
@@ -82,26 +63,27 @@ namespace FrameWork
                 _lerpRotation += Time.deltaTime * rotationSyncSpeed;
             }
         }
-        
-        
-        private void SyncLoc(ushort tick,ushort id,Vector3 loc,Vector3 ro)
+
+        protected override void OnTransform(ushort tick, ushort id, Vector3 position, Vector3 rotation)
         {
+            base.OnTransform(tick, id, position, rotation);
             //if (NetWorkSystem.GetClientId().Equals(id))return;
-            if(_identity.GetObjId()!=id)return;
-            if (_identity.IsLocalSpawn()) return;
+            //if(GetId()!=id)return;
+            if (IsLocal) return;
             var ti = NetWorkSystem.serverTick;
             if (ti>=tick&& tick>=ti-2)
             {
                 //Debug.Log("同步位置事件");
                 _curLoc = transform.position;
-                _syncLoc = loc;
+                _syncLoc = position;
 
                 _curRo = transform.eulerAngles;
-                _syncRo = ro;
+                _syncRo = rotation;
                 
                 _lerpPosition = 0;
                 _lerpRotation = 0;
             }
         }
+
     }
 }

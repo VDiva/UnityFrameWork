@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Reflection;
 using Riptide;
 using Riptide.Utils;
 using UnityEngine;
@@ -9,31 +10,9 @@ namespace FrameWork
 {
     public class NetWorkSystem
     {
-        public static Action<ushort,int,string> OnPlayerJoinRoom;
-        public static Action<ushort> OnPlayerLeftRoom;
-        public static Action<string> OnJoinError;
-        public static Action<string> OnInformation;
-        public static Action<ushort,ushort, Vector3,Vector3> OnTransform;
-        public static Action<ushort, ushort, string, Vector3, Vector3,bool> OnInstantiate;
-        public static Action<ushort, ushort[]> OnBelongingClient;
-
-        public static Action<GameObject> OnInstantiateEnd;
-        
-        public static Action<string,ushort,object[]> OnRpc;
-        public static Action<ushort> OnDestroy;
-
-        public static Action<ushort, ushort> OnRoomInfo;
-
-
-        public static Action OnConnectToServer;
-        public static Action OnDisConnectToServer;
-        
-        
         private static Client _client;
         private static ushort _id;
         public static ushort serverTick;
-
-        
         public static void Start(string address)
         {
             _client = new Client();
@@ -44,17 +23,17 @@ namespace FrameWork
             var netWork = NetWork.Instance;
             
         }
-
         
         private static void OnDisConnect(object sender, EventArgs e)
         {
-            OnDisConnectToServer?.Invoke();
+            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.DisConnectToServer);
+            //OnDisConnectToServer?.Invoke();
             Debug.Log("断开服务器....");
         }
 
         private static void OnConnect(object sender, EventArgs e)
         {
-            OnConnectToServer?.Invoke();
+            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.ConnectToServer);
             Debug.Log("链接到服务器....客户端id为:"+_client.Id);
         }
         
@@ -122,35 +101,57 @@ namespace FrameWork
             return _client.Id;
         }
         
-        public static void Instantiate(string spawnName,Vector3 position,Vector3 rotation,bool isPlayer,bool isAb=false)
+        public static void Instantiate(string packName,string spawnName,string typeName,Vector3 position,Vector3 rotation,bool isPlayer,bool isAb=true)
         {
-            
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Instantiate);
+            msg.AddString(packName);
             msg.AddString(spawnName);
+            msg.AddString(typeName);
             msg.AddVector3(position);
             msg.AddVector3(rotation);
             msg.AddBool(isPlayer);
             msg.AddBool(isAb);
             Send(msg);
         }
-        
-        public static void Rpc<T>(string methodName,T netWorkSystemMono,Rpc rpc,object[] param=null) where T: NetWorkSystemMono
+
+        public static void Instantiate<T>(Vector3 position, Vector3 rotation, bool isPlayer, bool isAb = true)where T: Actor
+        {
+            var type = typeof(T);
+            var actorInfo = type.GetCustomAttribute<ActorInfoAttribute>();
+            if (actorInfo!=null)
+            {
+                Instantiate(actorInfo.PackName,actorInfo.PrefabName,type.Namespace+"."+type.Name,position,rotation,isPlayer,isAb);
+            }
+        }
+
+        public static void Rpc<T>(string methodName,T actor,Rpc rpc,object[] param=null) where T: Actor
         {
             if (_client==null||!_client.IsConnected)return;
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
             msg.AddString(methodName);
-            msg.AddUShort(netWorkSystemMono.GetId());
+            msg.AddUShort(actor.GetIdentity().GetObjId());
             msg.AddUShort((ushort)rpc);
             msg.AddString(JsonConvert.SerializeObject(param));
             Send(msg);
         }
         
+        // public static void Rpc<T>(string methodName,T netWorkSystemMono,Rpc rpc,object[] param=null) where T: NetWorkSystemMono
+        // {
+        //     if (_client==null||!_client.IsConnected)return;
+        //     Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
+        //     msg.AddString(methodName);
+        //     msg.AddUShort(netWorkSystemMono.GetId());
+        //     msg.AddUShort((ushort)rpc);
+        //     msg.AddString(JsonConvert.SerializeObject(param));
+        //     Send(msg);
+        // }
         
         
-        public static void Destroy<T>(T netWorkSystemMono) where T: NetWorkSystemMono
+        
+        public static void Destroy<T>(T actor) where T: Actor
         {
             Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Destroy);
-            msg.AddUShort(netWorkSystemMono.GetId());
+            msg.AddUShort(actor.GetIdentity().GetObjId());
             Send(msg);
         }
         

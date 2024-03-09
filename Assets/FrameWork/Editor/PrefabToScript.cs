@@ -9,34 +9,41 @@ namespace FrameWork.Editor
     public class PrefabToScript: UnityEditor.Editor
     {
 
-        [MenuItem("Assets/FrameWork/Prefab/CreateScripToUiActor")]
+        [MenuItem("Assets/FrameWork/Prefab/CreateScrip")]
         public static void CreateScriptUiActor()
-        {
-            Init("UiActor");
-        }
-        
-        [MenuItem("Assets/FrameWork/Prefab/CreateScripToNettUiActor")]
-        public static void CreateScriptNetUiActor()
-        {
-            Init("NetUiActor");
-        }
-        
-        
-        [MenuItem("Assets/FrameWork/Prefab/CreateScriptActor")]
-        public static void CreateScriptActor()
         {
             Init("Actor");
         }
         
-        [MenuItem("Assets/FrameWork/Prefab/CreateScriptToNetActor")]
-        public static void CreateScriptNetActor()
-        {
-            Init("NetActor");
-        }
+        // [MenuItem("Assets/FrameWork/Prefab/CreateScripToUiActor")]
+        // public static void CreateScriptUiActor()
+        // {
+        //     Init("MonoBehaviour");
+        // }
+        
+        // [MenuItem("Assets/FrameWork/Prefab/CreateScripToNettUiActor")]
+        // public static void CreateScriptNetUiActor()
+        // {
+        //     Init("MonoBehaviour");
+        // }
+        //
+        //
+        // [MenuItem("Assets/FrameWork/Prefab/CreateScriptActor")]
+        // public static void CreateScriptActor()
+        // {
+        //     Init("MonoBehaviour");
+        // }
+        //
+        // [MenuItem("Assets/FrameWork/Prefab/CreateScriptToNetActor")]
+        // public static void CreateScriptNetActor()
+        // {
+        //     Init("MonoBehaviour");
+        // }
 
         
         private static void Init(string scriptName)
         {
+            ABConfig.AssetPackaged();
             string path = GlobalVariables.Configure.SpawnPrefabScriptPath;
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
@@ -69,6 +76,7 @@ namespace FrameWork.Editor
                         sw.WriteLine("namespace FrameWork\n{");
                         sw.WriteLine("\tpublic partial class "+name+" : "+scriptName);
                         sw.WriteLine("\t{");
+                        
                         sw.WriteLine("\t}");
                         sw.WriteLine("}");
                     }
@@ -96,7 +104,8 @@ namespace FrameWork.Editor
                     swView.WriteLine("namespace FrameWork\n{");
                     swView.WriteLine("\tpublic partial class "+name+" : "+scriptName);
                     swView.WriteLine("\t{");
-                    swView.WriteLine("\t\tprotected virtual void Awake()\n\t\t{");
+                    swView.WriteLine("\t\tpublic override void Start()\n\t\t{");
+                    swView.WriteLine("\t\t\tbase.Start();");
                     
                     Writer(swMode,swView,"",trans,true);
                     
@@ -111,20 +120,22 @@ namespace FrameWork.Editor
                     
                 }
             }
-            
-            ABConfig.AssetPackaged();
+            using (StreamWriter swAttr = new StreamWriter(path + "/" + name + "//" + name + ".Attr.cs", false))
+            {
+                AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+                swAttr.WriteLine("using UnityEngine;");
+                swAttr.WriteLine("using FrameWork;");
+                swAttr.WriteLine("using UnityEngine.UI;");
+                swAttr.WriteLine("namespace FrameWork\n{");
+                swAttr.WriteLine("\t[ActorInfo(\""+ai.assetBundleName+"\",\""+name+"\")]");
+                swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
+                swAttr.WriteLine("\t{");
+                swAttr.WriteLine("\t}");
+                swAttr.WriteLine("}");
+            }
             AssetBundle.CreatPCAssetBundleAsWindows();
-        
             AssetDatabase.Refresh();
-            
-            //AssetDatabase.ImportAsset(GlobalVariables.Configure.SpawnPrefabScriptPath);
-            
-            // if (Selection.activeGameObject.GetComponent("FrameWork."+Selection.activeGameObject.name)==null)
-            // {
-            //     string typeName = "FrameWork." + Selection.activeGameObject.name;
-            //     System.Type type = typeof(AssemblyType).Assembly.GetType(typeName);
-            //     Selection.activeGameObject.AddComponent(type);
-            // }
+
         }
 
 
@@ -132,15 +143,15 @@ namespace FrameWork.Editor
         {
             foreach (var item in trans.GetComponents<Component>())
             {
-                swMode.WriteLine("\t\tprotected "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
+                swMode.WriteLine("\t\tpublic "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
 
                 if (isRoot)
                 {
-                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"GetGameObject().transform.GetComponent<"+item.GetType().Name+">();");
                 }
                 else
                 {
-                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
+                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"GetGameObject().transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
                 }
             }
 

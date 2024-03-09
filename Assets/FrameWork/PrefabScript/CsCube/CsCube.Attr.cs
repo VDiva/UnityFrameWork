@@ -3,7 +3,8 @@ using FrameWork;
 using UnityEngine.UI;
 namespace FrameWork
 {
-	public partial class CsText : UiActor
+	[ActorInfo("prefab","CsCube")]
+	public partial class CsCube : Actor
 	{
 	}
 }

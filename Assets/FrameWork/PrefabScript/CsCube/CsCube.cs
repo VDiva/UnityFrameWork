@@ -3,7 +3,7 @@ using FrameWork;
 using UnityEngine.UI;
 namespace FrameWork
 {
-	public partial class UiRoot : Actor
+	public partial class CsCube : Actor
 	{
 	}
 }

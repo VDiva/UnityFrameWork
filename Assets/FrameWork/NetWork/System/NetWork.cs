@@ -1,12 +1,4 @@
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
-
-
 namespace FrameWork
 {
     public class NetWork : SingletonAsMono<NetWork>
@@ -18,9 +10,11 @@ namespace FrameWork
             DontDestroyOnLoad(this);
         }
         
+        
         private void OnApplicationQuit()
         {
             NetWorkSystem.DisConnect();
+            EventManager.Init();
         }
 
         private void FixedUpdate()

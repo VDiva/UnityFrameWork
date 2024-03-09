@@ -3,15 +3,15 @@ using FrameWork;
 using UnityEngine.UI;
 namespace FrameWork
 {
-	public partial class UiRoot : UiActor
+	public partial class UiRoot : Actor
 	{
-		protected RectTransform RectTransformUiRoot;
-		protected Canvas CanvasUiRoot;
-		protected CanvasScaler CanvasScalerUiRoot;
-		protected GraphicRaycaster GraphicRaycasterUiRoot;
-		protected RectTransform RectTransformPopup;
-		protected RectTransform RectTransformNormal;
-		protected RectTransform RectTransformControl;
-		protected RectTransform RectTransformBackground;
+		public RectTransform RectTransformUiRoot;
+		public Canvas CanvasUiRoot;
+		public CanvasScaler CanvasScalerUiRoot;
+		public GraphicRaycaster GraphicRaycasterUiRoot;
+		public RectTransform RectTransformPopup;
+		public RectTransform RectTransformNormal;
+		public RectTransform RectTransformControl;
+		public RectTransform RectTransformBackground;
 	}
 }
