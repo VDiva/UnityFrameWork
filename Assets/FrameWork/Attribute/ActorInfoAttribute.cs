@@ -2,7 +2,7 @@ using System;
 
 namespace FrameWork
 {
-    [AttributeUsage(AttributeTargets.Class,AllowMultiple = true,Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class,AllowMultiple = false,Inherited = false)]
     public class ActorInfoAttribute: Attribute
     {
         public string PackName;

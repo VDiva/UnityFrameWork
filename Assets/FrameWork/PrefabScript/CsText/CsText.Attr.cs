@@ -3,8 +3,8 @@ using FrameWork;
 using UnityEngine.UI;
 namespace FrameWork
 {
-	[ActorInfo("ui","UiRoot")]
-	public partial class UiRoot : UiActor
+	[ActorInfo("ui","CsText")]
+	public partial class CsText : UiActor
 	{
 	}
 }

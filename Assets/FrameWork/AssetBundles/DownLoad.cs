@@ -46,7 +46,7 @@ namespace FrameWork
                 
                 if (uwr.isHttpError|| uwr.isNetworkError)
                 {
-                    Debug.Log(uwr.error);
+                    MyLog.Log(uwr.error);
                     yield break;
                 }
                 long statrTime = Tool.ConvertDateTimep(DateTime.Now);
@@ -100,7 +100,7 @@ namespace FrameWork
 
         public static long GetPackSize(string path)
         {
-            Debug.Log(path);
+            MyLog.Log(path);
             long lenght=1;
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
             request.Method = "HEAD";
@@ -114,29 +114,5 @@ namespace FrameWork
             return lenght;
             
         }
-        
-        // public static void GetPackSize(string path,Action<long> lenght)
-        // {
-        //     Mono.Instance.StartCoroutine(GetPackSizeIEnumerator(path, lenght));
-        // }
-
-        // public static IEnumerator GetPackSizeIEnumerator(string path,Action<long> lenght)
-        // {
-        //     HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
-        //     request.Method = "HEAD";
-        //     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        //     while (true)
-        //     {
-        //         if (response.StatusCode == HttpStatusCode.OK)
-        //         {
-        //             lenght(response.ContentLength);
-        //             Debug.Log(response.ContentLength);
-        //             yield break;
-        //         }
-        //         yield return 0;
-        //         
-        //     }
-        // }
-        
     }
 }

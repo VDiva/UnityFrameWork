@@ -18,7 +18,7 @@ namespace FrameWork
             _client = new Client();
             _client.Connected += OnConnect;
             _client.Disconnected += OnDisConnect;
-            RiptideLogger.Initialize(Debug.Log, false);
+            RiptideLogger.Initialize(MyLog.Log, false);
             _client.Connect(address);
             var netWork = NetWork.Instance;
             
@@ -28,13 +28,14 @@ namespace FrameWork
         {
             EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.DisConnectToServer);
             //OnDisConnectToServer?.Invoke();
-            Debug.Log("断开服务器....");
+            MyLog.Log("断开服务器....");
         }
 
         private static void OnConnect(object sender, EventArgs e)
         {
+            _id = _client.Id;
             EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.ConnectToServer);
-            Debug.Log("链接到服务器....客户端id为:"+_client.Id);
+            MyLog.Log("链接到服务器....客户端id为:"+_client.Id);
         }
         
         public static void UpdateMessage()

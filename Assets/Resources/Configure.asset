@@ -16,9 +16,6 @@ MonoBehaviour:
   ConfigName: ABConfig.txt
   AbAssetPath: Assets/FrameWork/Asset
   AbEndName: info
-  AbMaterialName: material
-  AbUiPrefabName: ui
-  AbModePrefabName: mode
-  AbScreenName: screen
   SpawnPrefabScriptPath: Assets/FrameWork/PrefabScript
   SpawnUiScriptPath: Assets/FrameWork/UiScript
+  EnableLog: 1

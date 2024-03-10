@@ -1676,6 +1676,7 @@
      <Compile Include="Assets\FrameWork\Global\AssemblyType.cs" />
      <Compile Include="Assets\FrameWork\Global\GlobalVariables.cs" />
      <Compile Include="Assets\FrameWork\Interface\IAnim.cs" />
+     <Compile Include="Assets\FrameWork\Log\MyLog.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Component\Identity.cs" />
      <Compile Include="Assets\FrameWork\NetWork\Component\SyncTransform.cs" />
      <Compile Include="Assets\FrameWork\NetWork\System\MessageSystem.cs" />
@@ -1691,10 +1692,18 @@
      <Compile Include="Assets\FrameWork\ObjectPool\ObjectPoolAsGameObject.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\CsCube\CsCube.Attr.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\CsCube\CsCube.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsCube\CsCube.Extend.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\CsCube\CsCube.H.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\CsCube\CsCube.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.Attr.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.Extend.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.H.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.UiMode.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Attr.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Extend.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.H.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.cs" />
      <Compile Include="Assets\FrameWork\Singleton\SingletonAsClass.cs" />
@@ -1707,9 +1716,7 @@
      <Compile Include="Assets\FrameWork\Type\MessageType.cs" />
      <Compile Include="Assets\FrameWork\Type\Mode.cs" />
      <Compile Include="Assets\FrameWork\Type\NetMessageType.cs" />
-     <Compile Include="Assets\FrameWork\Type\NetType.cs" />
-     <Compile Include="Assets\FrameWork\Type\UiType.cs" />
-     <Compile Include="Assets\FrameWork\Ui\Type\AssetType.cs" />
+     <Compile Include="Assets\FrameWork\Type\UiMessageType.cs" />
      <Compile Include="Assets\FrameWork\Ui\UiManager.cs" />
      <Compile Include="Assets\cs\Manager.cs" />
      <Compile Include="Assets\cs\Move.cs" />

@@ -3,8 +3,9 @@ using FrameWork;
 using UnityEngine.UI;
 namespace FrameWork
 {
-	[ActorInfo("ui","UiRoot")]
 	public partial class UiRoot : UiActor
 	{
+		public UiRoot(Transform trans): base(trans){}
+		public UiRoot(): base(){}
 	}
 }

@@ -6,11 +6,11 @@ namespace FrameWork
     public class UiModeAttribute: System.Attribute
     {
         public Mode Mode;
-        public UiType UiType;
+        
 
-        public UiModeAttribute(Mode mode,UiType uiType)
+        public UiModeAttribute(Mode mode)
         {
-            
+            Mode = mode;
         }
     }
 }

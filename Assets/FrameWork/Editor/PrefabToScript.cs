@@ -10,15 +10,24 @@ namespace FrameWork.Editor
     {
 
         [MenuItem("Assets/FrameWork/Prefab/CreateScrip")]
-        public static void CreateScriptUiActor()
+        public static void CreateScript()
         {
-            Init("Actor");
+            var obj = Selection.activeGameObject;
+            if (obj.TryGetComponent<RectTransform>(out RectTransform rectTransform))
+            {
+                Init("UiActor");
+            }
+            else
+            {
+                Init("Actor");
+            }
+            
         }
         
-        // [MenuItem("Assets/FrameWork/Prefab/CreateScripToUiActor")]
+        // [MenuItem("Assets/FrameWork/Prefab/CreateScripUiActor")]
         // public static void CreateScriptUiActor()
         // {
-        //     Init("MonoBehaviour");
+        //     Init("UiActor");
         // }
         
         // [MenuItem("Assets/FrameWork/Prefab/CreateScripToNettUiActor")]
@@ -133,6 +142,24 @@ namespace FrameWork.Editor
                 swAttr.WriteLine("\t}");
                 swAttr.WriteLine("}");
             }
+            
+            
+            using (StreamWriter swAttr = new StreamWriter(path + "/" + name + "//" + name + ".Extend.cs", false))
+            {
+                AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+                swAttr.WriteLine("using UnityEngine;");
+                swAttr.WriteLine("using FrameWork;");
+                swAttr.WriteLine("using UnityEngine.UI;");
+                swAttr.WriteLine("namespace FrameWork\n{");
+                swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
+                swAttr.WriteLine("\t{");
+                swAttr.WriteLine("\t\tpublic "+name+"(Transform trans): base(trans){}");
+                swAttr.WriteLine("\t\tpublic "+name+"(): base(){}");
+                swAttr.WriteLine("\t}");
+                swAttr.WriteLine("}");
+            }
+        
+
             AssetBundle.CreatPCAssetBundleAsWindows();
             AssetDatabase.Refresh();
 

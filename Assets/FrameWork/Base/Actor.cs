@@ -19,10 +19,21 @@ namespace FrameWork
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
             if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
             var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
-            _gameObject = GameObject.Instantiate(go, Vector3.zero, Quaternion.identity);
+            _gameObject = GameObject.Instantiate(go);
             _identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
-            
+            actorMono.SetActor(this);
+        }
+        
+        public Actor(Transform trans)
+        {
+            var type=GetType();
+            var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
+            if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
+            var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+            _gameObject = GameObject.Instantiate(go,trans);
+            _identity = _gameObject.AddComponent<Identity>();
+            var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
         }
 
