@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 namespace FrameWork
 {
     public class NetWork : SingletonAsMono<NetWork>
@@ -13,8 +15,10 @@ namespace FrameWork
         
         private void OnApplicationQuit()
         {
-            NetWorkSystem.DisConnect();
+            //NetWorkSystem.DisConnect();
+            NetWorkSystem.CloseGame();
             EventManager.Init();
+            //Debug.Log("退出应用");
         }
 
         private void FixedUpdate()

@@ -78,7 +78,13 @@ namespace NetWork
         {
             var msg = CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.SyncTick);
             msg.AddUShort(currentTick);
-            server.SendToAll(msg);
+            try
+            {
+                server.SendToAll(msg);
+            }catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
 

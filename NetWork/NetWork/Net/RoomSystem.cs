@@ -218,7 +218,26 @@ namespace NetWork
             }
         }
 
+        [MessageHandler((ushort)ClientToServerMessageType.ReLink)]
+        private static void ReLink(ushort id, Message message)
+        {
+            var oldId=message.GetUShort();
+            if (playerIdGetRoom.TryGetValue(oldId, out var room))
+            {
+                room.ReLink(id, oldId);
+                playerIdGetRoom.Remove(oldId);
+                playerIdGetRoom.Add(id, room);
+            }
+        }
 
+        [MessageHandler((ushort)ClientToServerMessageType.CloseGame)]
+        private static void CloseGame(ushort id, Message message)
+        {
+            if (playerIdGetRoom.TryGetValue(id, out var room))
+            {
+                room.Left(id);
+            }
+        }
 
 
 
@@ -248,7 +267,7 @@ namespace NetWork
         {
             if(playerIdGetRoom.TryGetValue(id, out var room))
             {
-                room.Left(id);
+                room.PlayerDisConnect(id);
             }
         }
 

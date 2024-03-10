@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FrameWork
+namespace NetWork.Type
 {
     public enum ClientToServerMessageType: ushort
     {
@@ -28,6 +28,8 @@ namespace FrameWork
         GetId=103,
         SetBelongingClient=104,
         Destroy=115,
-        GetRoomInfo=116
+        GetRoomInfo=116,
+        ReLink=117,
+        CloseGame=118
     }
 }

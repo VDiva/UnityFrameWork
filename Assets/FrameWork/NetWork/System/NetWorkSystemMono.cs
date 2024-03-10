@@ -35,6 +35,7 @@ namespace FrameWork
             EventManager.AddListener(MessageType.NetMessage,NetMessageType.Rpc,OnRpc);
             EventManager.AddListener(MessageType.NetMessage,NetMessageType.BelongingClient,SetBelongingClient);
             EventManager.AddListener(MessageType.NetMessage,NetMessageType.Destroy,OnNetDestroy);
+            EventManager.AddListener(MessageType.NetMessage,NetMessageType.ReLink,OnReLink);
             
             
         }
@@ -54,6 +55,7 @@ namespace FrameWork
             EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Rpc,OnRpc);
             EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.BelongingClient,SetBelongingClient);
             EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Destroy,OnNetDestroy);
+            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.ReLink,OnReLink);
         }
         
         private void OnPlayerJoin(object[] param) {OnPlayerJoin((ushort)param[0],(int)param[1],(string)param[2]); }
@@ -92,11 +94,22 @@ namespace FrameWork
         private void OnRpc(string methodName, ushort id, object[] param) {if (GetId().Equals(id))gameObject.SendMessage(methodName,param==null? new object[1]: param); }
         
         private void SetBelongingClient(object[] param) { SetBelongingClient((ushort)param[0],(ushort[])param[1]); }
-        private void SetBelongingClient(ushort newId, ushort[] ids) {if (ids.Contains(GetId()))_identity.SetClientId(newId); }
+
+        private void SetBelongingClient(ushort newId, ushort[] ids) {if (ids.Contains(GetId())&& _identity.GetObjId()!=_identity.GetClientId())_identity.SetClientId(newId); }
         
         private void OnNetDestroy(object[] param) { OnNetDestroy((ushort)param[0]); }
         protected virtual void OnNetDestroy(ushort objId) {if (GetId().Equals(objId))Destroy(gameObject);}
         
+        private void OnReLink(object[] param) { OnReLink((ushort)param[0],(ushort)param[1]); }
+
+        protected virtual void OnReLink(ushort newId, ushort oldId)
+        {
+            if (_identity.GetObjId() == _identity.GetClientId()&&_identity.GetClientId().Equals(oldId))
+            {
+                _identity.SetClientId(newId); 
+                _identity.SetObjId(newId);
+            }
+        }
         
     }
 }

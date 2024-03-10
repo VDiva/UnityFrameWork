@@ -14,6 +14,7 @@ namespace FrameWork
         DisConnectToServer=10,//断开服务器消息
         Destroy=11,//销毁
         RoomInfo=12,//房间信息
-        InstantiateEnd
+        InstantiateEnd,
+        ReLink
     }
 }

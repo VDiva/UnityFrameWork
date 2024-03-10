@@ -4,7 +4,9 @@ namespace FrameWork
 {
     public class Identity : MonoBehaviour
     {
+        [SerializeField]
         private ushort _clientSpawnId;
+        [SerializeField]
         private ushort _id;
 
         public void SetObjId(ushort id)

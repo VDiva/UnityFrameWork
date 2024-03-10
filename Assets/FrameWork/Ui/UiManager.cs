@@ -145,7 +145,6 @@ namespace FrameWork
             _uiStack.Push(obj);
             return obj;
         }
-        
         public void HideUi(int index)
         {
             EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});

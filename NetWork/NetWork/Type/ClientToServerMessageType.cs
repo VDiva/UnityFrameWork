@@ -28,6 +28,8 @@ namespace NetWork.Type
         GetId=103,
         SetBelongingClient=104,
         Destroy=115,
-        GetRoomInfo=116
+        GetRoomInfo=116,
+        ReLink=117,
+        CloseGame=118
     }
 }

@@ -23,6 +23,7 @@ namespace FrameWork
             _identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
+            Start();
         }
         
         public Actor(Transform trans)
@@ -35,6 +36,7 @@ namespace FrameWork
             _identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
+            Start();
         }
 
 

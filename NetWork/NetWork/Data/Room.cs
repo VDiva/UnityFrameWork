@@ -17,7 +17,7 @@ namespace NetWork
         //private List<Connection> players;
         private List<Message> messages;
 
-        private Dictionary<ushort, Connection> players;
+        private Dictionary<ushort, Player> players;
 
         private ObjectPool<ObjDate> objectPoolGameObject;
 
@@ -31,7 +31,7 @@ namespace NetWork
             this.roomName = roomName;
             this.maxCount = maxCount;
             
-            players = new Dictionary<ushort, Connection>();
+            players = new Dictionary<ushort, Player>();
             messages = new List<Message>();
             gameObjects=new Dictionary<ushort, ObjDate>();
             objectPoolGameObject=new ObjectPool<ObjDate>();
@@ -40,7 +40,7 @@ namespace NetWork
 
         public Room()
         {
-            players = new Dictionary<ushort, Connection>();
+            players = new Dictionary<ushort, Player>();
             messages = new List<Message>();
             gameObjects = new Dictionary<ushort, ObjDate>();
             objectPoolGameObject = new ObjectPool<ObjDate>();
@@ -77,7 +77,8 @@ namespace NetWork
                 if (players.Count < maxCount)
                 {
                     Console.WriteLine(id + ":加入了房间:" + roomId);
-                    players.Add(id, connection);
+                    Player player = new Player(connection);
+                    players.Add(id, player);
 
                     SendHistoryInformation(connection, () =>
                     {
@@ -104,6 +105,23 @@ namespace NetWork
         }
 
 
+        public void PlayerDisConnect(ushort id)
+        {
+            if(players.ContainsKey(id))
+            {
+                players[id].IsDisConnect = true;
+
+                foreach (var player in players)
+                {
+                    if (player.Value.Connection.Id != id)
+                    {
+                        SetBelongingClient(id, player.Value.Connection.Id);
+                        break;
+                    }
+                }
+            }
+        }
+
         public void Left(ushort id)
         {
             if (players.ContainsKey(id))
@@ -126,8 +144,11 @@ namespace NetWork
                 {
                     foreach (var player in players)
                     {
-                        SetBelongingClient(id, player.Value.Id);
-                        break;
+                        if (player.Value.Connection.Id!=id)
+                        {
+                            SetBelongingClient(id, player.Value.Connection.Id);
+                            break;
+                        }
                     }
                 }
             }
@@ -262,6 +283,35 @@ namespace NetWork
             }
         }
 
+        public void ReLink(ushort newId,ushort oldId)
+        {
+            if(players.ContainsKey(oldId))
+            {
+                var player = players[oldId];
+                player.IsDisConnect = false;
+                player.Connection = NetWorkSystem.GetClient(newId);
+                players.Remove(oldId);
+                players.Add(newId, player);
+
+
+                var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.ReLink);
+                msg.AddUShort(newId);
+                msg.AddUShort(oldId);
+                SendAll(msg);
+
+                SendTmpTransfrom(newId);
+
+                for (var i = 0;i < player.Messages.Count;i++)
+                {
+                    SendSelf(newId, player.Messages[i]);
+                }
+
+
+                
+
+            }
+        }
+
 
         public void Destroy(ushort id)
         {
@@ -278,7 +328,14 @@ namespace NetWork
             if(isAdd) AddMessage(message);
             foreach (var player in players)
             {
-                player.Value.Send(message, !isAdd);
+                if (!player.Value.IsDisConnect)
+                {
+                    player.Value.Connection.Send(message, !isAdd);
+                }
+                else
+                {
+                    if(isAdd) player.Value.Messages.Add(message);
+                }
             }
         }
 
@@ -287,9 +344,16 @@ namespace NetWork
             if (isAdd) AddMessage(message);
             foreach (var player in players)
             {
-                if (player.Value.Id != id)
+                if (player.Value.Connection.Id != id)
                 {
-                    player.Value.Send(message, !isAdd);
+                    if (!player.Value.IsDisConnect)
+                    {
+                        player.Value.Connection.Send(message, !isAdd);
+                    }
+                    else
+                    {
+                        if (isAdd) player.Value.Messages.Add(message);
+                    }
                 }
             }
         }
@@ -299,9 +363,16 @@ namespace NetWork
             if (isAdd) AddMessage(message);
             foreach (var player in players)
             {
-                if (player.Value.Id == id)
+                if (player.Value.Connection.Id == id)
                 {
-                    player.Value.Send(message, !isAdd);
+                    if (!player.Value.IsDisConnect)
+                    {
+                        player.Value.Connection.Send(message, !isAdd);
+                    }
+                    else
+                    {
+                        if (isAdd) player.Value.Messages.Add(message);
+                    }
                 }
             }
             

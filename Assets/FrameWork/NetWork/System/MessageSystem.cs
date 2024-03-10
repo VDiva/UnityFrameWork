@@ -1,4 +1,5 @@
 
+using NetWork.Type;
 using Newtonsoft.Json;
 using Riptide;
 
@@ -119,6 +120,17 @@ namespace FrameWork
             var curCount = message.GetUShort();
             var maxCount = message.GetUShort();
             EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.RoomInfo, new object[] { curCount,maxCount });
+            //NetWorkSystem.OnRoomInfo?.Invoke(curCount,maxCount);
+            //Debug.Log("生成玩家");
+        }
+        
+        [MessageHandler((ushort)ServerToClientMessageType.ReLink)]
+        private static void ReLink(Message message)
+        {
+            var tick = message.GetUShort();
+            var newId = message.GetUShort();
+            var oldId = message.GetUShort();
+            EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.ReLink, new object[] { newId,oldId });
             //NetWorkSystem.OnRoomInfo?.Invoke(curCount,maxCount);
             //Debug.Log("生成玩家");
         }

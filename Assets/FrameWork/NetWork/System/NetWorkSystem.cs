@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Reflection;
+using NetWork.Type;
 using Riptide;
 using Riptide.Utils;
 using UnityEngine;
@@ -13,6 +14,8 @@ namespace FrameWork
         private static Client _client;
         private static ushort _id;
         public static ushort serverTick;
+        private static string _address;
+        private static NetWork _netWork;
         public static void Start(string address)
         {
             _client = new Client();
@@ -20,8 +23,8 @@ namespace FrameWork
             _client.Disconnected += OnDisConnect;
             RiptideLogger.Initialize(MyLog.Log, false);
             _client.Connect(address);
-            var netWork = NetWork.Instance;
-            
+            _netWork= NetWork.Instance;
+            _address = address;
         }
         
         private static void OnDisConnect(object sender, EventArgs e)
@@ -29,14 +32,26 @@ namespace FrameWork
             EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.DisConnectToServer);
             //OnDisConnectToServer?.Invoke();
             MyLog.Log("断开服务器....");
+            Start(_address);
+            
         }
 
         private static void OnConnect(object sender, EventArgs e)
         {
-            _id = _client.Id;
+           
             EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.ConnectToServer);
             MyLog.Log("链接到服务器....客户端id为:"+_client.Id);
+            //EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.ReLink, new object[] { _client.Id,_id });
+            var msg=CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.ReLink);
+            msg.AddUShort(_id);
+            Send(msg);
+            MyLog.Log("发送从连消息");
+            
+            _id = _client.Id;
         }
+        
+        
+        
         
         public static void UpdateMessage()
         {
@@ -64,6 +79,12 @@ namespace FrameWork
             _client.Disconnect();
         }
 
+        public static void CloseGame()
+        {
+            var msg=CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.CloseGame);
+            Send(msg);
+        }
+        
 
         public static void JoinRoom(int roomId)
         {

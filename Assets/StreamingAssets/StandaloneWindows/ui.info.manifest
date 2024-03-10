@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 4198245908
+CRC: 1802823395
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 572e0aa9bea2b6d508fc17a8c7706290
+    Hash: d6652a1cf6267b70804d94a11f23e63e
   TypeTreeHash:
     serializedVersion: 2
     Hash: f33071dfa1416ea3691f3bf44f5e10ea
@@ -42,5 +42,6 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/FrameWork/Asset/Ui/UiRoot.prefab
+- Assets/FrameWork/Asset/Ui/BtnGroup.prefab
 - Assets/FrameWork/Asset/Ui/CsText.prefab
 Dependencies: []

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using FrameWork;
 using UnityEngine;
+using Object = System.Object;
 
 namespace cs
 {
@@ -23,6 +24,12 @@ namespace cs
             actor?.AddComponent<SyncTransform>();
             actor?.GetIdentity().SetClientId(id);
             actor?.GetIdentity().SetObjId(objId);
+        }
+
+        protected override void OnPlayerLeft(ushort id)
+        {
+            base.OnPlayerLeft(id);
+            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.Destroy,new Object[]{id});
         }
     }
 }
