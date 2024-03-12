@@ -20,13 +20,14 @@ namespace FrameWork
             if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
             var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
             _gameObject = GameObject.Instantiate(go);
+            _gameObject.SetActive(false);
             _identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
-            
+            _gameObject.SetActive(true);
         }
        
-        public Actor(Transform trans)
+        protected Actor(Transform trans)
         {
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
@@ -41,73 +42,33 @@ namespace FrameWork
         }
 
 
-        public Identity GetIdentity()
-        {
-            return _identity;
-        }
+        public Identity GetIdentity() { return _identity; }
         
         
-        public GameObject GetGameObject()
-        {
-            return _gameObject;
-        }
+        public GameObject GetGameObject() { return _gameObject; }
 
-        public T AddComponent<T>() where T: Component
-        {
-            return _gameObject.AddComponent<T>();
-        }
+        public T AddComponent<T>() where T: Component { return _gameObject.AddComponent<T>(); }
         
         
-        public int GetIndex()
-        {
-            return Index;
-        }
+        public int GetIndex() { return Index; }
         
-        public void SetIndex(int index)
-        {
-            Index = index;
-            //return Index;
-        }
+        public void SetIndex(int index) { Index = index; }
         
-        public virtual void Awake()
-        {
-            Debug.Log("Awake");
-        }
+        public virtual void Awake() {}
 
-        public virtual void Start()
-        {
-            Debug.Log("start");
-        }
+        public virtual void Start() {}
 
-        public virtual void OnEnable()
-        {
-            Debug.Log("OnEnable");
-        }
+        public virtual void OnEnable() {}
 
-        public virtual void OnDisable()
-        {
-            
-        }
+        public virtual void OnDisable() {}
 
-        public virtual void Update()
-        {
-            
-        }
+        public virtual void Update() {}
 
-        public virtual void FixedUpdate()
-        {
-            
-        }
+        public virtual void FixedUpdate() {}
 
-        public virtual void LateUpdate()
-        {
-            
-        }
+        public virtual void LateUpdate() {}
 
-        public virtual void OnDestroy()
-        {
-            
-        }
+        public virtual void OnDestroy() {}
 
     }
 }
