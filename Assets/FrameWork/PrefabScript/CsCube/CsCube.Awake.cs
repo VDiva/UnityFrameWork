@@ -5,9 +5,9 @@ namespace FrameWork
 {
 	public partial class CsCube : Actor
 	{
-		public override void Start()
+		public override void Awake()
 		{
-			base.Start();
+			base.Awake();
 			TransformCsCube = GetGameObject().transform.GetComponent<Transform>();
 			MeshFilterCsCube = GetGameObject().transform.GetComponent<MeshFilter>();
 			MeshRendererCsCube = GetGameObject().transform.GetComponent<MeshRenderer>();

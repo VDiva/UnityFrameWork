@@ -23,9 +23,9 @@ namespace FrameWork
             _identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
-            Start();
+            
         }
-        
+       
         public Actor(Transform trans)
         {
             var type=GetType();
@@ -33,10 +33,11 @@ namespace FrameWork
             if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
             var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
             _gameObject = GameObject.Instantiate(go,trans);
+            _gameObject.SetActive(false);
             _identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
-            Start();
+            _gameObject.SetActive(true);
         }
 
 
@@ -68,16 +69,19 @@ namespace FrameWork
             //return Index;
         }
         
-        
+        public virtual void Awake()
+        {
+            Debug.Log("Awake");
+        }
 
         public virtual void Start()
         {
-            
+            Debug.Log("start");
         }
 
         public virtual void OnEnable()
         {
-            
+            Debug.Log("OnEnable");
         }
 
         public virtual void OnDisable()

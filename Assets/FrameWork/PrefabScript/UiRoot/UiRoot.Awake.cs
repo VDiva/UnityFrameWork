@@ -5,9 +5,9 @@ namespace FrameWork
 {
 	public partial class UiRoot : UiActor
 	{
-		public override void Start()
+		public override void Awake()
 		{
-			base.Start();
+			base.Awake();
 			RectTransformUiRoot = GetGameObject().transform.GetComponent<RectTransform>();
 			CanvasUiRoot = GetGameObject().transform.GetComponent<Canvas>();
 			CanvasScalerUiRoot = GetGameObject().transform.GetComponent<CanvasScaler>();

@@ -5,9 +5,9 @@ namespace FrameWork
 {
 	public partial class BtnGroup : UiActor
 	{
-		public override void Start()
+		public override void Awake()
 		{
-			base.Start();
+			base.Awake();
 			RectTransformBtnGroup = GetGameObject().transform.GetComponent<RectTransform>();
 			RectTransformBtn1 = GetGameObject().transform.Find("Btn1/").GetComponent<RectTransform>();
 			CanvasRendererBtn1 = GetGameObject().transform.Find("Btn1/").GetComponent<CanvasRenderer>();

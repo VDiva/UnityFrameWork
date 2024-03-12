@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 2038458122
+CRC: 3543398575
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 033abd97ba0a05aefc002c6f68e690f8
+    Hash: 2135697c665d81e1a5348951a6db88c5
   TypeTreeHash:
     serializedVersion: 2
-    Hash: f33071dfa1416ea3691f3bf44f5e10ea
+    Hash: db20261e5cd7c3103375bfc94380ebb7
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -26,6 +26,8 @@ ClassTypes:
 - Class: 114
   Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
 - Class: 114
+  Script: {fileID: 11500000, guid: d199490a83bb2b844b9695cbf13b01ef, type: 3}
+- Class: 114
   Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
 - Class: 115
   Script: {instanceID: 0}
@@ -41,6 +43,7 @@ ClassTypes:
   Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
+- Assets/FrameWork/Asset/Ui/InputCs.prefab
 - Assets/FrameWork/Asset/Ui/UiRoot.prefab
 - Assets/FrameWork/Asset/Ui/BtnGroup.prefab
 - Assets/FrameWork/Asset/Ui/CsText.prefab

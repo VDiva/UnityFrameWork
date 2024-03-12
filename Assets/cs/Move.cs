@@ -17,21 +17,12 @@ namespace cs
 
         public void Update()
         {
-
-            if (Input.GetKeyDown(KeyCode.A)||Input.GetKeyDown(KeyCode.D))
-            {
-                _dir.x = Input.GetAxis("Horizontal");
-              
-            }
-            
-            if (Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.S))
-            {
-               
-                _dir.y = Input.GetAxis("Vertical");
-            }
-            
             if (IsLocal)
             {
+#if UNITY_EDITOR_WIN|| UNITY_WINDOWS
+                _dir.x = Input.GetAxis("Horizontal");
+                _dir.y = Input.GetAxis("Vertical");
+#endif
                 
                 transform.Translate(_dir*Time.deltaTime*5);
                 transform.Rotate(_dir);

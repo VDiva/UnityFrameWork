@@ -13,39 +13,60 @@ namespace FrameWork
             _actor = actor;
         }
 
+        public int GetIndex()
+        {
+            return _actor.GetIndex();
+        }
+
+        public ushort GetObjId()
+        {
+            return _actor.GetIdentity().GetObjId();
+        }
+        
+        
+        public ushort GetClientId()
+        {
+            return _actor.GetIdentity().GetClientId();
+        }
+        
+        private void Awake()
+        {
+            _actor?.Awake();
+        }
+
         private void Start()
         {
-            if (_actor!=null)_actor.Start();
+            _actor?.Start();
         }
 
         private void OnEnable()
         {
-            if (_actor!=null)_actor.OnEnable();
+            _actor?.OnEnable();
         }
 
         private void OnDisable()
         {
-            if (_actor!=null)_actor.OnDisable();
+            _actor?.OnDisable();
         }
 
         private void Update()
         {
-            if (_actor!=null)_actor.Update();
+            _actor?.Update();
         }
 
         private void FixedUpdate()
         {
-            if (_actor!=null)_actor.FixedUpdate();
+            _actor?.FixedUpdate();
         }
 
         private void LateUpdate()
         {
-            if (_actor!=null)_actor.LateUpdate();
+            _actor?.LateUpdate();
         }
 
         private void OnDestroy()
         {
-            if (_actor!=null)_actor.OnDestroy();
+            _actor?.OnDestroy();
         }
     }
 }

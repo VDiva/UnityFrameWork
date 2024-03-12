@@ -90,15 +90,6 @@ namespace FrameWork.Editor
                         sw.WriteLine("}");
                     }
                     
-                    
-                    // using (StreamWriter swSystem = new StreamWriter( path+"/"+name + "//" + name + ".System.cs", false))
-                    // {
-                    //     swSystem.WriteLine("using UnityEngine;");
-                    //     swSystem.WriteLine("using UnityEngine;");
-                    //     swSystem.WriteLine("public partial class "+name+" : "+scriptName);
-                    //     swSystem.WriteLine("{");
-                    //     swSystem.WriteLine("}");
-                    // }
 
                     swMode.WriteLine("using UnityEngine;");
                     swMode.WriteLine("using FrameWork;");
@@ -113,8 +104,8 @@ namespace FrameWork.Editor
                     swView.WriteLine("namespace FrameWork\n{");
                     swView.WriteLine("\tpublic partial class "+name+" : "+scriptName);
                     swView.WriteLine("\t{");
-                    swView.WriteLine("\t\tpublic override void Start()\n\t\t{");
-                    swView.WriteLine("\t\t\tbase.Start();");
+                    swView.WriteLine("\t\tpublic override void Awake()\n\t\t{");
+                    swView.WriteLine("\t\t\tbase.Awake();");
                     
                     Writer(swMode,swView,"",trans,true);
                     
@@ -161,6 +152,7 @@ namespace FrameWork.Editor
         
 
             AssetBundle.CreatPCAssetBundleAsWindows();
+            AssetBundle.CreatAssetBundleAsAndroid();
             AssetDatabase.Refresh();
 
         }

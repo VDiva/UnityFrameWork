@@ -1708,6 +1708,12 @@
      <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.H.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.UiMode.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\CsText\CsText.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\InputCs\InputCs.Attr.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\InputCs\InputCs.Awake.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\InputCs\InputCs.Extend.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\InputCs\InputCs.H.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\InputCs\InputCs.UiMode.cs" />
+     <Compile Include="Assets\FrameWork\PrefabScript\InputCs\InputCs.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Attr.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Awake.cs" />
      <Compile Include="Assets\FrameWork\PrefabScript\UiRoot\UiRoot.Extend.cs" />

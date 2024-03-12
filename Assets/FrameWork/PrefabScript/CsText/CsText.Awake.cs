@@ -5,9 +5,9 @@ namespace FrameWork
 {
 	public partial class CsText : UiActor
 	{
-		public override void Start()
+		public override void Awake()
 		{
-			base.Start();
+			base.Awake();
 			RectTransformCsText = GetGameObject().transform.GetComponent<RectTransform>();
 			CanvasRendererCsText = GetGameObject().transform.GetComponent<CanvasRenderer>();
 			TextCsText = GetGameObject().transform.GetComponent<Text>();
