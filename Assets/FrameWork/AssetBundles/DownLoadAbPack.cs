@@ -43,10 +43,10 @@ namespace FrameWork
         {
             if (_abPackDates.TryDequeue(out AbPackDate abPackDate))
             {
-                DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+abPackDate.Name,((f, f1,s3,s4) =>
+                DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+abPackDate.Name,((f1,f2,s1,s2) =>
                 {
                     long len = 0;
-                    abPackDate.CurDownLoadSize = (long)(abPackDate.Size * f);
+                    abPackDate.CurDownLoadSize = (long)(abPackDate.Size * f1);
                     foreach (var item in abPackDates)
                     {
                         len += item.CurDownLoadSize;

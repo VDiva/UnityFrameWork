@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ebb6415b14643bfb81ca390f92f423a, type: 3}
   m_Name: Configure
   m_EditorClassIdentifier: 
-  DownLoadUrl: https://a.unity.cn/client_api/v1/buckets/f67ab219-9e85-4e72-967c-cb93450574ed/entry_by_path/content/?path=
+  DownLoadUrl: http://127.0.0.1:3000
   ConfigName: ABConfig.txt
   AbAssetPath: Assets/FrameWork/Asset
   AbEndName: info

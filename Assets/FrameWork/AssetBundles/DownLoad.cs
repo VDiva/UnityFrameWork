@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net;
+using BestHTTP;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -23,13 +24,13 @@ namespace FrameWork
         {
             Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data));
         }
-
+        
         static IEnumerator DownLoadAssetIEumerator(string path,Action<float,float,string,string> progress,Action<byte[],string> data)
         {
             using (UnityWebRequest uwr=UnityWebRequest.Get(path))
             {
                 
-                long lenght=1;
+                
                 // HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
                 // request.Method = "HEAD";
                 // HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -39,9 +40,7 @@ namespace FrameWork
                 //     lenght = response.ContentLength;
                 //     Console.WriteLine(response.ContentLength);
                 // }
-                lenght=GetPackSize(path);
-
-                string fileSize = GetFileSize(lenght);
+                
                 uwr.SendWebRequest();
                 
                 if (uwr.isHttpError|| uwr.isNetworkError)
@@ -49,8 +48,12 @@ namespace FrameWork
                     MyLog.Log(uwr.error);
                     yield break;
                 }
+
                 long statrTime = Tool.ConvertDateTimep(DateTime.Now);
                 
+                long lenght=1;
+                lenght=GetPackSize(path);
+                string fileSize = GetFileSize(lenght);
                 while (!uwr.isDone)
                 {
                     long curTime = Tool.ConvertDateTimep(DateTime.Now)-statrTime;

@@ -12,11 +12,11 @@ namespace FrameWork
         /// <summary>
         /// 版本检测并对比md5码检测那些ab包需要更新 并返回最新的版本文件自己数据
         /// </summary>
-        /// <param name="versionInfo"></param>
+        /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
         public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
         {
             DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+GlobalVariables.Configure.ConfigName,(
-                (f, f1, arg3, arg4) =>
+                (f1,f2,s1,s2) =>
                 { } ),(
                 (bytes, s) =>
                 {

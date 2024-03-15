@@ -4,12 +4,13 @@
 
 const express=require('express');
 const app=express();
+const fs=require('fs');
+//app.use(express.static(__dirname+'/public'))
 
-app.use(express.static(__dirname+'/public'))
-
-// app.get("/", (req, res) => {
-//     res.send("Hello World!");
-//   });
+app.get("/:path", (req, res) => {
+    let data=fs.readFileSync(__dirname+"/public/"+req.params.path);
+    res.send(data);
+  });
   
   app.listen(3000, () => {
     console.log("示例应用正在监听 3000 端口 !");

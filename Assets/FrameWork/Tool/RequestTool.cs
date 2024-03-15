@@ -21,6 +21,7 @@ namespace FrameWork
         private Action<string> _err;
         public RequestTool(string url,HTTPMethods httpMethods)
         {
+            
             _httpRequest = new HTTPRequest(new Uri(url), httpMethods,((request, response) =>
             {
                 if (response!=null)
@@ -33,7 +34,7 @@ namespace FrameWork
                 {
                     _err?.Invoke("请求失败");
                 }
-            } ));
+            }));
             
         }
         
@@ -144,6 +145,7 @@ namespace FrameWork
             _valueByte = action;
             _err = err;
             _httpRequest.Send();
+            
         }
         
         public void Send(Action<string> action=null,Action<string> err=null)

@@ -1737,6 +1737,7 @@
      <None Include="Assets\FrameWork\NetWork\Dll\RiptideNetworking.xml" />
      <None Include="Assets\FrameWork\Protobuf\System.Collections.Immutable.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\license.txt" />
+     <None Include="Assets\StreamingAssets\StandaloneWindows\ABConfig.txt" />
      <None Include="Assets\FrameWork\Protobuf\Google.Protobuf.xml" />
      <None Include="Assets\FrameWork\Protobuf\protobuf-net.Core.xml" />
      <None Include="Assets\FrameWork\Best HTTP (Pro)\link_android_subset.xml" />
