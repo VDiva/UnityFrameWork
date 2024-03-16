@@ -1,13 +1,19 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class ABConfig : UnityEditor.Editor 
+    public class ABConfig : UnityEditor.Editor
     {
+
+        private static string abEndName = "info";
+        private static string abAssetPath = "Assets/FrameWork/Asset";
+        private static string configName = "ABConfig.txt";
+        
         [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
         public static void CreateAbAndroidConfig()
         {
@@ -36,9 +42,9 @@ namespace FrameWork
             string info = "";
             foreach (var item in fileInfos)
             {
-                if (item.Extension.Equals("."+GlobalVariables.Configure.AbEndName))
+                if (item.Extension.Equals("."+abEndName))
                 {
-                    info += item.Name + " "+item.Length+" "+ Tool.GetMd5(item.FullName);
+                    info += item.Name + " "+item.Length+" "+ GetMd5(item.FullName);
                     info += "|";
                 }
             }
@@ -49,14 +55,14 @@ namespace FrameWork
                 Directory.CreateDirectory(path);
             }
             
-            using (StreamWriter sw=new StreamWriter(path+"/"+GlobalVariables.Configure.ConfigName,false))
+            using (StreamWriter sw=new StreamWriter(path+"/"+configName,false))
             {
                 sw.Write(info);
             }
             
             
             
-            MyLog.Log("AB包对比文件生成成功");
+            Debug.Log("AB包对比文件生成成功");
             AssetDatabase.Refresh();
         }
 
@@ -64,12 +70,12 @@ namespace FrameWork
         [MenuItem("FrameWork/AssetPackaged")]
         public static void AssetPackaged()
         {
-            if (!Directory.Exists(GlobalVariables.Configure.AbAssetPath))
+            if (!Directory.Exists(abAssetPath))
             {
-                Directory.CreateDirectory(GlobalVariables.Configure.AbAssetPath);
+                Directory.CreateDirectory(abAssetPath);
             }
             
-            DirectoryInfo directoryInfo = new DirectoryInfo(GlobalVariables.Configure.AbAssetPath);
+            DirectoryInfo directoryInfo = new DirectoryInfo(abAssetPath);
             CheckDirectory(directoryInfo);
             
            
@@ -85,7 +91,7 @@ namespace FrameWork
             
             
             ai.assetBundleName = abName;
-            ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
+            ai.assetBundleVariant = abEndName;
             
             
         }
@@ -107,6 +113,21 @@ namespace FrameWork
                 {
                     CheckFileInfo(item,abName);
                 }
+            }
+        }
+        
+        
+        public static string GetMd5(string path)
+        {
+            using (FileStream fs=new FileStream(path,FileMode.Open))
+            {
+                MD5 md5 = new MD5CryptoServiceProvider();
+                byte[] md5Info = md5.ComputeHash(fs);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < md5Info.Length; i++)
+                    sb.Append(md5Info[i].ToString("x2"));
+                return sb.ToString();
             }
         }
     }

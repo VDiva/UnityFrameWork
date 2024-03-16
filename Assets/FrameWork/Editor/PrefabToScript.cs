@@ -49,11 +49,12 @@ namespace FrameWork.Editor
         //     Init("MonoBehaviour");
         // }
 
+        private static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
         
         private static void Init(string scriptName)
         {
             ABConfig.AssetPackaged();
-            string path = GlobalVariables.Configure.SpawnPrefabScriptPath;
+            string path = spawnScriptPath;
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;

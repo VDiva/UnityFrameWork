@@ -6,7 +6,8 @@ obj
 Packages
 ProjectSettings
 
-
+*.csproj
+HybridCLRData
 Game-FrameWork.sln
 
 

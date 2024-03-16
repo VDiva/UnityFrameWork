@@ -25,7 +25,7 @@ namespace FrameWork
             
             BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/Android", BuildAssetBundleOptions.UncompressedAssetBundle, UnityEditor.BuildTarget.Android);
             AssetDatabase.Refresh();
-            MyLog.Log("Android Finish!");
+            Debug.Log("Android Finish!");
         }
 
         [MenuItem("FrameWork/AB/CreatAssetBundle for IOS")]
@@ -44,7 +44,7 @@ namespace FrameWork
             
             BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/Ios", BuildAssetBundleOptions.CollectDependencies, UnityEditor.BuildTarget.iOS);
             AssetDatabase.Refresh();
-            MyLog.Log("IOS Finish!");
+            Debug.Log("IOS Finish!");
 
         }
 
@@ -64,7 +64,7 @@ namespace FrameWork
             
             BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath+"/StandaloneWindows", BuildAssetBundleOptions.None, UnityEditor.BuildTarget.StandaloneWindows64);
             AssetDatabase.Refresh();
-            MyLog.Log("Windows Finish!");
+            Debug.Log("Windows Finish!");
         }
 
 

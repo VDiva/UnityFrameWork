@@ -16,6 +16,6 @@ MonoBehaviour:
   ConfigName: ABConfig.txt
   AbAssetPath: Assets/FrameWork/Asset
   AbEndName: info
-  SpawnPrefabScriptPath: Assets/FrameWork/PrefabScript
+  SpawnPrefabScriptPath: Assets/FrameWork/Scripts
   SpawnUiScriptPath: Assets/FrameWork/UiScript
   EnableLog: 1

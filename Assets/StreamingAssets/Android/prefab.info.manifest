@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 4280344236
+CRC: 921505996
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 56bff63f7cc3dc695e7d356ccac21e57
+    Hash: f31bb65bd3813bf252b00e88a5b72296
   TypeTreeHash:
     serializedVersion: 2
-    Hash: f84699563d2dd09d978bf6c2e03adf13
+    Hash: 455dde68235999262d75635ed5df448a
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -25,7 +25,10 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 65
   Script: {instanceID: 0}
+- Class: 135
+  Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/FrameWork/Asset/Prefab/CsCube.prefab
+- Assets/FrameWork/Asset/Prefab/CsSphere.prefab
 Dependencies: []
