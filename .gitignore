@@ -5,12 +5,14 @@ Temp
 obj
 Packages
 ProjectSettings
-
+.idea
+.vs
+.vsconfig
 *.csproj
 HybridCLRData
 Game-FrameWork.sln
 
 
 App.config
-
+.gitattributes
 packages.config
