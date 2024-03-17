@@ -24,48 +24,14 @@ namespace FrameWork.Editor
             
         }
         
-        // [MenuItem("Assets/FrameWork/Prefab/CreateScripUiActor")]
-        // public static void CreateScriptUiActor()
-        // {
-        //     Init("UiActor");
-        // }
-        
-        // [MenuItem("Assets/FrameWork/Prefab/CreateScripToNettUiActor")]
-        // public static void CreateScriptNetUiActor()
-        // {
-        //     Init("MonoBehaviour");
-        // }
-        //
-        //
-        // [MenuItem("Assets/FrameWork/Prefab/CreateScriptActor")]
-        // public static void CreateScriptActor()
-        // {
-        //     Init("MonoBehaviour");
-        // }
-        //
-        // [MenuItem("Assets/FrameWork/Prefab/CreateScriptToNetActor")]
-        // public static void CreateScriptNetActor()
-        // {
-        //     Init("MonoBehaviour");
-        // }
-
-        private static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
-        
         private static void Init(string scriptName)
         {
             ABConfig.AssetPackaged();
-            string path = spawnScriptPath;
+            string path = Config.spawnScriptPath;
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;
 
-            //
-            //
-            // AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-            // ai.assetBundleName = GlobalVariables.Configure.AbModePrefabName;
-            // ai.assetBundleVariant = GlobalVariables.Configure.AbEndName;
-            
-            
             
             
             if (!Directory.Exists(path+"/"+name))

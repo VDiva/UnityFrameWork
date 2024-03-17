@@ -10,27 +10,33 @@ namespace FrameWork
     public class ABConfig : UnityEditor.Editor
     {
 
-        private static string abEndName = "info";
-        private static string abAssetPath = "Assets/FrameWork/Asset";
-        private static string configName = "ABConfig.txt";
+        
         
         [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
         public static void CreateAbAndroidConfig()
         {
-            CreateConfig(Application.streamingAssetsPath+"/Android");
+            CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.Android));
         }
         
         [MenuItem("FrameWork/CreateConfig/CreateAbWindowsConfig")]
         public static void CreateAbWindowsConfig()
         {
-            CreateConfig(Application.streamingAssetsPath+"/StandaloneWindows");
+            CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.WindowsPlayer));
         }
 
         
         [MenuItem("FrameWork/CreateConfig/CreateAbIosConfig")]
         public static void CreateAbIosConfig()
         {
-            CreateConfig(Application.streamingAssetsPath+"/StandaloneWindows");
+            CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.IPhonePlayer));
+        }
+
+
+        [MenuItem("FrameWork/CreateConfig/All")]
+        public static void CreateAll()
+        {
+            CreateAbWindowsConfig();
+            CreateAbWindowsConfig();
         }
         
 
@@ -42,7 +48,7 @@ namespace FrameWork
             string info = "";
             foreach (var item in fileInfos)
             {
-                if (item.Extension.Equals("."+abEndName))
+                if (item.Extension.Equals("."+Config.abEndName))
                 {
                     info += item.Name + " "+item.Length+" "+ GetMd5(item.FullName);
                     info += "|";
@@ -55,7 +61,7 @@ namespace FrameWork
                 Directory.CreateDirectory(path);
             }
             
-            using (StreamWriter sw=new StreamWriter(path+"/"+configName,false))
+            using (StreamWriter sw=new StreamWriter(path+"/"+Config.configName,false))
             {
                 sw.Write(info);
             }
@@ -70,12 +76,12 @@ namespace FrameWork
         [MenuItem("FrameWork/AssetPackaged")]
         public static void AssetPackaged()
         {
-            if (!Directory.Exists(abAssetPath))
+            if (!Directory.Exists(Config.abAssetPath))
             {
-                Directory.CreateDirectory(abAssetPath);
+                Directory.CreateDirectory(Config.abAssetPath);
             }
             
-            DirectoryInfo directoryInfo = new DirectoryInfo(abAssetPath);
+            DirectoryInfo directoryInfo = new DirectoryInfo(Config.abAssetPath);
             CheckDirectory(directoryInfo);
             
            
@@ -91,7 +97,7 @@ namespace FrameWork
             
             
             ai.assetBundleName = abName;
-            ai.assetBundleVariant = abEndName;
+            ai.assetBundleVariant = Config.abEndName;
             
             
         }

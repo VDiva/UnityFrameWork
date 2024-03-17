@@ -5,11 +5,27 @@
 const express=require('express');
 const app=express();
 const fs=require('fs');
-//app.use(express.static(__dirname+'/public'))
+//app.use(express.static(__dirname))
 
-app.get("/:path", (req, res) => {
-    let data=fs.readFileSync(__dirname+"/public/"+req.params.path);
-    res.send(data);
+app.get("/:path/:fileName", (req, res) => {
+
+
+
+    const fileUrl = './public/'+req.params.path+"/"+req.params.fileName; // 文件路径
+    res.header("Access-Control-Allow-Origin", "*");
+
+    // 指定文件类型（例如：application/pdf）
+    res.writeHead(200, {
+        'Content-Type': 'application/info',
+    });
+
+    // 创建可读流
+    const readStream = fs.createReadStream(fileUrl);
+
+    // 将读取的结果以管道pipe流的方式返回给客户端
+    readStream.pipe(res);
+    
+    
   });
   
   app.listen(3000, () => {

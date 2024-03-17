@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using UnityEngine;
 
 
 namespace FrameWork
@@ -31,6 +32,47 @@ namespace FrameWork
         }
         
         
+        public static string GetAbPath()
+        {
+            string path = "";
+            RuntimePlatform platform = Application.platform;
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                case RuntimePlatform.WindowsPlayer:
+                    path ="/StandaloneWindows64/";
+                    break;
+                case RuntimePlatform.Android:
+                    path = "/Android/";
+                    break;
+                case RuntimePlatform.IPhonePlayer:
+                    path = "/Ios/";
+                    break;
+            }
+
+            return path;
+        }
+        
+        public static string GetAbPath(RuntimePlatform platform)
+        {
+            string path = "";
+            //RuntimePlatform platform = Application.platform;
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                case RuntimePlatform.WindowsPlayer:
+                    path ="/StandaloneWindows64/";
+                    break;
+                case RuntimePlatform.Android:
+                    path = "/Android/";
+                    break;
+                case RuntimePlatform.IPhonePlayer:
+                    path = "/Ios/";
+                    break;
+            }
+
+            return path;
+        }
         
         // public static void CopyAb(string path,string path2,string key)
         // {

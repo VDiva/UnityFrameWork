@@ -10,26 +10,7 @@ namespace FrameWork
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
 
-        private static string GetAbPath()
-        {
-            string path = "";
-            RuntimePlatform platform = Application.platform;
-            switch (platform)
-            {
-                case RuntimePlatform.WindowsEditor:
-                case RuntimePlatform.WindowsPlayer:
-                    path = Application.streamingAssetsPath + "/StandaloneWindows";
-                    break;
-                case RuntimePlatform.Android:
-                    path = Application.streamingAssetsPath + "/Android";
-                    break;
-                case RuntimePlatform.IPhonePlayer:
-                    path = Application.streamingAssetsPath + "/Ios";
-                    break;
-            }
-
-            return path;
-        }
+        
 
 
         private static string abEndName = "info";
@@ -37,17 +18,14 @@ namespace FrameWork
         {
             
             AssetBundle assetBundle;
-            string path = GetAbPath();
-            
-        
-            
+            string path = Application.streamingAssetsPath+Tool.GetAbPath();
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName+"."+abEndName);
+                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
                 MyLog.Log(Application.persistentDataPath+"/"+packName);
                 if (fileInfo.Exists)
                 {
-                    assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+"/"+packName+"."+abEndName);
+                    assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
                     MyLog.Log("从新包"+packName+"加载:"+name);
                 }
                 else
@@ -72,20 +50,20 @@ namespace FrameWork
         }
         
         
-        public static void LoadAssetAsync<T>(string packName,string name,BuildTarget buildTarget,Action<T> action) where T : Object
+        public static void LoadAssetAsync<T>(string packName,string name,Action<T> action) where T : Object
         {
             AssetBundle assetBundle;
-            string path = GetAbPath();
+            string path = Application.streamingAssetsPath+Tool.GetAbPath();
 
 
             
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+"/"+packName+"."+abEndName);
+                FileInfo fileInfo = new FileInfo(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
                 MyLog.Log(Application.persistentDataPath+"/"+packName);
                 if (fileInfo.Exists)
                 {
-                    assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+"/"+packName+"."+abEndName);
+                    assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
                     MyLog.Log("从新包"+packName+"加载:"+name);
                 }
                 else

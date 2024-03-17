@@ -9,7 +9,6 @@ namespace FrameWork
 {
     public static class VersionDetection
     {
-        private static string configName = "ABConfig.txt";
         
         /// <summary>
         /// 版本检测并对比md5码检测那些ab包需要更新 并返回最新的版本文件自己数据
@@ -17,7 +16,7 @@ namespace FrameWork
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
         public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
         {
-            DownLoad.DownLoadAsset(GlobalVariables.Configure.DownLoadUrl+"/"+configName,(
+            DownLoad.DownLoadAsset(GlobalVariables.DownLoadUrl+"/"+GlobalVariables.configName,(
                 (f1,f2,s1,s2) =>
                 { } ),(
                 (bytes, s) =>
@@ -27,13 +26,13 @@ namespace FrameWork
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
                     
-                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+  configName);
+                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+  GlobalVariables.configName);
                     List<AbPackDate> newInfoList=new List<AbPackDate>();
                     List<AbPackDate> oldInfoList=new List<AbPackDate>();
                     
                     if (fileInfo.Exists)
                     {
-                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" + configName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" + GlobalVariables.configName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
                         
                         
@@ -97,50 +96,6 @@ namespace FrameWork
 
             return false;
         }
-
-
-        // public static string GetAllPackSize(List<string> infos)
-        // {
-        //     long lenght = 1;
-        //     foreach (var item in infos)
-        //     {
-        //         long len=DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item);
-        //         lenght += len;
-        //     }
-        //
-        //     return DownLoad.GetFileSize(lenght);
-        // }
-        //
-        // public static void GetAllPackSize(List<List<string>> infos,Action<long> lenght)
-        // {
-        //     Mono.Instance.StartCoroutine(GetAllPackSizeIEnumerator(infos, lenght));
-        // }
-        //
-        // public static IEnumerator GetAllPackSizeIEnumerator(List<List<string>> infos,Action<long> lenght)
-        // {
-        //     long len = 1;
-        //     int index = 0;
-        //     foreach (var item in infos)
-        //     {
-        //         DownLoad.GetPackSize(GlobalVariables.UpdateDownLoadUrl+"/"+item[0],(l =>
-        //         {
-        //             len += l;
-        //             index += 1;
-        //         } ));
-        //     }
-        //
-        //     yield return 0;
-        //
-        //     while (true)
-        //     {
-        //         if (index==infos.Count)
-        //         {
-        //             lenght(len);
-        //             yield break;
-        //         }
-        //
-        //         yield return 0;
-        //     }
-        // }
+        
     }
 }
