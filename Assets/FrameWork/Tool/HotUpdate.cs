@@ -1,6 +1,9 @@
 
+using System.Collections;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace FrameWork
 {
@@ -9,6 +12,7 @@ namespace FrameWork
         
         private void Awake()
         {
+            
              VersionDetection.Detection(((list, bytes) =>
              {
                  if (list.Count>0)
@@ -49,6 +53,7 @@ namespace FrameWork
 
         private void Run()
         {
+            //var assembly=DllLoad.Load("RiptideNetworking.dll.bytes");
             var type=DllLoad.LoadType("HotUpdate.dll.bytes", "FrameWork.Main");
             type.GetMethod("Run")?.Invoke(null, null);  
         }

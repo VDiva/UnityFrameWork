@@ -16,7 +16,7 @@ namespace FrameWork
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
         public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
         {
-            DownLoad.DownLoadAsset(Config.DownLoadUrl+Config.GetAbPath()+Config.configName,(
+            DownLoad.DownLoadAsset(Config.DownLoadUrl+Tool.GetAbPath()+Config.configName,(
                 (f1,f2,s1,s2) =>
                 { } ),(
                 (bytes, s) =>
@@ -25,15 +25,14 @@ namespace FrameWork
 
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
-
-                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath + "/" + Config.GetAbPath() +
-                                                     Config.configName);
+                    
+                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+Tool.GetAbPath()+  Config.configName);
                     List<AbPackDate> newInfoList=new List<AbPackDate>();
                     List<AbPackDate> oldInfoList=new List<AbPackDate>();
                     
                     if (fileInfo.Exists)
                     {
-                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" +Config.GetAbPath()+ Config.configName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" +Tool.GetAbPath()+ Config.configName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
                         
                         

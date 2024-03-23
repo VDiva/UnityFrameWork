@@ -17,7 +17,7 @@ namespace FrameWork
                 return assembly;
             }
             
-            var asset = AbLoad.LoadAsset<TextAsset>("dll", assemblyName);
+            var asset = AssetBundlesLoad.LoadAsset<TextAsset>("dll", assemblyName);
             var assem = Assembly.Load(asset.bytes);
             _assemblies.Add(assemblyName,assem);
             return assem;
@@ -30,7 +30,7 @@ namespace FrameWork
             {
                 return assembly.GetType(typeName);
             }
-            var asset = AbLoad.LoadAsset<TextAsset>("dll", assemblyName);
+            var asset = AssetBundlesLoad.LoadAsset<TextAsset>("dll", assemblyName);
             var assem = Assembly.Load(asset.bytes);
             _assemblies.Add(assemblyName,assem);
             return assem.GetType(typeName);

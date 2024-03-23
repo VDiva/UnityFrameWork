@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net;
+using BestHTTP;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -48,14 +49,14 @@ namespace FrameWork
                     yield break;
                 }
 
-                long statrTime = Config.ConvertDateTimep(DateTime.Now);
+                long statrTime = Tool.ConvertDateTimep(DateTime.Now);
                 
                 long lenght=1;
                 lenght=GetPackSize(path);
                 string fileSize = GetFileSize(lenght);
                 while (!uwr.isDone)
                 {
-                    long curTime = Config.ConvertDateTimep(DateTime.Now)-statrTime;
+                    long curTime = Tool.ConvertDateTimep(DateTime.Now)-statrTime;
                     float prog = uwr.downloadProgress;
 
                     float speed = GetFileSize(prog * lenght / curTime);
