@@ -39,7 +39,6 @@ namespace FrameWork
             
             if (locDis>0.1f||rotDis >0.1f)
             {
-               
                 var msg=NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ClientToServerMessageType.Transform);
                 msg.AddUShort(GetId());
                 msg.AddVector3(loc);

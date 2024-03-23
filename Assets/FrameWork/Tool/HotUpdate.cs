@@ -26,17 +26,17 @@ namespace FrameWork
                      {
                          MyLog.Log("下载完毕正在解压");
 
-                         if (!Directory.Exists(Application.persistentDataPath+"/"+Config.GetAbPath()))
+                         if (!Directory.Exists(Application.streamingAssetsPath+"/"+Config.GetAbPath()))
                          {
-                             Directory.CreateDirectory(Application.persistentDataPath + "/" + Config.GetAbPath());
+                             Directory.CreateDirectory(Application.streamingAssetsPath + "/" + Config.GetAbPath());
                          }
                          
                          foreach (var item in dates)
                          {
-                             File.WriteAllBytes(Application.persistentDataPath+"/"+Config.GetAbPath()+item.Name,item.PackData);
+                             File.WriteAllBytes(Application.streamingAssetsPath+"/"+Config.GetAbPath()+item.Name,item.PackData);
                          }
                          
-                         File.WriteAllBytes(Application.persistentDataPath+"/"+Config.GetAbPath()+Config.configName,bytes);
+                         File.WriteAllBytes(Application.streamingAssetsPath+"/"+Config.GetAbPath()+Config.configName,bytes);
                          MyLog.Log("解压完毕正在读取资源");
                          Run();
                      } ));

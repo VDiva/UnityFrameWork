@@ -25,19 +25,20 @@ namespace FrameWork
             //     _assetBundles.TryAdd(packName, assetBundle);
             // }
             
-            FileInfo fileInfo = new FileInfo(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
-            MyLog.Log(Application.persistentDataPath+"/"+packName);
-            if (fileInfo.Exists)
-            {
-                isNewPack = "新";
-                assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
-            }
-            else
-            {
-                isNewPack = "旧";
-                assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+"."+abEndName);
-                //assetBundle=AssetBundle.LoadFromFile(Application.streamingAssetsPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
-            }
+            // FileInfo fileInfo = new FileInfo(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
+            // MyLog.Log(Application.persistentDataPath+"/"+packName);
+            // if (fileInfo.Exists)
+            // {
+            //     isNewPack = "新";
+            //     assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
+            // }
+            // else
+            // {
+            //     isNewPack = "旧";
+            //     assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+"."+abEndName);
+            //     //assetBundle=AssetBundle.LoadFromFile(Application.streamingAssetsPath+"/"+packName+"."+GlobalVariables.Configure.AbEndName);
+            // }
+            assetBundle=AssetBundle.LoadFromFile(path+"/"+packName+"."+abEndName);
             MyLog.Log($"从{isNewPack}包"+packName+"加载:"+name);
             var obj=assetBundle.LoadAsset<T>(name);
             assetBundle.Unload(false);
@@ -67,19 +68,21 @@ namespace FrameWork
             //     _assetBundles.TryAdd(packName, assetBundle);
             // }
             
-            FileInfo fileInfo = new FileInfo(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
-            MyLog.Log(Application.persistentDataPath+"/"+packName);
-            if (fileInfo.Exists)
-            {
-                isNewPack = "新";
-                assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
-            }
-            else
-            {
-                assetBundle=AssetBundle.LoadFromFile(path+packName+"."+abEndName);
-                //MyLog.Log("从旧包"+packName+"加载:"+name);
-                isNewPack = "旧";
-            }
+            // FileInfo fileInfo = new FileInfo(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
+            // MyLog.Log(Application.persistentDataPath+"/"+packName);
+            // if (fileInfo.Exists)
+            // {
+            //     isNewPack = "新";
+            //     assetBundle=AssetBundle.LoadFromFile(Application.persistentDataPath+Tool.GetAbPath()+packName+"."+abEndName);
+            // }
+            // else
+            // {
+            //     assetBundle=AssetBundle.LoadFromFile(path+packName+"."+abEndName);
+            //     //MyLog.Log("从旧包"+packName+"加载:"+name);
+            //     isNewPack = "旧";
+            // }
+            
+            assetBundle=AssetBundle.LoadFromFile(path+packName+"."+abEndName);
             MyLog.Log($"从{isNewPack}包"+packName+"加载:"+name);
             var asset=assetBundle.LoadAssetAsync<T>(name);
             asset.completed += (operation =>

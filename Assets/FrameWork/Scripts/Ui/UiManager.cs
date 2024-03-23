@@ -23,7 +23,7 @@ namespace FrameWork
         
         private Stack<Actor> _uiStack;
 
-        //private UiRoot _uiRoot;
+        private UiRoot _uiRoot;
         public void Init()
         {
             _index = 0;
@@ -37,8 +37,8 @@ namespace FrameWork
             //var prefab = AssetBundlesLoad.LoadAsset<GameObject>("Ui", "UiRoot");
             //CanvasTransform= GameObject.Instantiate(prefab)?.transform;
 
-            //_uiRoot = new UiRoot();
-            //CanvasTransform = _uiRoot.GetGameObject().transform;
+            _uiRoot = new UiRoot();
+            CanvasTransform = _uiRoot.GetGameObject().transform;
             if (CanvasTransform!=null)
             {
                 BackgroundTransform =CanvasTransform.Find("Background");

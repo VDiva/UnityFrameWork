@@ -26,13 +26,13 @@ namespace FrameWork
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
                     
-                    FileInfo fileInfo = new FileInfo(Application.persistentDataPath +"/"+Tool.GetAbPath()+  Config.configName);
+                    FileInfo fileInfo = new FileInfo(Application.streamingAssetsPath +"/"+Tool.GetAbPath()+  Config.configName);
                     List<AbPackDate> newInfoList=new List<AbPackDate>();
                     List<AbPackDate> oldInfoList=new List<AbPackDate>();
                     
                     if (fileInfo.Exists)
                     {
-                        string oldInfo=File.ReadAllText(Application.persistentDataPath + "/" +Tool.GetAbPath()+ Config.configName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(Application.streamingAssetsPath + "/" +Tool.GetAbPath()+ Config.configName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
                         
                         

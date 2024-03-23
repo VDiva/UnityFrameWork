@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1427015670
+CRC: 652705179
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: e646e4040cbb31ef0b6bb520553e35a9
+    Hash: 3e474d32cfbf14bec2da09e671635039
   TypeTreeHash:
     serializedVersion: 2
     Hash: 5ad585dd02dfb5016c0dad519eab8f49
@@ -14,4 +14,5 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/FrameWork/Asset/Dll/HotUpdate.dll.bytes
+- Assets/FrameWork/Asset/Dll/RiptideNetworking.dll.bytes
 Dependencies: []
