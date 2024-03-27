@@ -10,24 +10,20 @@ namespace FrameWork
         public override void Start()
         {
             base.Start();
-            // UiManager.Instance.ShowUiAction += ShowUi;
-            // UiManager.Instance.HideUiAction += HideUi;
-            // UiManager.Instance.RemoveUiAction += RemoveUi;
-            EventManager.AddListener(MessageType.UiMessage,UiMessageType.Show,ShowUi);
-            EventManager.AddListener(MessageType.UiMessage,UiMessageType.Hide,HideUi);
-            EventManager.AddListener(MessageType.UiMessage,UiMessageType.Remove,RemoveUi);
+            
+            Registered(MessageType.UiMessage,UiMessageType.Show,ShowUi);
+            Registered(MessageType.UiMessage,UiMessageType.Hide,HideUi);
+            Registered(MessageType.UiMessage,UiMessageType.Remove,RemoveUi);
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
-            // UiManager.Instance.ShowUiAction -= ShowUi;
-            // UiManager.Instance.HideUiAction -= HideUi;
-            // UiManager.Instance.RemoveUiAction -= RemoveUi;
             
-            EventManager.RemoveListener(MessageType.UiMessage,UiMessageType.Show,ShowUi);
-            EventManager.RemoveListener(MessageType.UiMessage,UiMessageType.Hide,HideUi);
-            EventManager.RemoveListener(MessageType.UiMessage,UiMessageType.Remove,RemoveUi);
+            Unbinding(MessageType.UiMessage,UiMessageType.Show,ShowUi);
+            Unbinding(MessageType.UiMessage,UiMessageType.Hide,HideUi);
+            Unbinding(MessageType.UiMessage,UiMessageType.Remove,RemoveUi);
+           
         }
 
         private void ShowUi(object[] parma)

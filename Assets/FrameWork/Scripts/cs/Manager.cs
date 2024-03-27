@@ -7,9 +7,10 @@ namespace FrameWork
     {
         private void Start()
         {
-            NetWorkSystem.Start("127.0.0.1:8888");
-            GameObject go = new GameObject("net");
-            go.AddComponent<net>();
+            // NetWorkSystem.Start("127.0.0.1:8888");
+            // GameObject go = new GameObject("net");
+            // go.AddComponent<net>();
+            UiManager.Instance.ShowUi<CsText>();
         }
 
         private void Update()
@@ -26,7 +27,7 @@ namespace FrameWork
             
             if (Input.GetKeyDown("3"))
             {
-                NetWorkSystem.Instantiate<CsCube>(Vector3.zero,Vector3.zero,true);
+                NetWorkSystem.Instantiate<CsSphere>(Vector3.zero,Vector3.zero,true);
             }
         }
         

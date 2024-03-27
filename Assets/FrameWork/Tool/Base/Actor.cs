@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using UnityEngine;
 
@@ -69,6 +70,26 @@ namespace FrameWork
         public virtual void LateUpdate() {}
 
         public virtual void OnDestroy() {}
+
+        protected void Registered(int eventType,int id,Action<object[]> evt)
+        {
+            EventManager.AddListener(eventType,id,evt);
+        }
+        
+        protected void Registered(Enum eventType,Enum id,Action<object[]> evt)
+        {
+            EventManager.AddListener(eventType,id,evt);
+        }
+        
+        protected void Unbinding(int eventType,int id,Action<object[]> evt)
+        {
+            EventManager.RemoveListener(eventType,id,evt);
+        }
+        
+        protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
+        {
+            EventManager.RemoveListener(eventType,id,evt);
+        }
 
     }
 }

@@ -20,12 +20,12 @@ namespace FrameWork
         /// <param name="path"></param>
         /// <param name="progress"></param>
         /// <param name="data"></param>
-        public static void DownLoadAsset(string path,Action<float,float,string,string> progress,Action<byte[],string> data)
+        public static void DownLoadAsset(string path,Action<float,float,string,string> progress,Action<byte[],string> data,Action<string> err)
         {
-            Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data));
+            Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data,err));
         }
         
-        static IEnumerator DownLoadAssetIEumerator(string path,Action<float,float,string,string> progress,Action<byte[],string> data)
+        static IEnumerator DownLoadAssetIEumerator(string path,Action<float,float,string,string> progress,Action<byte[],string> data,Action<string> err)
         {
             using (UnityWebRequest uwr=UnityWebRequest.Get(path))
             {
@@ -46,13 +46,21 @@ namespace FrameWork
                 if (uwr.isHttpError|| uwr.isNetworkError)
                 {
                     MyLog.Log(uwr.error);
+                    err?.Invoke(uwr.error);
                     yield break;
                 }
 
                 long statrTime = Tool.ConvertDateTimep(DateTime.Now);
                 
                 long lenght=1;
-                lenght=GetPackSize(path);
+                var value = GetPackSize(path);
+                if (value==null)
+                {
+                    err?.Invoke("网络错误获取失败");
+                    yield break;
+                }
+                
+                lenght=(long)value;
                 string fileSize = GetFileSize(lenght);
                 while (!uwr.isDone)
                 {
@@ -101,20 +109,29 @@ namespace FrameWork
         }
 
 
-        public static long GetPackSize(string path)
+        public static long? GetPackSize(string path)
         {
             MyLog.Log(path);
             long lenght=1;
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(path);
             request.Method = "HEAD";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             
-            if (response.StatusCode == HttpStatusCode.OK)
+            
+            try
             {
-                lenght = response.ContentLength;
-                Console.WriteLine(response.ContentLength);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    lenght = response.ContentLength;
+                    Console.WriteLine(response.ContentLength);
+                }
+                return lenght;
             }
-            return lenght;
+            catch (Exception e)
+            {
+                MyLog.Log(e.Message);
+                return null;
+            }
             
         }
     }

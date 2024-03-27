@@ -44,18 +44,23 @@ namespace FrameWork.Editor
             {
                 using (StreamWriter swView=new StreamWriter(path+"/"+name+"//"+name+".Awake.cs",false))
                 {
-                    using (StreamWriter sw = new StreamWriter( path+"/"+name + "//" + name + ".cs", false))
+
+                    if (!File.Exists(path+"/"+name + "//" + name + ".cs"))
                     {
-                        sw.WriteLine("using UnityEngine;");
-                        sw.WriteLine("using FrameWork;");
-                        sw.WriteLine("using UnityEngine.UI;");
-                        sw.WriteLine("namespace FrameWork\n{");
-                        sw.WriteLine("\tpublic partial class "+name+" : "+scriptName);
-                        sw.WriteLine("\t{");
+                        using (StreamWriter sw = new StreamWriter( path+"/"+name + "//" + name + ".cs", false))
+                        {
+                            sw.WriteLine("using UnityEngine;");
+                            sw.WriteLine("using FrameWork;");
+                            sw.WriteLine("using UnityEngine.UI;");
+                            sw.WriteLine("namespace FrameWork\n{");
+                            sw.WriteLine("\tpublic partial class "+name+" : "+scriptName);
+                            sw.WriteLine("\t{");
                         
-                        sw.WriteLine("\t}");
-                        sw.WriteLine("}");
+                            sw.WriteLine("\t}");
+                            sw.WriteLine("}");
+                        }
                     }
+                    
                     
 
                     swMode.WriteLine("using UnityEngine;");
@@ -87,39 +92,49 @@ namespace FrameWork.Editor
                     
                 }
             }
-            using (StreamWriter swAttr = new StreamWriter(path + "/" + name + "//" + name + ".Attr.cs", false))
-            {
-                AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-                swAttr.WriteLine("using UnityEngine;");
-                swAttr.WriteLine("using FrameWork;");
-                swAttr.WriteLine("using UnityEngine.UI;");
-                swAttr.WriteLine("namespace FrameWork\n{");
-                swAttr.WriteLine("\t[ActorInfo(\""+ai.assetBundleName+"\",\""+name+"\")]");
-                swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
-                swAttr.WriteLine("\t{");
-                swAttr.WriteLine("\t}");
-                swAttr.WriteLine("}");
-            }
-            
-            
-            using (StreamWriter swAttr = new StreamWriter(path + "/" + name + "//" + name + ".Extend.cs", false))
-            {
-                AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-                swAttr.WriteLine("using UnityEngine;");
-                swAttr.WriteLine("using FrameWork;");
-                swAttr.WriteLine("using UnityEngine.UI;");
-                swAttr.WriteLine("namespace FrameWork\n{");
-                swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
-                swAttr.WriteLine("\t{");
-                swAttr.WriteLine("\t\tpublic "+name+"(Transform trans): base(trans){}");
-                swAttr.WriteLine("\t\tpublic "+name+"(): base(){}");
-                swAttr.WriteLine("\t}");
-                swAttr.WriteLine("}");
-            }
-        
 
-            AssetBundle.CreatPCAssetBundleAsWindows();
-            AssetBundle.CreatAssetBundleAsAndroid();
+            if (!File.Exists(path + "/" + name + "//" + name + ".Attr.cs"))
+            {
+                using (StreamWriter swAttr = new StreamWriter(path + "/" + name + "//" + name + ".Attr.cs", false))
+                {
+                    AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+                    swAttr.WriteLine("using UnityEngine;");
+                    swAttr.WriteLine("using FrameWork;");
+                    swAttr.WriteLine("using UnityEngine.UI;");
+                    swAttr.WriteLine("namespace FrameWork\n{");
+                    if (scriptName=="UiActor")
+                    {
+                        swAttr.WriteLine("\t[UiMode(Mode.Normal)]");
+                    }
+                    swAttr.WriteLine("\t[ActorInfo(\""+ai.assetBundleName+"\",\""+name+"\")]");
+                    swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
+                    swAttr.WriteLine("\t{");
+                    swAttr.WriteLine("\t}");
+                    swAttr.WriteLine("}");
+                }
+            }
+
+
+            if (!File.Exists(path + "/" + name + "//" + name + ".Extend.cs"))
+            {
+                using (StreamWriter swAttr = new StreamWriter(path + "/" + name + "//" + name + ".Extend.cs", false))
+                {
+                    AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+                    swAttr.WriteLine("using UnityEngine;");
+                    swAttr.WriteLine("using FrameWork;");
+                    swAttr.WriteLine("using UnityEngine.UI;");
+                    swAttr.WriteLine("namespace FrameWork\n{");
+                    swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
+                    swAttr.WriteLine("\t{");
+                    swAttr.WriteLine("\t\tpublic "+name+"(Transform trans): base(trans){}");
+                    swAttr.WriteLine("\t\tpublic "+name+"(): base(){}");
+                    swAttr.WriteLine("\t}");
+                    swAttr.WriteLine("}");
+                }
+            }
+            
+            
+            AssetBundle.CreatAll();
             AssetDatabase.Refresh();
 
         }

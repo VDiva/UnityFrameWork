@@ -14,7 +14,7 @@ namespace FrameWork
         /// 版本检测并对比md5码检测那些ab包需要更新 并返回最新的版本文件自己数据
         /// </summary>
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
-        public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo)
+        public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo,Action<string> err=null)
         {
             DownLoad.DownLoadAsset(Config.DownLoadUrl+Tool.GetAbPath()+Config.configName,(
                 (f1,f2,s1,s2) =>
@@ -73,7 +73,7 @@ namespace FrameWork
                         
                         versionInfo(infos,bytes);
                     }
-                }));
+                }),err);
             
             
         }

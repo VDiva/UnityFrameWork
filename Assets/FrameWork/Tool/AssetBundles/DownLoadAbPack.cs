@@ -15,7 +15,7 @@ namespace FrameWork
         /// <param name="abPackDates"></param>
         /// <param name="progress"></param>
         /// <param name="end"></param>
-        public static void AddPackDownTack(List<AbPackDate> abPackDates,Action<float,float,string,string> progress,Action<List<AbPackDate>> end)
+        public static void AddPackDownTack(List<AbPackDate> abPackDates,Action<float,float,string,string> progress,Action<List<AbPackDate>> end,Action<string> err=null)
         {
             
             long lenght = 0;
@@ -27,8 +27,9 @@ namespace FrameWork
             }
             DownLoadAsset(lenght,abPackDates,progress,(() =>
             {
+                progress?.Invoke(0,1,DownLoad.GetFileSize(lenght),DownLoad.GetFileSize(lenght));
                 end(abPackDates);
-            }));
+            }),err);
         }
 
         
@@ -39,7 +40,7 @@ namespace FrameWork
         /// <param name="abPackDates"></param>
         /// <param name="progress"></param>
         /// <param name="end"></param>
-        private static void DownLoadAsset(long lenght,List<AbPackDate> abPackDates,Action<float,float,string,string> progress,Action end)
+        private static void DownLoadAsset(long lenght,List<AbPackDate> abPackDates,Action<float,float,string,string> progress,Action end,Action<string> err)
         {
             if (_abPackDates.TryDequeue(out AbPackDate abPackDate))
             {
@@ -55,8 +56,8 @@ namespace FrameWork
                 } ),((bytes, info) =>
                 {
                     abPackDate.PackData = bytes;
-                    DownLoadAsset(lenght,abPackDates,progress,end);
-                } ));
+                    DownLoadAsset(lenght,abPackDates,progress,end,err);
+                } ),err);
             }
             else
             {
