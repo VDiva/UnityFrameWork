@@ -14,7 +14,7 @@ namespace FrameWork
         
         protected Transform transform => _gameObject.transform;
         
-        protected Actor()
+        public Actor()
         {
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
@@ -28,7 +28,7 @@ namespace FrameWork
             _gameObject.SetActive(true);
         }
        
-        protected Actor(Transform trans)
+        public Actor(Transform trans)
         {
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
@@ -89,6 +89,11 @@ namespace FrameWork
         protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
         {
             EventManager.RemoveListener(eventType,id,evt);
+        }
+        
+        protected void Dispatch(object evtType, object evt, object[] data = null)
+        {
+            EventManager.DispatchEvent((int)evtType,(int)evt,data);
         }
 
     }

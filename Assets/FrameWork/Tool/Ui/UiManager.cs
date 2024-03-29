@@ -21,9 +21,9 @@ namespace FrameWork
         private int _index;
         
         
-        private Stack<Actor> _uiStack;
+        private Stack<int> _uiStack;
 
-        private UiRoot _uiRoot;
+        private Actor _uiRoot;
         public void Init()
         {
             _index = 0;
@@ -33,25 +33,30 @@ namespace FrameWork
 
         public UiManager()
         {
-            _uiStack = new Stack<Actor>();
+            _uiStack = new Stack<int>();
             //var prefab = AssetBundlesLoad.LoadAsset<GameObject>("Ui", "UiRoot");
             //CanvasTransform= GameObject.Instantiate(prefab)?.transform;
-
-            _uiRoot = new UiRoot();
-            CanvasTransform = _uiRoot.GetGameObject().transform;
-            if (CanvasTransform!=null)
+            var type = DllLoad.GetHoyUpdateDllType("FrameWork.UiRoot");
+            _uiRoot = (Actor)type.Assembly.CreateInstance(type.Namespace+"."+type.Name);
+            if (_uiRoot!=null)
             {
-                BackgroundTransform =CanvasTransform.Find("Background");
-                NormalTransform =CanvasTransform.Find("Normal");
-                PopupTransform =CanvasTransform.Find("Popup");
-                ControlTransform =CanvasTransform.Find("Control");
+                CanvasTransform = _uiRoot.GetGameObject().transform;
+                if (CanvasTransform!=null)
+                {
+                    BackgroundTransform =CanvasTransform.Find("Background");
+                    NormalTransform =CanvasTransform.Find("Normal");
+                    PopupTransform =CanvasTransform.Find("Popup");
+                    ControlTransform =CanvasTransform.Find("Control");
+                }
             }
         }
 
 
         public void ShowUi(int index)
         {
-            EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
+            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
+            Dispatch(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
+            _uiStack.Push(index);
             //ShowUiAction?.Invoke(index);
         }
         
@@ -104,57 +109,27 @@ namespace FrameWork
             
             obj.SetIndex(_index);
             _index += 1;
-            _uiStack.Push(obj);
+            _uiStack.Push(obj.GetIndex());
             return obj;
         }
         
 
         public UiActor ShowUi<T>() where T: UiActor
         {
-
-            if (CanvasTransform==null)
-            {
-                MyLog.LogError("场景中没有Canvas组件,无法显示Ui物体");
-                return null;
-            }
-            
-            Type t = typeof(T);
-            string fullName = t.Name;
-            var uiMode=t.GetCustomAttribute<UiModeAttribute>();
-
-            if (uiMode==null)
-            {
-                MyLog.LogError("类不具备UiModeAttribute");
-                return null;
-            }
-           
-            Transform tran=GetTransform(uiMode);
-
-            var param = new object[] { tran };
-            var obj=(T)Activator.CreateInstance(t,param);
-            
-            //var obj =(T)Assembly.GetExecutingAssembly().CreateInstance(t.Namespace+"."+fullName)
-            if (obj==null)
-            {
-                MyLog.LogError("生成ui失败");
-                return null;
-            }
-            
-            obj.SetIndex(_index);
-            _index += 1;
-            _uiStack.Push(obj);
-            return obj;
+            return ShowUi(typeof(T));
         }
         public void HideUi(int index)
         {
-            EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
+            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
+            Dispatch(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
             //HideUiAction?.Invoke(index);
         }
 
         
         public void RemoveUi(int index)
         {
-            EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
+            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
+            Dispatch(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
             //RemoveUiAction?.Invoke(index);
         }
 
@@ -163,21 +138,21 @@ namespace FrameWork
         {
             if (_uiStack.Count>0)
             {
-                var actor=_uiStack.Pop();
-                if (actor!=null)
-                {
-                    RemoveUi(actor.GetIndex());
-                }
-                else
-                {
-                    Back();
-                }
+                var index=_uiStack.Pop();
+                HideUi(index);
             }
         }
         
         public void ClearAllPanel()
         {
             RemoveUi(-1);
+            //RemoveUiAction?.Invoke(-1);
+            _uiStack.Clear();
+        }
+        
+        public void HideAllPanel()
+        {
+            HideUi(-1);
             //RemoveUiAction?.Invoke(-1);
             _uiStack.Clear();
         }
@@ -206,6 +181,31 @@ namespace FrameWork
             return tran;
         }
         
+        
+        protected void Registered(int eventType,int id,Action<object[]> evt)
+        {
+            EventManager.AddListener(eventType,id,evt);
+        }
+        
+        protected void Registered(Enum eventType,Enum id,Action<object[]> evt)
+        {
+            EventManager.AddListener(eventType,id,evt);
+        }
+        
+        protected void Unbinding(int eventType,int id,Action<object[]> evt)
+        {
+            EventManager.RemoveListener(eventType,id,evt);
+        }
+        
+        protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
+        {
+            EventManager.RemoveListener(eventType,id,evt);
+        }
 
+        
+        protected void Dispatch(object evtType, object evt, object[] data = null)
+        {
+            EventManager.DispatchEvent((int)evtType,(int)evt,data);
+        }
     }
 }

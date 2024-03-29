@@ -7,10 +7,10 @@ namespace FrameWork
     {
         private void Start()
         {
-            // NetWorkSystem.Start("127.0.0.1:8888");
-            // GameObject go = new GameObject("net");
-            // go.AddComponent<net>();
-            UiManager.Instance.ShowUi<CsText>();
+            NetWorkSystem.Start("127.0.0.1:8888");
+            GameObject go = new GameObject("net");
+            go.AddComponent<net>();
+            //UiManager.Instance.ShowUi<CsText>();
         }
 
         private void Update()

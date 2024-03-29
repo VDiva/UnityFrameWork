@@ -45,7 +45,7 @@ namespace FrameWork
         }
         private void HideUi(int index)
         {
-            if (index.Equals(GetIndex()))
+            if (index.Equals(GetIndex())|| index==-1)
             {
                 GetGameObject().SetActive(false);
             }

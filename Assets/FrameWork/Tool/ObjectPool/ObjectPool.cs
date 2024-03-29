@@ -11,6 +11,12 @@ namespace FrameWork
         private int _num;
         private int _currentNum;
         private ConcurrentQueue<T> _objectPool;
+
+
+        public int GetSize()
+        {
+            return _objectPool.Count;
+        }
         
         public ObjectPool(int num=-1)
         {
@@ -19,9 +25,7 @@ namespace FrameWork
             _currentNum = 0;
             _num = num;
         }
-
-
-
+        
         public void EnQueue(T t)
         {
             _objectPool.Enqueue(t);

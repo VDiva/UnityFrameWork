@@ -11,7 +11,8 @@ namespace FrameWork
         {
             base.OnInstantiate(id, objId, packName, spawnName, typeName, position, rotation, isAb);
             MyLog.Log("生成消息");
-            var obj=(Actor)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetType(typeName));
+            //var obj=(Actor)Activator.CreateInstance(Assembly.GetExecutingAssembly().GetType(typeName));
+            var obj = EntityManager.Instance.CreateEntity(DllLoad.GetHoyUpdateDllType(typeName));
             MyLog.Log(obj.ToString());
             obj.GetIdentity().SetClientId(id);
             obj.GetIdentity().SetObjId(objId);

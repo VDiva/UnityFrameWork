@@ -35,5 +35,15 @@ namespace FrameWork
             _assemblies.Add(assemblyName,assem);
             return assem.GetType(typeName);
         }
+
+        public static Assembly GetHotUpdateDll()
+        {
+            return Load("HotUpdate.dll.bytes");
+        }
+
+        public static Type GetHoyUpdateDllType(string typeName)
+        {
+            return LoadType("HotUpdate.dll.bytes", typeName);
+        }
     }
 }
