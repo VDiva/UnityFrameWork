@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace FrameWork
 {
@@ -14,7 +16,7 @@ namespace FrameWork
         /// 版本检测并对比md5码检测那些ab包需要更新 并返回最新的版本文件自己数据
         /// </summary>
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
-        public static void Detection(Action<List<AbPackDate>,byte[]> versionInfo,Action<string> err=null)
+        public static void Detection(string abConfigPath,Action<List<AbPackDate>,byte[]> versionInfo,Action<string> err=null)
         {
             DownLoad.DownLoadAsset(Config.DownLoadUrl+Tool.GetAbPath()+Config.configName,(
                 (f1,f2,s1,s2) =>
@@ -26,13 +28,13 @@ namespace FrameWork
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
                     
-                    FileInfo fileInfo = new FileInfo(Application.streamingAssetsPath +"/"+Tool.GetAbPath()+  Config.configName);
+                    FileInfo fileInfo = new FileInfo(abConfigPath+  Config.configName);
                     List<AbPackDate> newInfoList=new List<AbPackDate>();
                     List<AbPackDate> oldInfoList=new List<AbPackDate>();
                     
                     if (fileInfo.Exists)
                     {
-                        string oldInfo=File.ReadAllText(Application.streamingAssetsPath + "/" +Tool.GetAbPath()+ Config.configName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(abConfigPath+ Config.configName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
                         
                         
@@ -78,6 +80,14 @@ namespace FrameWork
             
         }
 
+        public static void Detection(Action<List<AbPackDate>, byte[]> versionInfo, Action<string> err = null)
+        {
+            var newPath = Application.persistentDataPath + Config.GetAbPath();
+            Detection(newPath,versionInfo,err);
+        }
+
+        
+        
         /// <summary>
         /// 对比md5码
         /// </summary>

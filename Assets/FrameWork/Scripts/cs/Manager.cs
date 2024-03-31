@@ -7,9 +7,19 @@ namespace FrameWork
     {
         private void Start()
         {
-            NetWorkSystem.Start("127.0.0.1:8888");
+            
+            
+            
+            NetWorkSystem.Start("192.168.31.131:8888");
             GameObject go = new GameObject("net");
             go.AddComponent<net>();
+
+            // if (Application.platform==RuntimePlatform.Android)
+            // {
+            //     
+            // }
+            UiManager.Instance.ShowUi<InputCs>();
+            
             //UiManager.Instance.ShowUi<CsText>();
         }
 

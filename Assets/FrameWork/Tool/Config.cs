@@ -16,7 +16,7 @@ namespace FrameWork
         public static string dllPath = dataPath+"\\HybridCLRData\\HotUpdateDlls\\";
         public static string dllCopyPath = dataPath+"\\Assets\\FrameWork\\Asset\\Dll\\";
         
-        public static string DownLoadUrl="http://127.0.0.1:3000";
+        public static string DownLoadUrl="http://192.168.31.131:3000";
         
         public static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
         

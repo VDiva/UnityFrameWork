@@ -34,44 +34,52 @@ namespace NetWork
 
         public static void Start(ushort port,ushort maxConnect)
         {
-            updateMessageThread?.Abort();
-            tickThread?.Abort();
             server = new Server();
             clients = new Dictionary<ushort, Connection>();
             RiptideLogger.Initialize(Console.WriteLine, false);
             server.ClientConnected += OnConnect;
             server.ClientDisconnected += OnDisConnect;
             server.Start(port,maxConnect);
-            updateMessageThread = new Thread(UpdateMessage);
-            updateMessageThread.Start();
+            
 
-            tickThread = new Thread(UpdateTick);
-            tickThread.Start();
+            UpdateMessage();
+            UpdateTick();
         }
 
         private static void UpdateMessage()
         {
-            while (true)
+            Console.WriteLine("开启消息监听");
+            Task.Run((async () =>
             {
-                Thread.Sleep(100);
-                try
+                while (true)
                 {
-                    server.Update();
-                }catch(Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
+                    
+                    try
+                    {
+                         server.Update();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+
+                    await Task.Delay(100);
                 }
-            }
+            }));
         }
 
         private static void UpdateTick()
         {
-            while (true)
+            Console.WriteLine("开启服务端帧发送");
+            Task.Run((async () =>
             {
-                Thread.Sleep(1000);
-                currentTick += 1; 
-                SendTick();
-            }
+                while (true)
+                {
+                    currentTick += 1;
+                    SendTick();
+                    await Task.Delay(1000);
+                }
+            }));
         }
 
         private static void SendTick()

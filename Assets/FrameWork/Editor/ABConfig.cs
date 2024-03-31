@@ -36,7 +36,7 @@ namespace FrameWork
         public static void CreateAll()
         {
             CreateAbWindowsConfig();
-            CreateAbWindowsConfig();
+            CreateAbAndroidConfig();
         }
         
 

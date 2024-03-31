@@ -16,6 +16,9 @@ namespace FrameWork
         public static ushort serverTick;
         private static string _address;
         private static NetWork _netWork;
+
+        public static bool IsOnBackground=false;
+        private static bool _isDisConnect=false;
         public static void Start(string address)
         {
             _client = new Client();
@@ -32,6 +35,7 @@ namespace FrameWork
             EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.DisConnectToServer);
             //OnDisConnectToServer?.Invoke();
             MyLog.Log("断开服务器....");
+            _isDisConnect = true;
             Start(_address);
             
         }
@@ -41,16 +45,22 @@ namespace FrameWork
            
             EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.ConnectToServer);
             MyLog.Log("链接到服务器....客户端id为:"+_client.Id);
-            //EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.ReLink, new object[] { _client.Id,_id });
-            var msg=CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.ReLink);
-            msg.AddUShort(_id);
-            Send(msg);
-            MyLog.Log("发送从连消息");
-            
+            if (IsOnBackground&& _isDisConnect)
+            {
+                var msg=CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.ReLink);
+                msg.AddUShort(_id);
+                Send(msg);
+                MyLog.Log("发送从连消息");
+            }
+            IsOnBackground = false;
+            _isDisConnect = false;
             _id = _client.Id;
         }
-        
-        
+
+        public static bool IsConnect()
+        {
+            return _client.IsConnected;
+        }
         
         
         public static void UpdateMessage()

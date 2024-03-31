@@ -27,7 +27,7 @@ namespace FrameWork
             }
             DownLoadAsset(lenght,abPackDates,progress,(() =>
             {
-                progress?.Invoke(0,1,DownLoad.GetFileSize(lenght),DownLoad.GetFileSize(lenght));
+                progress?.Invoke(1,0,DownLoad.GetFileSize(lenght),DownLoad.GetFileSize(lenght));
                 end(abPackDates);
             }),err);
         }

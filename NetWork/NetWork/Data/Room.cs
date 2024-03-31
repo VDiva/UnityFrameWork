@@ -110,7 +110,7 @@ namespace NetWork
             if(players.ContainsKey(id))
             {
                 players[id].IsDisConnect = true;
-
+            
                 foreach (var player in players)
                 {
                     if (player.Value.Connection.Id != id)
@@ -119,7 +119,15 @@ namespace NetWork
                         break;
                     }
                 }
+
+                Task.Run((async () =>
+                {
+                    await Task.Delay(30000);
+                    Left(id);
+                    Console.WriteLine("玩家"+id+"断开了链接");
+                }));
             }
+            
         }
 
         public void Left(ushort id)
@@ -159,10 +167,10 @@ namespace NetWork
         {
            SendOther(id,message,false);
            if(gameObjects.TryGetValue(objId,out var objDate))
-            {
+           {
                 objDate.Position = pos;
                 objDate.Rotation = rot;
-            }
+           }
         }
 
         public void Instantiate(ushort id,Message message)
@@ -234,7 +242,7 @@ namespace NetWork
 
             foreach(var go in gameObjects)
             {
-                if(go.Value.BelongingClient == id)
+                if(go.Key!=go.Value.BelongingClient&&go.Value.BelongingClient == id)
                 {
                     ids.Add(go.Key);
                     go.Value.BelongingClient = newId;
@@ -274,12 +282,14 @@ namespace NetWork
         {
             foreach(var item in gameObjects)
             {
-                var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Transform);
-                msg.AddUShort(item.Key);
-                msg.AddVector3(item.Value.Position);
-                msg.AddVector3(item.Value.Rotation);
-                SendSelf(id,msg);
-                
+                if (item.Key!=id)
+                {
+                    var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Transform);
+                    msg.AddUShort(item.Key);
+                    msg.AddVector3(item.Value.Position);
+                    msg.AddVector3(item.Value.Rotation);
+                    SendSelf(id,msg);
+                }
             }
         }
 
@@ -292,23 +302,33 @@ namespace NetWork
                 player.Connection = NetWorkSystem.GetClient(newId);
                 players.Remove(oldId);
                 players.Add(newId, player);
-
-
-                var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.ReLink);
-                msg.AddUShort(newId);
-                msg.AddUShort(oldId);
-                SendAll(msg);
-
-                SendTmpTransfrom(newId);
-
-                for (var i = 0;i < player.Messages.Count;i++)
-                {
-                    SendSelf(newId, player.Messages[i]);
-                }
-
+                
+                
+                 if (gameObjects.ContainsKey(oldId))
+                 {
+                     var obj = gameObjects[oldId];
+                     obj.objId = newId;
+                     obj.BelongingClient = newId;
+                     gameObjects.Remove(oldId);
+                     gameObjects.Add(newId,obj);
+                     
+                 }
+                
+                
+                
+                 var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.ReLink);
+                 msg.AddUShort(newId);
+                 msg.AddUShort(oldId);
+                 SendAll(msg);
 
                 
 
+                  for (var i = 0;i < player.Messages.Count;i++)
+                  {
+                      SendSelf(newId, player.Messages[i]);
+                  }
+                
+                SendTmpTransfrom(newId);
             }
         }
 
@@ -330,6 +350,7 @@ namespace NetWork
             {
                 if (!player.Value.IsDisConnect)
                 {
+                    Console.WriteLine("发送消息all");
                     player.Value.Connection.Send(message, !isAdd);
                 }
                 else
@@ -348,6 +369,7 @@ namespace NetWork
                 {
                     if (!player.Value.IsDisConnect)
                     {
+                        Console.WriteLine("发送消息other");
                         player.Value.Connection.Send(message, !isAdd);
                     }
                     else
@@ -361,20 +383,24 @@ namespace NetWork
         public void SendSelf(ushort id, Message message, bool isAdd = true)
         {
             if (isAdd) AddMessage(message);
-            foreach (var player in players)
+
+            if (players.ContainsKey(id))
             {
-                if (player.Value.Connection.Id == id)
+                var player = players[id];
+                if (player.Connection.Id == id)
                 {
-                    if (!player.Value.IsDisConnect)
+                    if (!player.IsDisConnect)
                     {
-                        player.Value.Connection.Send(message, !isAdd);
+                        player.Connection.Send(message, !isAdd);
+                        Console.WriteLine("发送消息self");
                     }
                     else
                     {
-                        if (isAdd) player.Value.Messages.Add(message);
+                        if (isAdd) player.Messages.Add(message);
                     }
                 }
             }
+            
             
         }
 

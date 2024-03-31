@@ -131,35 +131,13 @@ namespace NetWork
             {
                 if (playerIdGetRoom.TryGetValue(id, out var room))
                 {
-                    //var tick = NetWorkSystem.GetTick();
-                    //Console.WriteLine(tick.ToString());
                     Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.Transform);
-
                     var objId = message.GetUShort();
-
                     var pos = message.GetVector3();
-                    //var x = message.GetVector3();
-                    //var y = message.GetFloat();
-                    //var z = message.GetFloat();
-
-
                     var rot = message.GetVector3();
-                    //var rx = message.GetFloat();
-                    //var ry = message.GetFloat();
-                    //var rz = message.GetFloat();
-
-
                     msg.AddUShort(objId);
                     msg.AddVector3(pos);
-                    //msg.AddFloat(x);
-                    //msg.AddFloat(y);
-                    //msg.AddFloat(z);
-
                     msg.AddVector3(rot);
-                    //msg.AddFloat(rx);
-                    //msg.AddFloat(ry);
-                    //msg.AddFloat(rz);
-                    
                     room.Transform(id,msg,objId,pos,rot);
                 }
             }catch (Exception ex)
@@ -239,17 +217,7 @@ namespace NetWork
             }
         }
 
-
-
-
-        private static void SendJoinRoomSuccess(ushort id,Room room)
-        {
-            //Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.JoinRoomSuccess);
-            //msg.AddInt(room.roomId);
-            //msg.AddString(room.roomName);
-            //NetWorkSystem.Send(msg, id);
-        }
-
+        
 
         public static void EnQueue(Room room)
         {

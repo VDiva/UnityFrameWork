@@ -6,12 +6,26 @@ namespace FrameWork
     public class Move : NetWorkSystemMono
     {
         public float speed = 10;
+
+        public Vector3 dir;
+
+
+        private void Start()
+        {
+            if (!IsLocal)return;
+            EventManager.AddListener(99,1,(objects => { dir.x = (float)objects[0];} ));
+        }
+
         private void Update()
         {
             if (!IsLocal)return;
-            var h = Input.GetAxis("Horizontal");
-            var v = Input.GetAxis("Vertical");
-            transform.Translate(new Vector3(h,v)*speed*Time.deltaTime,Space.World);
+            if (Application.platform==RuntimePlatform.WindowsPlayer|| Application.platform==RuntimePlatform.WindowsEditor)
+            {
+                dir.x = Input.GetAxis("Horizontal");
+                dir.y = Input.GetAxis("Vertical");
+            }
+            
+            transform.Translate(dir*speed*Time.deltaTime,Space.World);
         }
     }
 }

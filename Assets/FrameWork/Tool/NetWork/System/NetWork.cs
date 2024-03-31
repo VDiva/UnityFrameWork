@@ -1,6 +1,8 @@
 
 using System;
 using System.Reflection;
+using NetWork.Type;
+using Riptide;
 using UnityEngine;
 
 namespace FrameWork
@@ -26,12 +28,21 @@ namespace FrameWork
         }
 
 
-        private void OnApplicationQuit()
+        // private void OnApplicationQuit()
+        // {
+        //     //NetWorkSystem.DisConnect();
+        //     NetWorkSystem.CloseGame();
+        //     EventManager.Init();
+        //     //Debug.Log("退出应用");
+        // }
+
+        private void OnApplicationPause(bool pauseStatus)
         {
-            //NetWorkSystem.DisConnect();
-            NetWorkSystem.CloseGame();
-            EventManager.Init();
-            //Debug.Log("退出应用");
+            if (!pauseStatus)
+            {
+                NetWorkSystem.IsOnBackground = true;
+            }
+            
         }
 
         private void FixedUpdate()
