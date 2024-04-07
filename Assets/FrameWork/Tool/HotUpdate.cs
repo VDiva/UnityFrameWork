@@ -46,6 +46,7 @@ namespace FrameWork
                         }),(s =>
                         {
                             Run();
+                            MyLog.Log("下载ab包文件错误");
                         } ));
                 }
                 else
@@ -55,6 +56,7 @@ namespace FrameWork
                 }
             }),(s =>
             {
+                MyLog.Log("下载配置文件错误");
                 Run();
             } ));
         }

@@ -19,6 +19,7 @@ namespace FrameWork
         private Action<Texture2D> _valueTexture;
 
         private Action<string> _err;
+        private Action<HTTPRequest, long, long> _progress;
         public RequestTool(string url,HTTPMethods httpMethods)
         {
             
@@ -35,7 +36,13 @@ namespace FrameWork
                     _err?.Invoke("请求失败");
                 }
             }));
-            
+
+            _httpRequest.OnUploadProgress += OnUploadProgressDelegate;
+        }
+
+        private void OnUploadProgressDelegate(HTTPRequest originalRequest, long uploaded, long uploadLength)
+        {
+            _progress?.Invoke(originalRequest,uploaded,uploadLength);
         }
         
         public static RequestTool Create(string url,HTTPMethods httpMethods)
@@ -133,22 +140,23 @@ namespace FrameWork
         }
         
 
-        public void Send(Action<Texture2D> action=null,Action<string> err=null)
+        public void Send(Action<Texture2D> action=null,Action<HTTPRequest, long, long> progress=null,Action<string> err=null)
         {
             _valueTexture = action;
             _err = err;
             _httpRequest.Send();
         }
         
-        public void Send(Action<byte[]> action=null,Action<string> err=null)
+        public void Send(Action<byte[]> action=null,Action<HTTPRequest, long, long> progress=null,Action<string> err=null)
         {
             _valueByte = action;
             _err = err;
             _httpRequest.Send();
             
+            
         }
         
-        public void Send(Action<string> action=null,Action<string> err=null)
+        public void Send(Action<string> action=null,Action<HTTPRequest, long, long> progress=null,Action<string> err=null)
         {
             _valueString = action;
             _err = err;

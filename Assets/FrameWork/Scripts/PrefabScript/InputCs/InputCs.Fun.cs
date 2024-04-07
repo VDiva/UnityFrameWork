@@ -34,6 +34,10 @@ namespace FrameWork
                 MyLog.Log("点击匹配");
             }));
             
+            ButtonButton.onClick.AddListener((() =>
+            {
+                NetWorkSystem.Start(InputFieldInputField.text);
+            }));
         }
     }
 }

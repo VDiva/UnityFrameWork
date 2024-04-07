@@ -22,11 +22,28 @@ namespace FrameWork
         /// <param name="data"></param>
         public static void DownLoadAsset(string path,Action<float,float,string,string> progress,Action<byte[],string> data,Action<string> err)
         {
-            Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data,err));
+            MyLog.Log(path);
+            long statrTime = Tool.ConvertDateTimep(DateTime.Now);
+            long lenght = 1;
+            RequestTool requestTool = RequestTool.Create(path, HTTPMethods.Get);
+            requestTool.Send((byte[] bytes) =>
+            {
+                progress?.Invoke(1,0,GetFileSize(lenght),GetFileSize(lenght));
+                data?.Invoke(bytes,Path.GetFileName(path));
+            },((request, curLen, len) =>
+            {
+                lenght = len;
+                long curTime = Tool.ConvertDateTimep(DateTime.Now)-statrTime;
+                float speed = GetFileSize((float)curLen / curTime);
+                float pro = (float)curLen / len;
+                progress?.Invoke(pro,speed,GetFileSize(curLen),GetFileSize(len));
+            } ), err);
+            //Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data,err));
         }
         
         static IEnumerator DownLoadAssetIEumerator(string path,Action<float,float,string,string> progress,Action<byte[],string> data,Action<string> err)
         {
+            
             using (UnityWebRequest uwr=UnityWebRequest.Get(path))
             {
                 

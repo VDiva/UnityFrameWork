@@ -122,5 +122,21 @@ namespace FrameWork
             return resultArray;
         }
 
+
+        public static bool IsAndroid()
+        {
+            return CheckPlatform(RuntimePlatform.Android);
+        }
+
+        public static bool IsWindows()
+        {
+            return CheckPlatform(RuntimePlatform.WindowsEditor) || CheckPlatform(RuntimePlatform.WindowsPlayer);
+        }
+
+        public static bool CheckPlatform(RuntimePlatform runtimePlatform)
+        {
+            return Application.platform == runtimePlatform;
+        }
+
     }
 }

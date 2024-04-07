@@ -282,7 +282,7 @@ namespace NetWork
         {
             foreach(var item in gameObjects)
             {
-                if (item.Key!=id)
+                if (item.Value.BelongingClient!=id)
                 {
                     var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Transform);
                     msg.AddUShort(item.Key);
@@ -328,7 +328,7 @@ namespace NetWork
                       SendSelf(newId, player.Messages[i]);
                   }
                 
-                SendTmpTransfrom(newId);
+                  SendTmpTransfrom(newId);
             }
         }
 
