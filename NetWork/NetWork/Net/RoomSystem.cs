@@ -239,6 +239,11 @@ namespace NetWork
             }
         }
 
+        public static void PlayerLeft(ushort id)
+        {
+            playerIdGetRoom.Remove(id, out var room);
+        }
+
 
 
     }

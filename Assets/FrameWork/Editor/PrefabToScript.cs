@@ -134,7 +134,7 @@ namespace FrameWork.Editor
             }
             
             
-            AssetBundle.CreatAll();
+            AssetBundle.CreatAssetBundle();
             AssetDatabase.Refresh();
 
         }

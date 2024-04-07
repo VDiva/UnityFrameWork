@@ -19,7 +19,7 @@ namespace FrameWork
             var dllCopyPath = Config.dllCopyPath;
             var dlls = Config.dlls;
             var dllPath = Config.dllPath;
-            var abPath = Config.GetAbPath();
+            var abPath = GetPath();
             if (!Directory.Exists(dllCopyPath))
             {
                 Directory.CreateDirectory(dllCopyPath);
@@ -35,8 +35,8 @@ namespace FrameWork
                 }
             }
             
-            AssetBundle.CreatAll();
-            ABConfig.CreateAll();
+            AssetBundle.CreatAssetBundle();
+            ABConfig.CreateConfig();
             AssetDatabase.Refresh();
         }
 
@@ -44,6 +44,27 @@ namespace FrameWork
         public static void SpawnAll()
         {
             PrebuildCommand.GenerateAll();
+        }
+
+
+        public static string GetPath()
+        {
+            var path = "";
+            switch (EditorUserBuildSettings.activeBuildTarget)
+            {
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64: 
+                    path ="/StandaloneWindows64/";
+                    break;
+                case BuildTarget.Android:
+                    path ="/Android/";
+                    break;
+                case BuildTarget.iOS:
+                    path ="/Ios/";
+                    break;
+            }
+
+            return path;
         }
     }
 }

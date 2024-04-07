@@ -25,6 +25,8 @@ namespace NetWork
 
         private ushort objIndex=2000;
         
+        
+        private bool _canJoin;
         public Room(int roomId,string roomName,int maxCount)
         {
             this.roomId = roomId;
@@ -35,7 +37,7 @@ namespace NetWork
             messages = new List<Message>();
             gameObjects=new Dictionary<ushort, ObjDate>();
             objectPoolGameObject=new ObjectPool<ObjDate>();
-
+            _canJoin = true;
         }
 
         public Room()
@@ -44,6 +46,7 @@ namespace NetWork
             messages = new List<Message>();
             gameObjects = new Dictionary<ushort, ObjDate>();
             objectPoolGameObject = new ObjectPool<ObjDate>();
+            _canJoin = true;
         }
 
         public void Init(int roomId, string roomName, int maxCount)
@@ -57,7 +60,7 @@ namespace NetWork
             messages.Clear();
             players.Clear();
             gameObjects.Clear();
-
+            _canJoin = true;
         }
         public void Init( string roomName, int maxCount)
         {
@@ -68,10 +71,12 @@ namespace NetWork
             messages.Clear();
             players.Clear();
             gameObjects.Clear();
+            _canJoin = true;
         }
 
         public bool Join(ushort id,Connection connection)
         {
+            if (!_canJoin) return false;
             if (!players.ContainsKey(id))
             {
                 if (players.Count < maxCount)
@@ -105,6 +110,7 @@ namespace NetWork
         }
 
 
+
         public void PlayerDisConnect(ushort id)
         {
             if(players.ContainsKey(id))
@@ -119,13 +125,17 @@ namespace NetWork
                         break;
                     }
                 }
-
+                
+                
+                
                 Task.Run((async () =>
                 {
                     await Task.Delay(30000);
                     Left(id);
                     Console.WriteLine("玩家"+id+"断开了链接");
                 }));
+
+                CheckRoomDisConnect();
             }
             
         }
@@ -141,7 +151,7 @@ namespace NetWork
                 players.Remove(id);
 
 
-
+                RoomSystem.PlayerLeft(id);
                 Console.WriteLine(id + ":离开了房间:" + roomId);
                 if(players.Count == 0)
                 {
@@ -163,6 +173,30 @@ namespace NetWork
         }
 
 
+        private bool CheckRoomDisConnect()
+        {
+            bool isHas = false;
+            foreach (var item in players.Values)
+            {
+                if (!item.IsDisConnect)
+                {
+                    isHas = true;
+                    break;
+                }
+            }
+
+            if (!isHas)
+            {
+                _canJoin = false;
+                
+            }
+            else
+            {
+                _canJoin = true;
+            }
+            return isHas;
+        }
+        
         public void Transform(ushort id,Message message,ushort objId,Vector3 pos,Vector3 rot)
         {
            SendOther(id,message,false);
@@ -327,8 +361,10 @@ namespace NetWork
                   {
                       SendSelf(newId, player.Messages[i]);
                   }
-                
+
+                  
                   SendTmpTransfrom(newId);
+                  CheckRoomDisConnect();
             }
         }
 
@@ -350,7 +386,7 @@ namespace NetWork
             {
                 if (!player.Value.IsDisConnect)
                 {
-                    Console.WriteLine("发送消息all");
+                    //Console.WriteLine("发送消息all");
                     player.Value.Connection.Send(message, !isAdd);
                 }
                 else
@@ -369,7 +405,7 @@ namespace NetWork
                 {
                     if (!player.Value.IsDisConnect)
                     {
-                        Console.WriteLine("发送消息other");
+                        //Console.WriteLine("发送消息other");
                         player.Value.Connection.Send(message, !isAdd);
                     }
                     else
@@ -392,7 +428,7 @@ namespace NetWork
                     if (!player.IsDisConnect)
                     {
                         player.Connection.Send(message, !isAdd);
-                        Console.WriteLine("发送消息self");
+                        //Console.WriteLine("发送消息self");
                     }
                     else
                     {

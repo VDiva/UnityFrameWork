@@ -10,34 +10,38 @@ namespace FrameWork
     public class ABConfig : UnityEditor.Editor
     {
 
-        
-        
-        [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
-        public static void CreateAbAndroidConfig()
+        [MenuItem("FrameWork/Config/CreateConfig")]
+        public static void CreateConfig()
         {
-            CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.Android));
+            CreateConfig(Application.streamingAssetsPath+AssetBundle.GetPath());
         }
         
-        [MenuItem("FrameWork/CreateConfig/CreateAbWindowsConfig")]
-        public static void CreateAbWindowsConfig()
-        {
-            CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.WindowsPlayer));
-        }
-
-        
-        [MenuItem("FrameWork/CreateConfig/CreateAbIosConfig")]
-        public static void CreateAbIosConfig()
-        {
-            CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.IPhonePlayer));
-        }
-
-
-        [MenuItem("FrameWork/CreateConfig/All")]
-        public static void CreateAll()
-        {
-            CreateAbWindowsConfig();
-            CreateAbAndroidConfig();
-        }
+        // [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
+        // public static void CreateAbAndroidConfig()
+        // {
+        //     CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.Android));
+        // }
+        //
+        // [MenuItem("FrameWork/CreateConfig/CreateAbWindowsConfig")]
+        // public static void CreateAbWindowsConfig()
+        // {
+        //     CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.WindowsPlayer));
+        // }
+        //
+        //
+        // [MenuItem("FrameWork/CreateConfig/CreateAbIosConfig")]
+        // public static void CreateAbIosConfig()
+        // {
+        //     CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.IPhonePlayer));
+        // }
+        //
+        //
+        // [MenuItem("FrameWork/CreateConfig/All")]
+        // public static void CreateAll()
+        // {
+        //     CreateAbWindowsConfig();
+        //     CreateAbAndroidConfig();
+        // }
         
 
         private static void CreateConfig(string path)

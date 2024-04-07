@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace FrameWork
 {
@@ -19,7 +20,7 @@ namespace FrameWork
                 if (list.Count > 0)
                 {
                     MyLog.Log("检测到更新正在下载更新包");
-
+                    
                     DownLoadAbPack.AddPackDownTack(list,
                         ((f, f1, arg3, arg4) => { MyLog.Log($"进度:{f}--速度:{f1}--{arg3}/{arg4}｝"); }), (dates =>
                         {
