@@ -127,23 +127,12 @@ namespace NetWork
         [MessageHandler((ushort)ClientToServerMessageType.Transform)]
         private static void TransfromAll(ushort id,Message message)
         {
-            try
+           
+            if (playerIdGetRoom.TryGetValue(id, out var room))
             {
-                if (playerIdGetRoom.TryGetValue(id, out var room))
-                {
-                    Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.Transform);
-                    var objId = message.GetUShort();
-                    var pos = message.GetVector3();
-                    var rot = message.GetVector3();
-                    msg.AddUShort(objId);
-                    msg.AddVector3(pos);
-                    msg.AddVector3(rot);
-                    room.Transform(id,msg,objId,pos,rot);
-                }
-            }catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+                room.Transform(id,message);
             }
+            
         }
 
         [MessageHandler((ushort)ClientToServerMessageType.LeftRoom)]

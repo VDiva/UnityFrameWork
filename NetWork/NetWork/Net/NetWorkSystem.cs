@@ -43,7 +43,7 @@ namespace NetWork
             
 
             UpdateMessage();
-            UpdateTick();
+            //UpdateTick();
         }
 
         private static void UpdateMessage()
@@ -53,7 +53,6 @@ namespace NetWork
             {
                 while (true)
                 {
-                    
                     try
                     {
                          server.Update();
@@ -68,52 +67,52 @@ namespace NetWork
             }));
         }
 
-        private static void UpdateTick()
-        {
-            Console.WriteLine("开启服务端帧发送");
-            Task.Run((async () =>
-            {
-                while (true)
-                {
-                    currentTick += 1;
-                    SendTick();
-                    await Task.Delay(1000);
-                }
-            }));
-        }
-
-        private static void SendTick()
-        {
-            var msg = CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.SyncTick);
-            msg.AddUShort(currentTick);
-            try
-            {
-                server.SendToAll(msg);
-            }catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
+        // private static void UpdateTick()
+        // {
+        //     Console.WriteLine("开启服务端帧发送");
+        //     Task.Run((async () =>
+        //     {
+        //         while (true)
+        //         {
+        //             currentTick += 1;
+        //             SendTick();
+        //             await Task.Delay(1000);
+        //         }
+        //     }));
+        // }
+        //
+        // private static void SendTick()
+        // {
+        //     var msg = CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.SyncTick);
+        //     msg.AddUShort(currentTick);
+        //     try
+        //     {
+        //         server.SendToAll(msg);
+        //     }catch(Exception e)
+        //     {
+        //         Console.WriteLine(e.Message);
+        //     }
+        // }
 
 
         public static Message CreateMessage(MessageSendMode sendMode,Enum id)
         {
             Message msg = Message.Create(sendMode, id);
-            msg.AddUShort(currentTick);
+            //msg.AddUShort(currentTick);
             return msg;
         }
 
 
-        public static void  SendAll(Message message)
-        {
-            server.SendToAll(message);
-        }
-
-        public static void Send(Message message,Connection connection)
-        {
-            server.Send(message,connection);
-
-        }
+        // public static void  SendAll(Message message)
+        // {
+        //     server.SendToAll(message);
+        // }
+        //
+        // public static void Send(Message message,Connection connection)
+        // {
+        //     server.Send(message,connection);
+        //
+        // }
 
         public static void Send(Message message, ushort id)
         {

@@ -25,8 +25,11 @@ namespace NetWork
 
         private ushort objIndex=2000;
         
-        
         private bool _canJoin;
+
+        private ushort currentTick;
+        
+        private CancellationTokenSource _cancellation;
         public Room(int roomId,string roomName,int maxCount)
         {
             this.roomId = roomId;
@@ -36,8 +39,9 @@ namespace NetWork
             players = new Dictionary<ushort, Player>();
             messages = new List<Message>();
             gameObjects=new Dictionary<ushort, ObjDate>();
-            objectPoolGameObject=new ObjectPool<ObjDate>();
-            _canJoin = true;
+            objectPoolGameObject=new ObjectPool<ObjDate>(); 
+            
+            //UpdateTick();
         }
 
         public Room()
@@ -46,21 +50,22 @@ namespace NetWork
             messages = new List<Message>();
             gameObjects = new Dictionary<ushort, ObjDate>();
             objectPoolGameObject = new ObjectPool<ObjDate>();
-            _canJoin = true;
+            
+            //UpdateTick();
         }
-
         public void Init(int roomId, string roomName, int maxCount)
         {
             this.roomId = roomId;
             this.roomName = "房间"+roomId+"-"+roomName;
             this.maxCount = maxCount;
-
             ReleaseMessage();
             objIndex = 2000;   
             messages.Clear();
             players.Clear();
             gameObjects.Clear();
             _canJoin = true;
+            currentTick = 0;
+            UpdateTick();
         }
         public void Init( string roomName, int maxCount)
         {
@@ -72,7 +77,44 @@ namespace NetWork
             players.Clear();
             gameObjects.Clear();
             _canJoin = true;
+            currentTick = 0;
+            UpdateTick();
         }
+        
+        
+        private void SendTick()
+        {
+            var msg = CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.SyncTick);
+            msg.AddUShort(currentTick);
+            SendAll(msg,false);
+        }
+        
+        
+        private void UpdateTick()
+        {
+            Console.WriteLine("开启房间帧发送");
+            _cancellation = new CancellationTokenSource();
+            Task.Run((async () =>
+            {
+                while (true)
+                {
+
+                    if (!_cancellation.IsCancellationRequested)
+                    {
+                        currentTick += 1;
+                        SendTick();
+                        Console.WriteLine($"第{currentTick}帧数据");
+                        await Task.Delay(1000);
+                    }
+                    else
+                    {
+                        return; // 结束线程
+                       
+                    }
+                }
+            }),_cancellation.Token);
+        }
+        
 
         public bool Join(ushort id,Connection connection)
         {
@@ -87,7 +129,7 @@ namespace NetWork
 
                     SendHistoryInformation(connection, () =>
                     {
-                        Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
+                        Message msg = CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerJoinRoom);
                         msg.AddUShort(id);
                         msg.AddInt(roomId);
                         msg.AddString(roomName);
@@ -130,7 +172,7 @@ namespace NetWork
                 
                 Task.Run((async () =>
                 {
-                    await Task.Delay(30000);
+                    await Task.Delay(3000);
                     Left(id);
                     Console.WriteLine("玩家"+id+"断开了链接");
                 }));
@@ -144,7 +186,7 @@ namespace NetWork
         {
             if (players.ContainsKey(id))
             {
-                Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerLeftRoom);
+                Message msg = CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.PlayerLeftRoom);
                 msg.AddUShort(id);
                 SendAll(msg);
                 gameObjects.Remove(id);
@@ -155,8 +197,12 @@ namespace NetWork
                 Console.WriteLine(id + ":离开了房间:" + roomId);
                 if(players.Count == 0)
                 {
-                    Console.WriteLine(roomId+"房间空 回收房间");
-                    RoomSystem.EnQueue(this);
+                    if (!_cancellation.IsCancellationRequested)
+                    {
+                        _cancellation.Cancel();
+                        Console.WriteLine(roomId+"房间空 回收房间");
+                        RoomSystem.EnQueue(this);
+                    }
                 }
                 else
                 {
@@ -197,9 +243,16 @@ namespace NetWork
             return isHas;
         }
         
-        public void Transform(ushort id,Message message,ushort objId,Vector3 pos,Vector3 rot)
+        public void Transform(ushort id,Message message)
         {
-           SendOther(id,message,false);
+            Message msg = CreateMessage(MessageSendMode.Unreliable, ServerToClientMessageType.Transform);
+            var objId = message.GetUShort();
+            var pos = message.GetVector3();
+            var rot = message.GetVector3();
+            msg.AddUShort(objId);
+            msg.AddVector3(pos);
+            msg.AddVector3(rot);
+           SendOther(id,msg,false);
            if(gameObjects.TryGetValue(objId,out var objDate))
            {
                 objDate.Position = pos;
@@ -209,7 +262,7 @@ namespace NetWork
 
         public void Instantiate(ushort id,Message message)
         {
-            Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Instantiate);
+            Message msg = CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Instantiate);
             
             var go=objectPoolGameObject.DeQueue();
 
@@ -250,7 +303,7 @@ namespace NetWork
 
         public void Rpc(ushort id, Message message)
         {
-            Message msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
+            Message msg = CreateMessage(MessageSendMode.Reliable, ClientToServerMessageType.Rpc);
 
             var methodName = message.GetString();
             var objId = message.GetUShort();
@@ -283,7 +336,7 @@ namespace NetWork
                 }
             }
 
-            Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Reliable,ServerToClientMessageType.SetBelongingClient);
+            Message msg=CreateMessage(MessageSendMode.Reliable,ServerToClientMessageType.SetBelongingClient);
             msg.AddUShort(newId);
             msg.AddInt(ids.Count);
             for(var i = 0; i < ids.Count; i++)
@@ -318,7 +371,7 @@ namespace NetWork
             {
                 if (item.Value.BelongingClient!=id)
                 {
-                    var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Transform);
+                    var msg = CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Transform);
                     msg.AddUShort(item.Key);
                     msg.AddVector3(item.Value.Position);
                     msg.AddVector3(item.Value.Rotation);
@@ -350,7 +403,7 @@ namespace NetWork
                 
                 
                 
-                 var msg = NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.ReLink);
+                 var msg = CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.ReLink);
                  msg.AddUShort(newId);
                  msg.AddUShort(oldId);
                  SendAll(msg);
@@ -373,7 +426,7 @@ namespace NetWork
         {
             gameObjects.Remove(id, out var go);
 
-            Message msg=NetWorkSystem.CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Destroy);
+            Message msg=CreateMessage(MessageSendMode.Reliable, ServerToClientMessageType.Destroy);
             msg.AddUShort(id);
             SendAll(msg);
 
@@ -452,6 +505,13 @@ namespace NetWork
             {
                 messages[i].Release();
             }
+        }
+
+        private Message CreateMessage(MessageSendMode messageSendMode,Enum id)
+        {
+            var msg=NetWorkSystem.CreateMessage(messageSendMode, id);
+            msg.AddUShort(currentTick);
+            return msg;
         }
 
     }
