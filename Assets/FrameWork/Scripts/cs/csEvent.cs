@@ -1,30 +1,66 @@
 ﻿using System;
-using UnityEngine;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace FrameWork
 {
-    public class csEvent : MonoBehaviour
+    public static class csEvent
     {
-        private void Update()
+        private static ConcurrentDictionary<int,Action<object[]>> _listeners = new ConcurrentDictionary<int,Action<object[]>>();
+        
+        public static void Init()
         {
-            if (Input.GetKeyDown("1"))
+            _listeners.Clear();
+        }
+        
+        // public static void AddListener(Enum evtType, Enum evt, Action<object[]> listener)
+        // {
+        //     AddListener(evtType,evt,listener);
+        // }
+
+        // 添加事件注册
+        public static void AddListener(int evtType,Action<object[]> listener)
+        {
+            if (_listeners.TryGetValue(evtType,out var actions))
             {
-                EventManager.AddListener(99,99,Events);
+                actions += listener;
             }
-            if (Input.GetKeyDown("2"))
+            else
             {
-                EventManager.DispatchEvent(99,99);
-            }
-            if (Input.GetKeyDown("3"))
-            {
-                EventManager.RemoveListener(99,99,Events);
+
+                _listeners.TryAdd(evtType, listener);
+                //dictionary.Add(evt,listener);
+                //_listeners.TryAdd(evtType,dictionary);
             }
         }
 
-        public void Events(object[] cs)
+        // public static void DispatchEvent(Enum evtType, Enum evt, object[] data = null)
+        // {
+        //     DispatchEvent(evtType,evt,data);
+        // }
+
+        // 事件的触发
+        public static void DispatchEvent(int evtType,object[] data=null)
         {
-            MyLog.Log("aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+            if (_listeners.TryGetValue(evtType,out var actions))
+            {
+                actions?.Invoke(data);
+            }
         }
-        
+
+        // public static void RemoveListener(Enum evtType, Enum evt, Action<object[]> listener)
+        // {
+        //     RemoveListener(evtType,evt,listener);
+        // }
+
+        // 移除事件
+        public static void RemoveListener(int evtType, Action<object[]> listener)
+        {
+            if (_listeners.ContainsKey(evtType))
+            {
+                _listeners[evtType] -= listener;
+                //actions -= listener;
+            }
+        }
     }
 }

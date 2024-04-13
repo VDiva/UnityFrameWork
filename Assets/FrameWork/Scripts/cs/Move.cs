@@ -13,7 +13,7 @@ namespace FrameWork
         private void Start()
         {
             if (!IsLocal)return;
-            EventManager.AddListener(99,1,(objects => { dir.x = (float)objects[0];} ));
+            //csEvent.AddListener(99,1,(objects => { dir.x = (float)objects[0];} ));
         }
 
         private void Update()

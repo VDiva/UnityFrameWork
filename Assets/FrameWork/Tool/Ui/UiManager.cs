@@ -55,7 +55,7 @@ namespace FrameWork
         public void ShowUi(int index)
         {
             //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
-            Dispatch(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
+            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Show,new object[]{index});
             _uiStack.Push(index);
             //ShowUiAction?.Invoke(index);
         }
@@ -121,7 +121,7 @@ namespace FrameWork
         public void HideUi(int index)
         {
             //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
-            Dispatch(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
+            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Hide,new object[]{index});
             //HideUiAction?.Invoke(index);
         }
 
@@ -129,7 +129,7 @@ namespace FrameWork
         public void RemoveUi(int index)
         {
             //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
-            Dispatch(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
+            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Remove,new object[]{index});
             //RemoveUiAction?.Invoke(index);
         }
 
@@ -187,23 +187,23 @@ namespace FrameWork
             EventManager.AddListener(eventType,id,evt);
         }
         
-        protected void Registered(Enum eventType,Enum id,Action<object[]> evt)
-        {
-            EventManager.AddListener(eventType,id,evt);
-        }
+        // protected void Registered(Enum eventType,Enum id,Action<object[]> evt)
+        // {
+        //     EventManager.AddListener((int)eventType,(int)id,evt);
+        // }
         
         protected void Unbinding(int eventType,int id,Action<object[]> evt)
         {
             EventManager.RemoveListener(eventType,id,evt);
         }
         
-        protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
-        {
-            EventManager.RemoveListener(eventType,id,evt);
-        }
+        // protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
+        // {
+        //     EventManager.RemoveListener(eventType,id,evt);
+        // }
 
         
-        protected void Dispatch(object evtType, object evt, object[] data = null)
+        protected void Dispatch(int evtType, int evt, object[] data = null)
         {
             EventManager.DispatchEvent((int)evtType,(int)evt,data);
         }

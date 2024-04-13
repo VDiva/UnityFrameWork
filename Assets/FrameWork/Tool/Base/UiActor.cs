@@ -11,18 +11,18 @@ namespace FrameWork
         {
             base.Start();
             
-            Registered(MessageType.UiMessage,UiMessageType.Show,ShowUi);
-            Registered(MessageType.UiMessage,UiMessageType.Hide,HideUi);
-            Registered(MessageType.UiMessage,UiMessageType.Remove,RemoveUi);
+            Registered((int)MessageType.UiMessage,(int)UiMessageType.Show,ShowUi);
+            Registered((int)MessageType.UiMessage,(int)UiMessageType.Hide,HideUi);
+            Registered((int)MessageType.UiMessage,(int)UiMessageType.Remove,RemoveUi);
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
             
-            Unbinding(MessageType.UiMessage,UiMessageType.Show,ShowUi);
-            Unbinding(MessageType.UiMessage,UiMessageType.Hide,HideUi);
-            Unbinding(MessageType.UiMessage,UiMessageType.Remove,RemoveUi);
+            Unbinding((int)MessageType.UiMessage,(int)UiMessageType.Show,ShowUi);
+            Unbinding((int)MessageType.UiMessage,(int)UiMessageType.Hide,HideUi);
+            Unbinding((int)MessageType.UiMessage,(int)UiMessageType.Remove,RemoveUi);
            
         }
 

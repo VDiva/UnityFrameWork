@@ -12,7 +12,7 @@ namespace FrameWork
         {
             var tick = message.GetUShort();
             var info = message.GetString();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.JoinError,new object[]{info});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.JoinError,new object[]{info});
             //NetWorkSystem.OnJoinError?.Invoke(info);
             //Debug.Log("第"+tick+"帧"+info);
         }
@@ -24,7 +24,7 @@ namespace FrameWork
             var id = message.GetUShort();
             var roomId = message.GetInt();
             var roomName = message.GetString();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.PlayerJoinRoom,new object[]{id,roomId,roomName});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.PlayerJoinRoom,new object[]{id,roomId,roomName});
             //NetWorkSystem.OnPlayerJoinRoom?.Invoke(id,roomId,roomName);
             //Debug.Log("第"+tick+"帧"+id+"加入了房间");
         }
@@ -34,7 +34,7 @@ namespace FrameWork
         {
             var tick = message.GetUShort();
             var id = message.GetUShort();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.PlayerLeftRoom,new object[]{id});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.PlayerLeftRoom,new object[]{id});
             //NetWorkSystem.OnPlayerLeftRoom?.Invoke(id);
             //Debug.Log("第"+tick+"帧"+id+"离开了房间");
         }
@@ -44,7 +44,7 @@ namespace FrameWork
         {
             var tick = message.GetUShort();
             var info = message.GetString();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.Information,new object[]{info});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.Information,new object[]{info});
             //NetWorkSystem.OnJoinError?.Invoke(info);
             //Debug.Log("第"+tick+"帧"+info);
         }
@@ -56,7 +56,7 @@ namespace FrameWork
             var id = message.GetUShort();
             var loc = message.GetVector3();
             var ro = message.GetVector3();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.Transform,new object[]{tick,id,loc,ro});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.Transform,new object[]{tick,id,loc,ro});
             //NetWorkSystem.OnTransform?.Invoke(tick,id,loc,ro);
             //Debug.Log(id+"-"+loc+"-"+tick);
         }
@@ -74,7 +74,7 @@ namespace FrameWork
             var loc = message.GetVector3();
             var ro = message.GetVector3();
             var isAb = message.GetBool();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.Instantiate,new object[]{clientId,objId,packName,spawnName,typeName,loc,ro,isAb});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.Instantiate,new object[]{clientId,objId,packName,spawnName,typeName,loc,ro,isAb});
             //NetWorkSystem.OnInstantiate?.Invoke(clientId,objId,spawnName,loc,ro,isAb);
             //Debug.Log("生成玩家");
         }
@@ -86,7 +86,7 @@ namespace FrameWork
             var methodName = message.GetString();
             var objId = message.GetUShort();
             var param = message.GetString();
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.Rpc,new object[]{message,objId,JsonConvert.DeserializeObject<object[]>(param)});
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.Rpc,new object[]{message,objId,JsonConvert.DeserializeObject<object[]>(param)});
             //NetWorkSystem.OnRpc?.Invoke(methodName,objId,JsonConvert.DeserializeObject<object[]>(param));
             //Debug.Log("生成玩家");
         }
@@ -98,7 +98,7 @@ namespace FrameWork
             var newId = message.GetUShort();
             var count = message.GetInt();
             var ids = message.GetUShorts(count);
-            EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.BelongingClient, new object[] { newId,ids });
+            EventManager.DispatchEvent((int)MessageType.NetMessage, (int)NetMessageType.BelongingClient, new object[] { newId,ids });
             //NetWorkSystem.OnBelongingClient?.Invoke(newId,ids);
             //Debug.Log("生成玩家");
         }
@@ -108,7 +108,7 @@ namespace FrameWork
         {
             var tick = message.GetUShort();
             var objId = message.GetUShort();
-            EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.Destroy, new object[] { objId });
+            EventManager.DispatchEvent((int)MessageType.NetMessage, (int)NetMessageType.Destroy, new object[] { objId });
             //NetWorkSystem.OnDestroy?.Invoke(objId);
             //Debug.Log("生成玩家");
         }
@@ -119,7 +119,7 @@ namespace FrameWork
             var tick = message.GetUShort();
             var curCount = message.GetUShort();
             var maxCount = message.GetUShort();
-            EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.RoomInfo, new object[] { curCount,maxCount });
+            EventManager.DispatchEvent((int)MessageType.NetMessage, (int)NetMessageType.RoomInfo, new object[] { curCount,maxCount });
             //NetWorkSystem.OnRoomInfo?.Invoke(curCount,maxCount);
             //Debug.Log("生成玩家");
         }
@@ -130,7 +130,7 @@ namespace FrameWork
             var tick = message.GetUShort();
             var newId = message.GetUShort();
             var oldId = message.GetUShort();
-            EventManager.DispatchEvent(MessageType.NetMessage, NetMessageType.ReLink, new object[] { newId,oldId });
+            EventManager.DispatchEvent((int)MessageType.NetMessage, (int)NetMessageType.ReLink, new object[] { newId,oldId });
             //NetWorkSystem.OnRoomInfo?.Invoke(curCount,maxCount);
             //Debug.Log("生成玩家");
         }

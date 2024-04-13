@@ -32,7 +32,7 @@ namespace FrameWork
         
         private static void OnDisConnect(object sender, EventArgs e)
         {
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.DisConnectToServer);
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.DisConnectToServer);
             //OnDisConnectToServer?.Invoke();
             MyLog.Log("断开服务器....");
             _isDisConnect = true;
@@ -43,7 +43,7 @@ namespace FrameWork
         private static void OnConnect(object sender, EventArgs e)
         {
            
-            EventManager.DispatchEvent(MessageType.NetMessage,NetMessageType.ConnectToServer);
+            EventManager.DispatchEvent((int)MessageType.NetMessage,(int)NetMessageType.ConnectToServer);
             MyLog.Log("链接到服务器....客户端id为:"+_client.Id);
             if (IsOnBackground&& _isDisConnect)
             {

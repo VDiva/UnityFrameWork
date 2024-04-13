@@ -18,17 +18,17 @@ public class CsUiManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.A))
         {
-            EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Show,new object[]{_uiActor.GetIndex()});
+            EventManager.DispatchEvent((int)MessageType.UiMessage,(int)UiMessageType.Show,new object[]{_uiActor.GetIndex()});
         }
         
         if (Input.GetKeyDown(KeyCode.S))
         {
-            EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{_uiActor.GetIndex()});
+            EventManager.DispatchEvent((int)MessageType.UiMessage,(int)UiMessageType.Hide,new object[]{_uiActor.GetIndex()});
         }
         
         if (Input.GetKeyDown(KeyCode.D))
         {
-            EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Remove,new object[]{_uiActor.GetIndex()});
+            EventManager.DispatchEvent((int)MessageType.UiMessage,(int)UiMessageType.Remove,new object[]{_uiActor.GetIndex()});
         }
     }
 }

@@ -76,22 +76,12 @@ namespace FrameWork
             EventManager.AddListener(eventType,id,evt);
         }
         
-        protected void Registered(Enum eventType,Enum id,Action<object[]> evt)
-        {
-            EventManager.AddListener(eventType,id,evt);
-        }
-        
         protected void Unbinding(int eventType,int id,Action<object[]> evt)
         {
             EventManager.RemoveListener(eventType,id,evt);
         }
         
-        protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
-        {
-            EventManager.RemoveListener(eventType,id,evt);
-        }
-        
-        protected void Dispatch(object evtType, object evt, object[] data = null)
+        protected void Dispatch(int evtType, int evt, object[] data = null)
         {
             EventManager.DispatchEvent((int)evtType,(int)evt,data);
         }

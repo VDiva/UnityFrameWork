@@ -22,40 +22,40 @@ namespace FrameWork
         
         protected virtual void OnEnable()
         {
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.PlayerJoinRoom,OnPlayerJoin);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.PlayerLeftRoom,OnPlayerLeft);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.JoinError,OnJoinError);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.Information,OnInformation);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.Transform,OnTransform);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.Instantiate,OnInstantiate);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.ConnectToServer,OnConnected);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.DisConnectToServer,OnDisConnected);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.RoomInfo,OnRoomInfo);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.InstantiateEnd,OnInstantiateEnd);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.Rpc,OnRpc);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.BelongingClient,SetBelongingClient);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.Destroy,OnNetDestroy);
-            EventManager.AddListener(MessageType.NetMessage,NetMessageType.ReLink,OnReLink);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.PlayerJoinRoom,OnPlayerJoin);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.PlayerLeftRoom,OnPlayerLeft);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.JoinError,OnJoinError);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.Information,OnInformation);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.Transform,OnTransform);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.Instantiate,OnInstantiate);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.ConnectToServer,OnConnected);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.DisConnectToServer,OnDisConnected);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.RoomInfo,OnRoomInfo);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.InstantiateEnd,OnInstantiateEnd);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.Rpc,OnRpc);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.BelongingClient,SetBelongingClient);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.Destroy,OnNetDestroy);
+            EventManager.AddListener((int)MessageType.NetMessage,(int)NetMessageType.ReLink,OnReLink);
             
             
         }
 
         protected virtual void OnDisable()
         {
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.PlayerJoinRoom,OnPlayerJoin);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.PlayerLeftRoom,OnPlayerLeft);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.JoinError,OnJoinError);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Information,OnInformation);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Transform,OnTransform);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Instantiate,OnInstantiate);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.ConnectToServer,OnConnected);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.DisConnectToServer,OnDisConnected);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.RoomInfo,OnRoomInfo);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.InstantiateEnd,OnInstantiateEnd);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Rpc,OnRpc);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.BelongingClient,SetBelongingClient);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.Destroy,OnNetDestroy);
-            EventManager.RemoveListener(MessageType.NetMessage,NetMessageType.ReLink,OnReLink);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.PlayerJoinRoom,OnPlayerJoin);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.PlayerLeftRoom,OnPlayerLeft);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.JoinError,OnJoinError);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.Information,OnInformation);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.Transform,OnTransform);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.Instantiate,OnInstantiate);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.ConnectToServer,OnConnected);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.DisConnectToServer,OnDisConnected);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.RoomInfo,OnRoomInfo);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.InstantiateEnd,OnInstantiateEnd);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.Rpc,OnRpc);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.BelongingClient,SetBelongingClient);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.Destroy,OnNetDestroy);
+            EventManager.RemoveListener((int)MessageType.NetMessage,(int)NetMessageType.ReLink,OnReLink);
         }
         
         private void OnPlayerJoin(object[] param) {OnPlayerJoin((ushort)param[0],(int)param[1],(string)param[2]); }
