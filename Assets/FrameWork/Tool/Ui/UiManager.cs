@@ -65,9 +65,9 @@ namespace FrameWork
             var t = Assembly.GetExecutingAssembly().GetType(type);
             return ShowUi(t);
         }
-
         
-        private UiActor ShowUi(Type type)
+        
+        public UiActor ShowUi(Type type)
         {
             if (CanvasTransform==null)
             {

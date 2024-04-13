@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace FrameWork
 {
     public static class EventManager
     {
-        private static Dictionary<int, Dictionary<int,Action<object[]>>> _listeners = new Dictionary<int, Dictionary<int,Action<object[]>>>();
+        private static ConcurrentDictionary<int, ConcurrentDictionary<int,Action<object[]>>> _listeners = new ConcurrentDictionary<int, ConcurrentDictionary<int,Action<object[]>>>();
         
         public static void Init()
         {
@@ -24,7 +25,7 @@ namespace FrameWork
             {
                 if (!actions.ContainsKey(evt))
                 {
-                    actions.Add(evt,listener);
+                    actions.TryAdd(evt,listener);
                 }
                 else
                 {
@@ -33,9 +34,10 @@ namespace FrameWork
             }
             else
             {
-                Dictionary<int, Action<object[]>> dictionary = new Dictionary<int, Action<object[]>>(){{evt,listener}};
+                ConcurrentDictionary<int, Action<object[]>> dictionary = new ConcurrentDictionary<int, Action<object[]>>();
+                dictionary.TryAdd(evt, listener);
                 //dictionary.Add(evt,listener);
-                _listeners.Add(evtType,dictionary);
+                _listeners.TryAdd(evtType,dictionary);
             }
         }
 
