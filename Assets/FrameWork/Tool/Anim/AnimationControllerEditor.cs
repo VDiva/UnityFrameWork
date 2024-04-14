@@ -53,8 +53,11 @@ namespace FrameWork
                 {
                     foreach (var anim in item.AnimData)
                     {
-                        _keys.Add(anim.name);
-                        _values.Add(anim);
+                        if (anim!=null)
+                        {
+                            _keys.Add(anim.name);
+                            _values.Add(anim);
+                        }
                     }
                 }
             }
@@ -83,6 +86,7 @@ namespace FrameWork
                 //     assetEditor.OnInspectorGUI(); //Editor初始化
                 //     return;
                 // }
+                DestroyImmediate(assetEditor);
                 var clip = unityAsset as AnimationClip; //如果是动画片
                 if (clip != null)
                 {

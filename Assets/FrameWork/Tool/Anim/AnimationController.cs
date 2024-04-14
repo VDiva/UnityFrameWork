@@ -42,7 +42,7 @@ namespace FrameWork
                 _playableGraph.Destroy();
             }
             
-            _playableGraph=PlayableGraph.Create("AnimationController");
+            _playableGraph=PlayableGraph.Create(transform.root.name);
             _isInit = true;
             GraphVisualizerClient.Show(_playableGraph);
             _layerMixerPlayable=AnimationLayerMixerPlayable.Create(_playableGraph,animLayer.Length);
