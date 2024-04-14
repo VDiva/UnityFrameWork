@@ -18,20 +18,36 @@ namespace FrameWork
         private AnimationPlayableOutput _output;
 
         private PlayableGraph _playableGraph;
+
+        private bool _isInit;
         
         private ConcurrentDictionary<string, LayerAnim> _layerAnimDic;
         private void Awake()
         {
             _layerAnimArr = new LayerAnim[animLayer.Length];
             _layerAnimDic = new ConcurrentDictionary<string, LayerAnim>();
-            _playableGraph=PlayableGraph.Create("AnimationController");
-            GraphVisualizerClient.Show(_playableGraph);
-            _layerMixerPlayable=AnimationLayerMixerPlayable.Create(_playableGraph,animLayer.Length);
-            _output=AnimationPlayableOutput.Create(_playableGraph,"AnimationControllerOut",GetComponent<Animator>());
+            _isInit = false;
         }
 
         private void Start()
         {
+            Init();
+        }
+
+
+        public void Init()
+        {
+            if (_isInit)
+            {
+                _playableGraph.Destroy();
+            }
+            
+            _playableGraph=PlayableGraph.Create("AnimationController");
+            _isInit = true;
+            GraphVisualizerClient.Show(_playableGraph);
+            _layerMixerPlayable=AnimationLayerMixerPlayable.Create(_playableGraph,animLayer.Length);
+            _output=AnimationPlayableOutput.Create(_playableGraph,"AnimationControllerOut",GetComponent<Animator>());
+            
             for (int i = 0; i < animLayer.Length; i++)
             {
                 var item = animLayer[i];
@@ -56,6 +72,7 @@ namespace FrameWork
             
             _playableGraph.Play();
         }
+        
         
         private LayerAnim anim;
         public void SetAnim(string animName,float lerpSpeed=1)
@@ -87,6 +104,8 @@ namespace FrameWork
             }
         }
 
+
+       
         private void OnDestroy()
         {
             _playableGraph.Destroy();

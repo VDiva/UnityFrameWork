@@ -23,7 +23,7 @@ namespace FrameWork
         private AnimationMixerPlayable _mixerPlayable;
         
         private ConcurrentDictionary<string, int> _layerAnims;
-
+        
         public LayerAnim()
         {
             _layerAnims = new ConcurrentDictionary<string, int>();

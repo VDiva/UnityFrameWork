@@ -134,7 +134,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4673691203326514, guid: 69054243cebd5cf408c1f2862f6694b5, type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4673691203326514, guid: 69054243cebd5cf408c1f2862f6694b5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -175,6 +175,31 @@ PrefabInstance:
     - target: {fileID: 4673691203326514, guid: 69054243cebd5cf408c1f2862f6694b5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 137002950427722524, guid: 69054243cebd5cf408c1f2862f6694b5,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.size
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 137046456743867008, guid: 69054243cebd5cf408c1f2862f6694b5,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.size
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 137135874907094738, guid: 69054243cebd5cf408c1f2862f6694b5,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 137271255101249222, guid: 69054243cebd5cf408c1f2862f6694b5,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 137282647626709722, guid: 69054243cebd5cf408c1f2862f6694b5,
+        type: 3}
+      propertyPath: m_BlendShapeWeights.Array.size
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 95768356059557230, guid: 69054243cebd5cf408c1f2862f6694b5, type: 3}
@@ -305,7 +330,7 @@ MonoBehaviour:
   - AnimData:
     - {fileID: 7400000, guid: d9a2874e1c6daa848872fb0bd27dc881, type: 3}
     - {fileID: 7400000, guid: b4f544c3178a03744880da27d4f3f903, type: 3}
-    - {fileID: 7400000, guid: b4f544c3178a03744880da27d4f3f903, type: 3}
+    - {fileID: 7400000, guid: e4d000527a6ff874681871252b5a0440, type: 3}
     AvatarMask: {fileID: 0}
   - AnimData:
     - {fileID: 7400000, guid: 22d99a9df90a7b142a2b2fa9a9f4d66d, type: 3}
@@ -493,8 +518,8 @@ Transform:
   m_GameObject: {fileID: 2106749341}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.04, z: 0}
-  m_LocalScale: {x: 9.338795, y: 0.21548836, z: 2.3953}
+  m_LocalScale: {x: 9.338795, y: 0.21548837, z: 2.3953}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
