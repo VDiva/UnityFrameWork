@@ -6,7 +6,12 @@ namespace FrameWork
     [Serializable]
     public struct AnimData
     {
-        public Vector2 Weight;
-        public AnimationClip Clip;
+        public float strikesTime;
+        public AnimationClip animStart;
+    }
+    
+    public struct AnimDatas
+    {
+        public AnimData[] animDatas;
     }
 }

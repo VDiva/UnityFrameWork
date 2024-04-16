@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 1247181153
+CRC: 2789786288
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -10,4 +10,7 @@ AssetBundleManifest:
       Dependencies: {}
     Info_2:
       Name: prefab.info
+      Dependencies: {}
+    Info_3:
+      Name: anbi.info
       Dependencies: {}

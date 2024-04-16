@@ -7,41 +7,46 @@ using UnityEngine.Playables;
 
 namespace FrameWork
 {
+    
     [RequireComponent(typeof(Animator))]
     public class AnimationController : MonoBehaviour
     {
+        
         public AnimLayerData[] animLayer;
 
-        private LayerAnim[] _layerAnimArr;
-        private AnimationLayerMixerPlayable _layerMixerPlayable;
+        public string _abAnimName;
         
-        private AnimationPlayableOutput _output;
+        protected LayerAnim[] _layerAnimArr;
+        protected AnimationLayerMixerPlayable _layerMixerPlayable;
+        
+        protected AnimationPlayableOutput _output;
 
-        private PlayableGraph _playableGraph;
+        protected PlayableGraph _playableGraph;
 
-        private bool _isInit;
+        protected bool _isInit;
         
         private ConcurrentDictionary<string, LayerAnim> _layerAnimDic;
-        private void Awake()
+        
+        protected virtual void Awake()
         {
-            _layerAnimArr = new LayerAnim[animLayer.Length];
+            
             _layerAnimDic = new ConcurrentDictionary<string, LayerAnim>();
             _isInit = false;
         }
 
-        private void Start()
+        protected virtual void Start()
         {
             Init();
         }
 
 
-        public void Init()
+        public virtual void Init()
         {
             if (_isInit)
             {
                 _playableGraph.Destroy();
             }
-            
+            _layerAnimArr = new LayerAnim[animLayer.Length];
             _playableGraph=PlayableGraph.Create(transform.root.name);
             _isInit = true;
             GraphVisualizerClient.Show(_playableGraph);
@@ -82,13 +87,12 @@ namespace FrameWork
                 anim.SetAnim(animName,lerpSpeed);
             }
         }
-        
-        public void SetAnim(int index,int port,float lerpSpeed=1)
+
+
+        public void SetAnim(int layer,AnimationClip animationClip,float lerpSpeed=1)
         {
-            if (_layerAnimArr.Length > port)
-            {
-                _layerAnimArr[index].SetAnim(port,lerpSpeed);
-            }
+            _layerAnimDic.TryAdd(animationClip.name, anim);
+            _layerAnimArr[layer].SetAnim(animationClip,lerpSpeed);
         }
         
         public void SetLayerWeight(int port,float weight)
@@ -96,15 +100,34 @@ namespace FrameWork
             _layerMixerPlayable.SetInputWeight(port,weight);
         }
         
-        private void Update()
+        protected virtual void Update()
         {
-            for (int i = 0; i < _layerAnimArr.Length; i++)
+            if (_layerAnimArr!=null)
             {
-                _layerAnimArr[i]?.Update();
+                for (int i = 0; i < _layerAnimArr.Length; i++)
+                {
+                    _layerAnimArr[i]?.Update();
+                }
+                GetCurAnimPlayLenght(0);
             }
+
+            
         }
 
-
+        public float GetCurAnimPlayLenght(int layer)
+        {
+            return _layerAnimArr[layer].GetCurAnimPlayLenght();
+        }
+        
+        public bool IsGreater(int layer,float value)
+        {
+            return _layerAnimArr[layer].IsGreater(value);
+        }
+        
+        public float GetCurAnimLerp(int layer)
+        {
+            return _layerAnimArr[layer].GetLerp();
+        }
        
         private void OnDestroy()
         {

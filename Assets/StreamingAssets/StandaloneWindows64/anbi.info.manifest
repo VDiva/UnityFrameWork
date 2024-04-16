@@ -1,0 +1,33 @@
+ManifestFileVersion: 0
+CRC: 4188969259
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 81315e4165f4a7063db60bd70a6bd85b
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: be0efc9aab4079a89194b01c565417e3
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/FrameWork/Asset/AnBi/RunEnd.anim
+- Assets/FrameWork/Asset/AnBi/Run.anim
+- Assets/FrameWork/Asset/AnBi/Avatar_Female_Size02_Anbi_Ani_Evade_Back.anim
+- Assets/FrameWork/Asset/AnBi/AnBiMove 1.fbx
+- Assets/FrameWork/Asset/AnBi/Idle.anim
+Dependencies: []
