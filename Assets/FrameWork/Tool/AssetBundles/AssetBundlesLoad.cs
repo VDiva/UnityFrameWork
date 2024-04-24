@@ -22,7 +22,7 @@ namespace FrameWork
                 assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);
                 _assetBundles.TryAdd(packName, assetBundle);
             }
-            MyLog.Log($"从包"+packName+"加载:"+name);
+            //MyLog.Log($"从包"+packName+"加载:"+name);
             var obj=assetBundle.LoadAsset<T>(name);
             //assetBundle.Unload(false);
             return obj;

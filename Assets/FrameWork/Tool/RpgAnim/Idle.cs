@@ -9,5 +9,16 @@ namespace FrameWork
         {
             return "Idle";
         }
+
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (MoveComponent.moveSpeed>0.1f)
+            {
+                _stateMachine.RunAnim<Walk>();
+            }
+        }
     }
 }

@@ -8,10 +8,12 @@ namespace FrameWork
         private IAnim _anim;
         private AnimationController _animationController;
         private CharacterController _characterController;
-        public StateMachine(AnimationController anim,CharacterController characterController)
+        private MoveComponent _moveComponent;
+        public StateMachine(AnimationController anim,CharacterController characterController,MoveComponent moveComponent)
         {
             _characterController = characterController;
             _animationController = anim;
+            _moveComponent = moveComponent;
         }
         
         public void RunAnim<T>() where T : IAnim,new()
@@ -21,13 +23,13 @@ namespace FrameWork
                 _anim?.End((() =>
                 {
                     _anim = new T();
-                    _anim.Start(_animationController,_characterController,this);
+                    _anim.Start(_animationController,_characterController,this,_moveComponent);
                 }));
             }
             else
             {
                 _anim = new T();
-                _anim.Start(_animationController,_characterController,this);
+                _anim.Start(_animationController,_characterController,this,_moveComponent);
             }
         }
 

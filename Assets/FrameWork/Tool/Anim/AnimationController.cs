@@ -26,6 +26,8 @@ namespace FrameWork
         protected bool _isInit;
         
         private ConcurrentDictionary<string, LayerAnim> _layerAnimDic;
+
+        
         
         protected virtual void Awake()
         {

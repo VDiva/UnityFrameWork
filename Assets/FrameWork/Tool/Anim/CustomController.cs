@@ -7,15 +7,18 @@ using UnityEngine.Playables;
 namespace FrameWork
 {
     [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(MoveComponent))]
     public class CustomController : AnimationController
     {
         private CharacterController _characterController;
         private StateMachine _stateMachine;
+        private MoveComponent _moveComponent;
         protected override void Awake()
         {
             base.Awake();
-            _stateMachine = new StateMachine(this, _characterController);
+            _moveComponent = GetComponent<MoveComponent>();
             _characterController = GetComponent<CharacterController>();
+            _stateMachine = new StateMachine(this, _characterController,_moveComponent);
         }
 
 
@@ -48,24 +51,7 @@ namespace FrameWork
         {
             base.Update();
             _stateMachine?.Update();
-            
-            if (Input.GetKeyDown("1"))
-            {
-                _stateMachine.RunAnim<Idle>();
-                MyLog.Log("按下1");
-            }
 
-            if (Input.GetKeyDown("2"))
-            {
-                _stateMachine.RunAnim<Run>();
-                MyLog.Log("按下2");
-            }
-            
-            if (Input.GetKeyDown("3"))
-            {
-                _stateMachine.RunAnim<RunEnd>();
-
-            }
         }
     }
 }

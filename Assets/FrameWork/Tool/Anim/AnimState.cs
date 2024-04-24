@@ -9,13 +9,15 @@ namespace FrameWork
         protected CharacterController _characterController;
         protected AnimationClip _animationClip;
         protected StateMachine _stateMachine;
-        public virtual void Start(AnimationController animationController, CharacterController characterController,StateMachine stateMachine)
+        protected MoveComponent MoveComponent;
+        public virtual void Start(AnimationController animationController, CharacterController characterController,StateMachine stateMachine,MoveComponent moveComponent)
         {
             if (animationController.IsGreater(0,AnimStrikes()))
             {
                 _animationController = animationController;
                 _characterController = characterController;
                 _stateMachine = stateMachine;
+                MoveComponent = moveComponent;
                 _animationClip = AssetBundlesLoad.LoadAsset<AnimationClip>(animationController._abAnimName, AnimName());
                 animationController.SetAnim(0,_animationClip,Speed());
             }

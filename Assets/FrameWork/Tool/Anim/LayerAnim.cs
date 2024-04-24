@@ -98,30 +98,55 @@ namespace FrameWork
         private AnimationClipPlayable _clipPlayable;
         private void SetAnim(int port,float lerpSpeed=1)
         {
-            if (_animationClipPlayables.TryGetValue(port,out _clipPlayable))
+
+            if (_mixlerp>=1)
             {
-                _clipPlayable.SetTime(0);
-            }
+                
+                if (_animationClipPlayables.TryGetValue(port,out _clipPlayable))
+                {
+                    _clipPlayable.SetTime(0);
+                }
+                _mixlerp = 0;
+                _lefpSpeed = lerpSpeed;
+                if (curMixProt!=-1)
+                {
+                    lastMixProt = curMixProt;
+                }
+                else
+                {
+                    _mixlerp = 1;
+                }
+                
+                if (lerpSpeed==-1)
+                {
+                    _mixlerp = 1;
+                    _lefpSpeed = 1;
+                }
             
-            _mixlerp = 0;
-            _lefpSpeed = lerpSpeed;
-            if (curMixProt!=-1)
-            {
-                lastMixProt = curMixProt;
+            
+            
+                _curAnimPlayLenght = 0;
+                curMixProt = port; 
             }
             else
             {
-                _mixlerp = 1;
-            }
-                
-            if (lerpSpeed==-1)
-            {
-                _mixlerp = 1;
-                _lefpSpeed = 1;
+                if (_animationClipPlayables.TryGetValue(port,out _clipPlayable))
+                {
+                    if (lastMixProt!=-1)
+                    {
+                        _mixerPlayable.SetInputWeight(lastMixProt,0);
+                    }
+                    _clipPlayable.SetTime(_animLenghts[port]*_mixlerp);
+                    _curAnimPlayLenght = _animLenghts[port] * _mixlerp;
+                    _lefpSpeed = lerpSpeed;
+                    lastMixProt = curMixProt;
+                    curMixProt = port;
+                    _mixlerp = 0;
+                }
             }
             
-            _curAnimPlayLenght = 0;
-            curMixProt = port;
+            
+            
             //InvokeRepeating("LerpAnim",0,0.02f);
         }
 
