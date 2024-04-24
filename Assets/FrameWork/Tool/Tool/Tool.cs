@@ -40,19 +40,52 @@ namespace FrameWork
             {
                 case RuntimePlatform.WindowsEditor:
                 case RuntimePlatform.WindowsPlayer:
-                    path ="/StandaloneWindows64/";
+
+                    if (Directory.Exists(Application.streamingAssetsPath+"/StandaloneWindows64/"))
+                    {
+                        path = Application.streamingAssetsPath+"/StandaloneWindows64/";
+                    }
+                    else
+                    {
+                        path = Application.persistentDataPath + "/StandaloneWindows64/";
+                    }
+                    
                     break;
                 case RuntimePlatform.Android:
-                    path = "/Android/";
+                    path = Application.persistentDataPath + "/Android/";
                     break;
                 case RuntimePlatform.IPhonePlayer:
-                    path = "/Ios/";
+                    path = Application.persistentDataPath + "/Ios/";
                     break;
             }
 
             return path;
         }
-        
+
+        public static string GetAbDictoryPath()
+        {
+            string path = "";
+            RuntimePlatform platform = Application.platform;
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                case RuntimePlatform.WindowsPlayer:
+
+                    path = "/StandaloneWindows64/";
+
+                    break;
+                case RuntimePlatform.Android:
+                    path =  "/Android/";
+                    break;
+                case RuntimePlatform.IPhonePlayer:
+                    path ="/Ios/";
+                    break;
+            }
+
+            return path;
+        }
+
+
         public static string GetAbPath(RuntimePlatform platform)
         {
             string path = "";
@@ -61,13 +94,22 @@ namespace FrameWork
             {
                 case RuntimePlatform.WindowsEditor:
                 case RuntimePlatform.WindowsPlayer:
-                    path ="/StandaloneWindows64/";
+
+                    if (Directory.Exists(Application.streamingAssetsPath + "/StandaloneWindows64/"))
+                    {
+                        path = Application.streamingAssetsPath + "/StandaloneWindows64/";
+                    }
+                    else
+                    {
+                        path = Application.persistentDataPath + "/StandaloneWindows64/";
+                    }
+
                     break;
                 case RuntimePlatform.Android:
-                    path = "/Android/";
+                    path = Application.persistentDataPath + "/Android/";
                     break;
                 case RuntimePlatform.IPhonePlayer:
-                    path = "/Ios/";
+                    path = Application.persistentDataPath + "/Ios/";
                     break;
             }
 

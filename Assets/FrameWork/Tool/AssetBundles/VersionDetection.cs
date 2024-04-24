@@ -18,7 +18,7 @@ namespace FrameWork
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
         public static void Detection(string abConfigPath,Action<List<AbPackDate>,byte[]> versionInfo,Action<string> err=null)
         {
-            DownLoad.DownLoadAsset(Config.DownLoadUrl+Tool.GetAbPath()+Config.configName,(
+            DownLoad.DownLoadAsset(Config.DownLoadUrl+Tool.GetAbDictoryPath()+Config.configName,(
                 (f1,f2,s1,s2) =>
                 { } ),(
                 (bytes, s) =>
@@ -82,7 +82,7 @@ namespace FrameWork
 
         public static void Detection(Action<List<AbPackDate>, byte[]> versionInfo, Action<string> err = null)
         {
-            var newPath = Application.persistentDataPath + Config.GetAbPath();
+            var newPath =Config.GetAbPath();
             Detection(newPath,versionInfo,err);
         }
 

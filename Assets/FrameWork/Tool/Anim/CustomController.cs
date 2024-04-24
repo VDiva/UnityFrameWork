@@ -47,6 +47,8 @@ namespace FrameWork
         protected override void Update()
         {
             base.Update();
+            _stateMachine?.Update();
+            
             if (Input.GetKeyDown("1"))
             {
                 _stateMachine.RunAnim<Idle>();

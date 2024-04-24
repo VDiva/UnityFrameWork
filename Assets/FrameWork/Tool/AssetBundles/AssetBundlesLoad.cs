@@ -18,8 +18,8 @@ namespace FrameWork
             AssetBundle assetBundle=null;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                string path = Application.platform==RuntimePlatform.WindowsEditor? Application.streamingAssetsPath+Tool.GetAbPath():Application.persistentDataPath+Tool.GetAbPath();
-                assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);;
+                string path = Tool.GetAbPath();
+                assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);
                 _assetBundles.TryAdd(packName, assetBundle);
             }
             MyLog.Log($"从包"+packName+"加载:"+name);
@@ -33,7 +33,7 @@ namespace FrameWork
             AssetBundle assetBundle=null;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                string path = Application.platform==RuntimePlatform.WindowsEditor? Application.streamingAssetsPath+Tool.GetAbPath():Application.persistentDataPath+Tool.GetAbPath();
+                string path = Tool.GetAbPath();
                 assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);;
                 _assetBundles.TryAdd(packName, assetBundle);
             }

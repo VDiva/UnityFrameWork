@@ -11,7 +11,7 @@ namespace FrameWork
 
         public override float Speed()
         {
-            return -1;
+            return 10;
         }
     }
 }

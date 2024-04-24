@@ -13,7 +13,7 @@ namespace FrameWork
         [MenuItem("FrameWork/Config/CreateConfig")]
         public static void CreateConfig()
         {
-            CreateConfig(Application.streamingAssetsPath+AssetBundle.GetPath());
+            CreateConfig(Application.streamingAssetsPath+Tool.GetAbDictoryPath());
         }
         
         // [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
