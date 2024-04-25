@@ -11,15 +11,16 @@
         public override void Update()
         {
             base.Update();
-            if (MoveComponent.moveSpeed<=0.1f)
+            if (moveComponent.moveSpeed<=0.1f)
             {
                 _stateMachine.RunAnim<Idle>();
-            }
-
-            if (MoveComponent.moveSpeed>10)
+            }else if (moveComponent.moveSpeed>1)
             {
                 _stateMachine.RunAnim<Run>();
             }
+
+            
         }
+        
     }
 }

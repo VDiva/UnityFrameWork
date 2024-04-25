@@ -15,10 +15,15 @@ namespace FrameWork
         {
             base.Update();
 
-            if (MoveComponent.moveSpeed>0.1f)
+            if (moveComponent.moveSpeed>0.1f)
             {
                 _stateMachine.RunAnim<Walk>();
             }
+        }
+
+        public override float AnimStrikes()
+        {
+            return 0;
         }
     }
 }

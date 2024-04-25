@@ -22,8 +22,8 @@ namespace FrameWork
             {
                 _anim?.End((() =>
                 {
-                    _anim = new T();
-                    _anim.Start(_animationController,_characterController,this,_moveComponent);
+                    _anim= new T();
+                    _anim.Start(_animationController, _characterController, this, _moveComponent);
                 }));
             }
             else

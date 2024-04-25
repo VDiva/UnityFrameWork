@@ -15,20 +15,7 @@ namespace FrameWork
 
         private void Update()
         {
-            if (Input.GetKeyDown("1"))
-            {
-                _animationController.SetAnim("Run");
-            }
             
-            if (Input.GetKeyDown("2"))
-            {
-                _animationController.SetAnim("Walk");
-            }
-            
-            if (Input.GetKeyDown("3"))
-            {
-                
-            }
         }
 
       

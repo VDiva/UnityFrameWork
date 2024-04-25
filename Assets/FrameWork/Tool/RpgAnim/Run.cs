@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace FrameWork
 {
@@ -14,16 +15,23 @@ namespace FrameWork
         public override void Update()
         {
             base.Update();
-
-            if (MoveComponent.moveSpeed<=0.5f)
+            if (moveComponent.moveSpeed<1)
             {
-                _stateMachine.RunAnim<RunEnd>();
-            }else if (MoveComponent.moveSpeed<5)
-            {
-                _stateMachine.RunAnim<Walk>();
+                if (Mathf.Abs(Input.GetAxisRaw("Horizontal"))>0.1f|| Mathf.Abs(Input.GetAxisRaw("Vertical"))>0.1f)
+                {
+                    _stateMachine.RunAnim<Walk>();
+                }
+                else
+                {
+                    _stateMachine.RunAnim<RunEnd>();
+                }
+               
             }
 
             
         }
+        
+
+
     }
 }

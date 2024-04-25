@@ -9,19 +9,19 @@ namespace FrameWork
         protected CharacterController _characterController;
         protected AnimationClip _animationClip;
         protected StateMachine _stateMachine;
-        protected MoveComponent MoveComponent;
+        protected MoveComponent moveComponent;
+        
+        
         public virtual void Start(AnimationController animationController, CharacterController characterController,StateMachine stateMachine,MoveComponent moveComponent)
         {
-            if (animationController.IsGreater(0,AnimStrikes()))
-            {
-                _animationController = animationController;
-                _characterController = characterController;
-                _stateMachine = stateMachine;
-                MoveComponent = moveComponent;
-                _animationClip = AssetBundlesLoad.LoadAsset<AnimationClip>(animationController._abAnimName, AnimName());
-                animationController.SetAnim(0,_animationClip,Speed());
-            }
+            _animationController = animationController;
+            _characterController = characterController;
+            _stateMachine = stateMachine;
+            this.moveComponent = moveComponent;
+            _animationClip = AssetBundlesLoad.LoadAsset<AnimationClip>(animationController._abAnimName, AnimName());
+            animationController.SetAnim(0,_animationClip,Speed());
         }
+
 
         public virtual void Update()
         {
@@ -30,7 +30,10 @@ namespace FrameWork
 
         public virtual void End(Action end)
         {
-            end?.Invoke();
+            if (_animationController.IsGreater(0,AnimStrikes()))
+            {
+                end?.Invoke();
+            }
         }
 
         public virtual string AnimName()
@@ -40,7 +43,7 @@ namespace FrameWork
 
         public virtual float AnimStrikes()
         {
-            return 0;
+            return _animationClip.length;
         }
 
         public virtual float Speed()

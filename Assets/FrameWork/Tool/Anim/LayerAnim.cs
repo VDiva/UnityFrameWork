@@ -20,18 +20,19 @@ namespace FrameWork
         private int curLayerProt = -1;
 
         private float _lefpSpeed=1;
-
+        
         private AnimationMixerPlayable _mixerPlayable;
         
         private ConcurrentDictionary<string, int> _layerAnims;
         private ConcurrentDictionary<int, AnimationClipPlayable> _animationClipPlayables;
         private List<float> _animLenghts;
-        private bool _isEnd=true;
+
 
         private StringBuilder _curAnim;
 
         private float _curAnimPlayLenght;
 
+        private AnimationClipPlayable _curPlayable;
         private int _animIndex;
         public LayerAnim()
         {
@@ -77,7 +78,7 @@ namespace FrameWork
             }
 
             _curAnimPlayLenght = 0;
-            _isEnd = true;
+          
         }
         
         public void Init(PlayableGraph playableGraph)
@@ -85,7 +86,7 @@ namespace FrameWork
             _playableGraph = playableGraph;
             _mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, 1);
             //_mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, _animIndex);
-            _isEnd = true;
+           
             _curAnimPlayLenght = 0;
         }
         
@@ -93,57 +94,60 @@ namespace FrameWork
         public void Update()
         {
             LerpAnim();
+            
         }
-
+        
         private AnimationClipPlayable _clipPlayable;
+        private int _prot = -1;
         private void SetAnim(int port,float lerpSpeed=1)
         {
-
-            if (_mixlerp>=1)
+            if (_animationClipPlayables.TryGetValue(port, out _clipPlayable))
             {
+                _curAnimPlayLenght = 0;
+                if (_mixlerp>=1)
+                {
+                    _mixlerp = 0;
+                    _lefpSpeed = lerpSpeed;
+                    if (curMixProt!=-1)
+                    {
+                        lastMixProt = curMixProt;
+                    }
+                    else
+                    {
+                        _mixlerp = 1;
+                    }
                 
-                if (_animationClipPlayables.TryGetValue(port,out _clipPlayable))
-                {
-                    _clipPlayable.SetTime(0);
-                }
-                _mixlerp = 0;
-                _lefpSpeed = lerpSpeed;
-                if (curMixProt!=-1)
-                {
-                    lastMixProt = curMixProt;
+                    
+                    
+                    curMixProt = port; 
                 }
                 else
                 {
-                    _mixlerp = 1;
+                    _prot = lastMixProt;
+                    
+                    
+                    _curAnimPlayLenght = _animLenghts[port] * _mixlerp;
+                    _lefpSpeed = lerpSpeed;
+                    lastMixProt = curMixProt;
+                    curMixProt = port;
+                    _mixlerp = 1 - _mixlerp;
+                    
+                    
+                    if (_prot!=-1&& _prot!=port&& _mixlerp!=1)
+                    {
+                        _mixerPlayable.SetInputWeight(_prot,0);
+                    }
                 }
                 
                 if (lerpSpeed==-1)
                 {
                     _mixlerp = 1;
                     _lefpSpeed = 1;
-                }
-            
-            
-            
-                _curAnimPlayLenght = 0;
-                curMixProt = port; 
-            }
-            else
-            {
-                if (_animationClipPlayables.TryGetValue(port,out _clipPlayable))
-                {
-                    if (lastMixProt!=-1)
-                    {
-                        _mixerPlayable.SetInputWeight(lastMixProt,0);
-                    }
-                    _clipPlayable.SetTime(_animLenghts[port]*_mixlerp);
-                    _curAnimPlayLenght = _animLenghts[port] * _mixlerp;
-                    _lefpSpeed = lerpSpeed;
-                    lastMixProt = curMixProt;
-                    curMixProt = port;
-                    _mixlerp = 0;
+                    _clipPlayable.SetTime(0);
                 }
             }
+
+            
             
             
             
@@ -159,6 +163,7 @@ namespace FrameWork
                 var clip = AnimationClipPlayable.Create(_playableGraph,animationClip);
                 _playableGraph.Connect(clip, 0, _mixerPlayable, _layerAnims.Count-1);
                 _mixerPlayable.SetInputCount(curInput+1);
+                _curPlayable = clip;
                 _animationClipPlayables.TryAdd(_layerAnims.Count-1, clip);
                 SetAnim(_layerAnims.Count-1,lerpSpeed);
                 
@@ -179,7 +184,7 @@ namespace FrameWork
                 _curAnim.Clear();
                 _curAnim.Append(animName);
                // EventManager.DispatchEvent((int)MessageType.Animation,(int)AnimMessageType.Start,new object[]{animName});
-                _isEnd = false;
+               
             }
         }
         
@@ -187,6 +192,7 @@ namespace FrameWork
         private void LerpAnim()
         {
             _mixlerp += Time.deltaTime*_lefpSpeed;
+            
             _mixlerp = Mathf.Clamp(_mixlerp, 0, 1);
             _curAnimPlayLenght += Time.deltaTime;
             if (lastMixProt!=-1)
@@ -198,12 +204,7 @@ namespace FrameWork
             {
                 _mixerPlayable.SetInputWeight(curMixProt,_mixlerp);
             }
-
-            if (!_isEnd&& _mixlerp>=1)
-            {
-                _isEnd = true;
-                //EventManager.DispatchEvent((int)MessageType.Animation,(int)AnimMessageType.End,new object[]{_curAnim.ToString()});
-            }
+            
         }
 
 
@@ -214,7 +215,14 @@ namespace FrameWork
 
         public bool IsGreater(float value)
         {
-            return _curAnimPlayLenght >=value ;
+            if (_animationClipPlayables.TryGetValue(curMixProt,out var clipPlayable))
+            {
+                return _curAnimPlayLenght >=value ;
+            }
+            else
+            {
+                return true;
+            }
         }
         
         public float GetCurAnimPlayLenght()

@@ -11,7 +11,7 @@ namespace FrameWork
         
         public override float Speed()
         {
-            return 10;
+            return -1;
         }
 
 
@@ -23,5 +23,7 @@ namespace FrameWork
                 _stateMachine.RunAnim<Idle>();
             }
         }
+
+        
     }
 }

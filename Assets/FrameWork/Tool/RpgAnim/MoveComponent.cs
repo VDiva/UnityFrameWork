@@ -6,7 +6,7 @@ namespace FrameWork
     [RequireComponent(typeof(CharacterController))]
     public class MoveComponent: MonoBehaviour
     {
-        private float _speed;
+        private float _speed=5;
         public Vector3 dir;
         private Camera _camera;
         private Vector3 _cameraForward;
@@ -25,19 +25,18 @@ namespace FrameWork
         private void Update()
         {
             _cameraForward = _camera.transform.forward;
-            dir.x =Input.GetAxis("Horizontal");
-            dir.z = Input.GetAxis("Vertical");
+            dir.x =Input.GetAxisRaw("Horizontal");
+            dir.z = Input.GetAxisRaw("Vertical");
             dir=_camera.transform.TransformDirection(dir);
             dir.y = 0;
-            
-            _speed = 5 + Input.GetAxis("Shift")*10;
+
+            moveSpeed = Mathf.Clamp(dir.magnitude,0,.99f)+Input.GetAxis("Shift");
             //MyLog.Log(dir+"-"+speed+"-"+Time.deltaTime);
-            transform.Translate(dir*_speed*Time.deltaTime,Space.World);
-            _characterController.Move(dir * _speed*Time.deltaTime);
-            _moveVelocity.x = _characterController.velocity.x;
-            _moveVelocity.z = _characterController.velocity.z;
-            fallingSpeed = _characterController.velocity.y;
-            moveSpeed = _moveVelocity.magnitude;
+            //_characterController.Move(dir * _speed*Time.deltaTime);
+            // _moveVelocity.x = _characterController.velocity.x;
+            // _moveVelocity.z = _characterController.velocity.z;
+            // fallingSpeed = _characterController.velocity.y;
+            //moveSpeed = _moveVelocity.magnitude;
            // MyLog.Log(moveSpeed.ToString());
             if (dir.x!=0|| dir.z!=0)
             {
@@ -46,7 +45,7 @@ namespace FrameWork
                transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.LookRotation(dir),Time.deltaTime*3);
             }
             
-            
+            MyLog.Log(Mathf.Abs(Input.GetAxisRaw("Horizontal"))+"-"+Mathf.Abs(Input.GetAxisRaw("Vertical")));
             
         }
         
