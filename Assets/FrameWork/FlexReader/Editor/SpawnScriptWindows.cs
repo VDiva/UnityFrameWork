@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,7 @@ using FlexFramework.Excel;
 
 using Object = UnityEngine.Object;
 
-namespace FrameWork
+namespace FlexReader.Editor
 {
     public class SpawnScriptWindows : EditorWindow
     {
@@ -69,7 +68,7 @@ namespace FrameWork
             }
             
             
-            if (GUILayout.Button("生成代码"))
+            if (GUILayout.Button("生成类代码"))
             {
                 if (_xlsxPath!=null&& _outputPath!=null)
                 {
@@ -112,7 +111,7 @@ namespace FrameWork
                             
                             sw.WriteLine("using System.Collections.Generic;");
                             sw.WriteLine("using UnityEngine;");
-                            sw.WriteLine("using FrameWork;");
+                            sw.WriteLine("using ProjectDawn.Navigation;");
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             sw.WriteLine("\tpublic class "+fileName);
@@ -140,7 +139,7 @@ namespace FrameWork
                                 sw.WriteLine("\t\t/// <summary>");
                                 sw.WriteLine("\t\t/// "+book[0][i]);
                                 sw.WriteLine("\t\t/// </summary>");
-                                sw.WriteLine("\t\tpublic "+book[1][i]+" "+book[2][i]+";");
+                                sw.WriteLine("\t\tpublic "+CheckTypeKey(book[1][i])+" "+book[2][i]+";");
                                 sw.WriteLine("");
                                 
                                 fz += "\t\t\tthis." + book[2][i] + "=" + book[2][i]+";\n";
@@ -162,6 +161,7 @@ namespace FrameWork
                             sw.WriteLine("\t\t}");
                             // sw.WriteLine("public void css(int value){Debug.Log(value);}");
                             
+                            sw.Write("\t\tpublic "+fileName+"(){}");
                             
                             sw.WriteLine("\t}");
                             sw.WriteLine("}");
@@ -171,8 +171,9 @@ namespace FrameWork
                         using (StreamWriter sw=new StreamWriter(_outputPath+"\\"+fileQuName+".cs",false))
                         {
                             sw.WriteLine("using System.Collections.Generic;");
+                            sw.WriteLine("using UnityEngine;");
+                            sw.WriteLine("using ProjectDawn.Navigation;");
                             sw.WriteLine("using Xlsx;");
-                            sw.WriteLine("using FrameWork;");
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             
@@ -183,10 +184,11 @@ namespace FrameWork
                             
                             for (int i = 3; i < book.Count; i++)
                             {
+                                //if (book[i][0].ToString().Equals(""))continue;
                                 sw.Write("\t\t\tnew "+fileName+"(");
                                 for (int j = 0; j < book[i].Count; j++)
                                 {
-                                    sw.Write(book[i][j].ToString());
+                                    sw.Write(CheckTypeValue(book[1][j].ToString(),book[i][j].ToString()));
                                     if (j!=book[i].Count-1)
                                     {
                                         sw.Write(",");
@@ -225,6 +227,93 @@ namespace FrameWork
                 }
             }
             
+            
+        }
+
+        private string CheckTypeKey(string type)
+        {
+            
+            switch (type)
+            {
+                
+                default:
+                    return type;
+                    break;
+            }
+        }
+        
+        private string CheckTypeValue(string type,string value) 
+        {
+            
+            if (type.IndexOf("Dictionary")!=-1)
+            {
+                
+                return $"new {type}(){{{value}}}";
+            }
+            
+            if (type.IndexOf("[]")!=-1)
+            {
+                string zhi = "";
+                zhi += $"new {type}{{";
+                string[] zhis = value.Split(',');
+                switch (type)
+                {
+                    case "float[]":
+                        
+                        for (int i = 0; i < zhis.Length; i++)
+                        {
+                            if (i<zhis.Length)
+                            {
+                                zhi += zhis[i] + "f,";
+                            }
+                            else
+                            {
+                                zhi += zhis[i] + "f";
+                            }
+                        }
+                        
+                        break;
+                    case "string[]":
+                        for (int i = 0; i < zhis.Length; i++)
+                        {
+                            if (i<zhis.Length)
+                            {
+                                zhi += $"\"{zhi[i]}\",";
+                            }
+                            else
+                            {
+                                zhi += $"\"{zhi[i]}\"";
+                            }
+                        }
+                        break;
+                    case "int[]":
+                        zhi += value;
+                        break;
+                }
+                zhi += "}";
+                return zhi;
+            }
+
+            
+            switch (type)
+            {
+                case "int":
+                    return value;
+                    break;
+                case "float":
+                    return $"{value}f";
+                    break;
+                case "string":
+                    return $"\"{value}\"";
+                    break;
+                case "Vector2":
+                    return $"new Vector2({value})";
+                    break;
+                case "Vector3":
+                    return $"new Vector3({value})";
+                    break;
+            }
+            return value;
         }
 
         private void OnDestroy()
