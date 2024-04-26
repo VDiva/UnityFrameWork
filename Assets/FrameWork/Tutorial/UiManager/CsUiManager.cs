@@ -9,8 +9,7 @@ public class CsUiManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        var type = DllLoad.GetHoyUpdateDllType("FrameWork.InputCs");
-        _uiActor=UiManager.Instance.ShowUi(type);
+        
     }
 
     // Update is called once per frame

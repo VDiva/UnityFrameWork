@@ -50,6 +50,7 @@ namespace FrameWork.Editor
                         using (StreamWriter sw = new StreamWriter( path+"/"+name + "//" + name + ".cs", false))
                         {
                             sw.WriteLine("using UnityEngine;");
+                            sw.WriteLine("using UnityEngine.Video;");
                             sw.WriteLine("using FrameWork;");
                             sw.WriteLine("using UnityEngine.UI;");
                             sw.WriteLine("namespace FrameWork\n{");
@@ -66,6 +67,7 @@ namespace FrameWork.Editor
                     swMode.WriteLine("using UnityEngine;");
                     swMode.WriteLine("using FrameWork;");
                     swMode.WriteLine("using UnityEngine.UI;");
+                    swMode.WriteLine("using UnityEngine.Video;");
                     swMode.WriteLine("namespace FrameWork\n{");
                     swMode.WriteLine("\tpublic partial class "+name+" : "+scriptName);
                     swMode.WriteLine("\t{");
@@ -73,6 +75,7 @@ namespace FrameWork.Editor
                     swView.WriteLine("using UnityEngine;");
                     swView.WriteLine("using FrameWork;");
                     swView.WriteLine("using UnityEngine.UI;");
+                    swView.WriteLine("using UnityEngine.Video;");
                     swView.WriteLine("namespace FrameWork\n{");
                     swView.WriteLine("\tpublic partial class "+name+" : "+scriptName);
                     swView.WriteLine("\t{");
@@ -101,6 +104,7 @@ namespace FrameWork.Editor
                     swAttr.WriteLine("using UnityEngine;");
                     swAttr.WriteLine("using FrameWork;");
                     swAttr.WriteLine("using UnityEngine.UI;");
+                    swAttr.WriteLine("using UnityEngine.Video;");
                     swAttr.WriteLine("namespace FrameWork\n{");
                     if (scriptName=="UiActor")
                     {
@@ -123,6 +127,7 @@ namespace FrameWork.Editor
                     swAttr.WriteLine("using UnityEngine;");
                     swAttr.WriteLine("using FrameWork;");
                     swAttr.WriteLine("using UnityEngine.UI;");
+                    swAttr.WriteLine("using UnityEngine.Video;");
                     swAttr.WriteLine("namespace FrameWork\n{");
                     swAttr.WriteLine("\tpublic partial class "+name+" : "+scriptName);
                     swAttr.WriteLine("\t{");
