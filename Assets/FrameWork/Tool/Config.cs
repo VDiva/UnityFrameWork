@@ -8,7 +8,7 @@ namespace FrameWork
         public static string abEndName = "info";
         public static string abAssetPath = "Assets/FrameWork/Asset";
         public static string configName = "ABConfig.txt";
-        
+        public static string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
         
         
         public static string[] dlls = new String[] { "HotUpdate.dll" };

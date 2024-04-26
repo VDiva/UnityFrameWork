@@ -19,7 +19,8 @@ namespace FrameWork
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
                 string path = Tool.GetAbPath();
-                assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);
+                //assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);
+                assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+abEndName),Config.key));
                 _assetBundles.TryAdd(packName, assetBundle);
             }
             MyLog.Log($"从包"+packName+"加载:"+name);
@@ -34,7 +35,8 @@ namespace FrameWork
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
                 string path = Tool.GetAbPath();
-                assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);;
+               // assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);;
+               assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+abEndName),Config.key));
                 _assetBundles.TryAdd(packName, assetBundle);
             }
 
