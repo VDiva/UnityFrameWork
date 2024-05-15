@@ -1,63 +1,45 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class UiManager : SingletonAsClass<UiManager>
+    public class UiManager : SingletonAsMono<UiManager>
     {
-        
-        // private Transform CanvasTransform = null;
-        //
-        // private Transform BackgroundTransform = null;
-        //
-        // private Transform NormalTransform = null;
-        //
-        // private Transform PopupTransform = null;
-        //
-        // private Transform ControlTransform = null;
 
         private int _index;
-        
-        
         private Stack<int> _uiStack;
-
+        private ConcurrentDictionary<Type, UiActor> _actors;
         private Actor _uiRoot;
         public void Init()
         {
             _index = 0;
-            //_uiStack.Clear();
             ClearAllPanel();
         }
 
         public UiManager()
         {
+            _actors = new ConcurrentDictionary<Type, UiActor>();
             _uiStack = new Stack<int>();
-            //var prefab = AssetBundlesLoad.LoadAsset<GameObject>("Ui", "UiRoot");
-            //CanvasTransform= GameObject.Instantiate(prefab)?.transform;
-            // var type = DllLoad.GetHoyUpdateDllType("FrameWork.UiRoot");
             _uiRoot = (Actor)GetType().Assembly.CreateInstance("FrameWork.UiRoot");
-            // if (_uiRoot!=null)
-            // {
-            //     CanvasTransform = _uiRoot.GetGameObject().transform;
-            //     if (CanvasTransform!=null)
-            //     {
-            //         BackgroundTransform =CanvasTransform.Find("Background");
-            //         NormalTransform =CanvasTransform.Find("Normal");
-            //         PopupTransform =CanvasTransform.Find("Popup");
-            //         ControlTransform =CanvasTransform.Find("Control");
-            //     }
-            // }
+                
         }
 
-
+        private void Awake()
+        {
+            DontDestroyOnLoad(this);
+        }
         public void ShowUi(int index)
         {
-            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
+            
             Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Show,new object[]{index});
-            _uiStack.Push(index);
-            //ShowUiAction?.Invoke(index);
+            if (!_uiStack.Contains(index))
+            {
+                _uiStack.Push(index);
+            }
+
         }
         
         public UiActor ShowUi(string type)
@@ -76,6 +58,14 @@ namespace FrameWork
             }
             
             Type t = type;
+
+            if (_actors.TryGetValue(type,out UiActor actor))
+            {
+                ShowUi(actor.GetIndex());
+                return actor;
+            }
+            
+            
             string fullName = t.Name;
             var uiMode=t.GetCustomAttribute<UiModeAttribute>();
 
@@ -109,6 +99,7 @@ namespace FrameWork
             
             obj.SetIndex(_index);
             _index += 1;
+            _actors.TryAdd(type,obj);
             _uiStack.Push(obj.GetIndex());
             return obj;
         }
@@ -132,15 +123,16 @@ namespace FrameWork
             Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Remove,new object[]{index});
             //RemoveUiAction?.Invoke(index);
         }
-
-
-        public void Back()
+        
+        public int Back()
         {
             if (_uiStack.Count>0)
             {
                 var index=_uiStack.Pop();
                 HideUi(index);
+                return index;
             }
+            return -1;
         }
         
         public void ClearAllPanel()
