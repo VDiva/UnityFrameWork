@@ -138,8 +138,8 @@ namespace FrameWork.Editor
                 }
             }
             
-            
-            AssetBundle.CreatAssetBundle();
+            AssetImporter assetImporter=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+            AssetBundle.UpdateAssetBundle(assetImporter.assetBundleName);
             AssetDatabase.Refresh();
 
         }

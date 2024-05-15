@@ -278,11 +278,11 @@ namespace FlexReader.Editor
                         {
                             if (i<zhis.Length)
                             {
-                                zhi += $"\"{zhi[i]}\",";
+                                zhi += $"\"{zhis[i]}\",";
                             }
                             else
                             {
-                                zhi += $"\"{zhi[i]}\"";
+                                zhi += $"\"{zhis[i]}\"";
                             }
                         }
                         break;

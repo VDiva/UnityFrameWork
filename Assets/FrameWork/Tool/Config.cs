@@ -59,6 +59,33 @@ namespace FrameWork
                 case RuntimePlatform.IPhonePlayer:
                     path = "/Ios/";
                     break;
+                case RuntimePlatform.WebGLPlayer:
+                    path = Application.persistentDataPath + "/WebGl/";
+                    break;
+            }
+
+            return path;
+        }
+        
+        public static string GetAbDictoryPath()
+        {
+            string path = "";
+            RuntimePlatform platform = Application.platform;
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                case RuntimePlatform.WindowsPlayer:
+                    path = "/StandaloneWindows64/";
+                    break;
+                case RuntimePlatform.Android:
+                    path =  "/Android/";
+                    break;
+                case RuntimePlatform.IPhonePlayer:
+                    path ="/Ios/";
+                    break;
+                case RuntimePlatform.WebGLPlayer:
+                    path = "/WebGl/";
+                    break;
             }
 
             return path;
