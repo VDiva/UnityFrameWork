@@ -100,11 +100,8 @@ namespace FlexReader.Editor
                         var book = new WorkBook(item)[0].Rows;
                         fileName = "Xlsx_"+item.Split('/').Last().Split('.')[0];
                         var fileQuName = fileName + "_Query";
-
-
                         
                         StringBuilder stringBuilder = new StringBuilder();
-                        
                         Debug.Log(_outputPath);
                         using (StreamWriter sw=new StreamWriter(_outputPath+"\\"+fileName+".cs",false))
                         {

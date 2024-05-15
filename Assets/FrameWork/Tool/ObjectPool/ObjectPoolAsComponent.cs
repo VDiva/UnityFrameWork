@@ -10,16 +10,26 @@ namespace FrameWork
         private int _num;
         private int _currentNum;
         private ConcurrentQueue<T> _objectPool;
-        
-        public ObjectPoolAsComponent(int num=-1)
+        private Func<T> _func;
+        private bool IsFun;
+        public ObjectPoolAsComponent(Func<T> func,int num=-1)
         {
+            _func = func;
             _objectPool = new ConcurrentQueue<T>();
             _type = typeof(T);
             _currentNum = 0;
             _num = num;
         }
 
-
+        
+        public ObjectPoolAsComponent(int num=-1)
+        {
+            IsFun = false;
+            _objectPool = new ConcurrentQueue<T>();
+            _type = typeof(T);
+            _currentNum = 0;
+            _num = num;
+        }
 
         public void EnQueue(T t)
         {
@@ -40,10 +50,20 @@ namespace FrameWork
             {
                 if (_num==-1)
                 {
-                    GameObject obj = new GameObject(_type.Name);
-                    obj.SetActive(true);
-                    T t2=obj.AddComponent(_type) as T;
-                    return t2;
+                    
+                    if (IsFun)
+                    {
+                        return _func?.Invoke();
+                    }
+                    else
+                    {
+                       GameObject obj = new GameObject(_type.Name);
+                        obj.SetActive(true);
+                        T t2=obj.AddComponent(_type) as T;
+                        return t2;
+                    }
+                     
+                    
                 }
                 else
                 {
@@ -53,11 +73,18 @@ namespace FrameWork
                     }
                     else
                     {
-                        GameObject obj = new GameObject(_type.Name);
-                        obj.SetActive(true);
-                        T t2=obj.AddComponent(_type) as T;
-                        
-                        return t2;
+                        _currentNum += 1;
+                        if (IsFun)
+                        {
+                            return _func?.Invoke();
+                        }
+                        else
+                        {
+                            GameObject obj = new GameObject(_type.Name);
+                            obj.SetActive(true);
+                            T t2=obj.AddComponent(_type) as T;
+                            return t2;
+                        }
                     }
                 }
             }

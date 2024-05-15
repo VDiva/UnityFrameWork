@@ -11,15 +11,26 @@ namespace FrameWork
         private int _num;
         private int _currentNum;
         private ConcurrentQueue<T> _objectPool;
-
-
+        private Func<T> _func;
+        private bool IsFun;
         public int GetSize()
         {
             return _objectPool.Count;
         }
         
+        public ObjectPool(Func<T> func,int num=-1)
+        {
+            IsFun = true;
+            _objectPool = new ConcurrentQueue<T>();
+            _func = func;
+            _type = typeof(T);
+            _currentNum = 0;
+            _num = num;
+        }
+        
         public ObjectPool(int num=-1)
         {
+            IsFun = false;
             _objectPool = new ConcurrentQueue<T>();
             _type = typeof(T);
             _currentNum = 0;
@@ -43,7 +54,7 @@ namespace FrameWork
             {
                 if (_num==-1)
                 {
-                    T t2 = new T();
+                    T t2 = IsFun ? _func() : new T();
                     return t2;
                 }
                 else
@@ -54,7 +65,8 @@ namespace FrameWork
                     }
                     else
                     {
-                        T t2 = new T();
+                        _currentNum += 1;
+                        T t2 = IsFun ? _func() : new T();
                         return t2;
                     }
                 }

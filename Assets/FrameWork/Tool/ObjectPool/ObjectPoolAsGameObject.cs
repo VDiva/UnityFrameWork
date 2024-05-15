@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using UnityEngine;
-
+using System;
 namespace FrameWork
 {
     public class ObjectPoolAsGameObject
@@ -10,24 +10,21 @@ namespace FrameWork
         private int _currentNum;
         private GameObject _go;
         private ConcurrentQueue<GameObject> _objectPool;
-        
-        public ObjectPoolAsGameObject(GameObject go,int num=-1)
+        private Func<GameObject> _func;
+        public ObjectPoolAsGameObject(Func<GameObject> func,int num=-1)
         {
+            _func = func;
             _objectPool = new ConcurrentQueue<GameObject>();
-            _go = go;
             _currentNum = 0;
             _num = num;
         }
-
-
-
+        
         public void EnQueue(GameObject go)
         {
             go.SetActive(false);
             _objectPool.Enqueue(go);
         }
-
-
+        
         public GameObject DeQueue()
         {
             
@@ -40,7 +37,7 @@ namespace FrameWork
             {
                 if (_num==-1)
                 {
-                    GameObject obj = GameObject.Instantiate(_go);
+                    GameObject obj = _func.Invoke();
                     obj.SetActive(true);
                     return obj;
                 }
@@ -52,7 +49,7 @@ namespace FrameWork
                     }
                     else
                     {
-                        GameObject obj = GameObject.Instantiate(_go);
+                        GameObject obj = _func.Invoke();
                         obj.SetActive(true);
                         return go;
                     }
