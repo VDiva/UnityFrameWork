@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -5,8 +6,7 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 using FlexFramework.Excel;
-
-
+using FrameWork;
 using Object = UnityEngine.Object;
 
 namespace FlexReader.Editor
@@ -106,9 +106,13 @@ namespace FlexReader.Editor
                         using (StreamWriter sw=new StreamWriter(_outputPath+"\\"+fileName+".cs",false))
                         {
                             
-                            sw.WriteLine("using System.Collections.Generic;");
-                            sw.WriteLine("using UnityEngine;");
-                            sw.WriteLine("using ProjectDawn.Navigation;");
+                            // sw.WriteLine("using System.Collections.Generic;");
+                            // sw.WriteLine("using UnityEngine;");
+                            // sw.WriteLine("using ProjectDawn.Navigation;");
+                            for (int i = 0; i < Config.XlsxSpawnUse.Length; i++)
+                            {
+                                sw.WriteLine($"using {Config.XlsxSpawnUse[i]};");
+                            }
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             sw.WriteLine("\tpublic class "+fileName);
@@ -167,10 +171,16 @@ namespace FlexReader.Editor
                         
                         using (StreamWriter sw=new StreamWriter(_outputPath+"\\"+fileQuName+".cs",false))
                         {
-                            sw.WriteLine("using System.Collections.Generic;");
-                            sw.WriteLine("using UnityEngine;");
-                            sw.WriteLine("using ProjectDawn.Navigation;");
-                            sw.WriteLine("using Xlsx;");
+                            // sw.WriteLine("using System.Collections.Generic;");
+                            // sw.WriteLine("using UnityEngine;");
+                            // sw.WriteLine("using ProjectDawn.Navigation;");
+                            // sw.WriteLine("using Xlsx;");
+
+                            for (int i = 0; i < Config.XlsxSpawnUse.Length; i++)
+                            {
+                                sw.WriteLine($"using {Config.XlsxSpawnUse[i]};");
+                            }
+                            
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             
@@ -219,6 +229,7 @@ namespace FlexReader.Editor
                             sw.WriteLine("}");
                         }
                     }
+                    
                     AssetDatabase.Refresh();
 
                 }

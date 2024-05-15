@@ -30,6 +30,7 @@ namespace FrameWork
         private void Awake()
         {
             DontDestroyOnLoad(this);
+            DontDestroyOnLoad(_uiRoot.GetGameObject());
         }
         public void ShowUi(int index)
         {
