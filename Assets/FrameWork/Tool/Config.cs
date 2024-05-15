@@ -10,7 +10,7 @@ namespace FrameWork
         public static string configName = "ABConfig.txt";
         public static string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
 
-        public static string[] XlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","ProjectDawn.Navigation","Xlsx"};
+        public static string[] XlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx"};
         public static string[] dlls = new String[] { "HotUpdate.dll" };
         public static string dataPath = Application.dataPath.Replace("Assets", "");
         public static string dllPath = dataPath+"\\HybridCLRData\\HotUpdateDlls\\";
