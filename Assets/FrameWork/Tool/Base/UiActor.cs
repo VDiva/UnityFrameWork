@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameWork
@@ -26,7 +27,7 @@ namespace FrameWork
            
         }
 
-        private void ShowUi(object[] parma)
+        private void ShowUi(List<object> parma)
         {
             ShowUi((int)parma[0]);
         }
@@ -39,7 +40,7 @@ namespace FrameWork
             }
         }
 
-        private void HideUi(object[] parma)
+        private void HideUi(List<object> parma)
         {
             HideUi((int)parma[0]);
         }
@@ -51,7 +52,7 @@ namespace FrameWork
             }
         }
 
-        private void RemoveUi(object[] parma)
+        private void RemoveUi(List<object> parma)
         {
             RemoveUi((int)parma[0]);
         }

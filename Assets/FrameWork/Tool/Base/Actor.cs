@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -71,17 +72,17 @@ namespace FrameWork
 
         public virtual void OnDestroy() {}
 
-        protected void Registered(int eventType,int id,Action<object[]> evt)
+        protected void Registered(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.AddListener(eventType,id,evt);
         }
         
-        protected void Unbinding(int eventType,int id,Action<object[]> evt)
+        protected void Unbinding(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.RemoveListener(eventType,id,evt);
         }
         
-        protected void Dispatch(int evtType, int evt, object[] data = null)
+        protected void Dispatch(int evtType, int evt, List<object> data = null)
         {
             EventManager.DispatchEvent((int)evtType,(int)evt,data);
         }

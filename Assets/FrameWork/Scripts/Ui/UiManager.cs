@@ -34,8 +34,9 @@ namespace FrameWork
         }
         public void ShowUi(int index)
         {
-            
-            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Show,new object[]{index});
+            var data = EventManager.GetEventMsg();
+            data.Add(index);
+            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Show,data);
             if (!_uiStack.Contains(index))
             {
                 _uiStack.Push(index);
@@ -113,7 +114,9 @@ namespace FrameWork
         public void HideUi(int index)
         {
             //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
-            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Hide,new object[]{index});
+            var data = EventManager.GetEventMsg();
+            data.Add(index);
+            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Hide,data);
             //HideUiAction?.Invoke(index);
         }
 
@@ -121,7 +124,9 @@ namespace FrameWork
         public void RemoveUi(int index)
         {
             //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
-            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Remove,new object[]{index});
+            var data = EventManager.GetEventMsg();
+            data.Add(index);
+            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Remove,data);
             //RemoveUiAction?.Invoke(index);
         }
         
@@ -160,7 +165,7 @@ namespace FrameWork
         }
         
         
-        protected void Registered(int eventType,int id,Action<object[]> evt)
+        protected void Registered(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.AddListener(eventType,id,evt);
         }
@@ -170,7 +175,7 @@ namespace FrameWork
         //     EventManager.AddListener((int)eventType,(int)id,evt);
         // }
         
-        protected void Unbinding(int eventType,int id,Action<object[]> evt)
+        protected void Unbinding(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.RemoveListener(eventType,id,evt);
         }
@@ -181,7 +186,7 @@ namespace FrameWork
         // }
 
         
-        protected void Dispatch(int evtType, int evt, object[] data = null)
+        protected void Dispatch(int evtType, int evt, List<object> data = null)
         {
             EventManager.DispatchEvent((int)evtType,(int)evt,data);
         }
