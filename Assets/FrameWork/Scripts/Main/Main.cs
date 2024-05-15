@@ -7,7 +7,7 @@ namespace FrameWork
     {
         public static void Run()
         {
-            var manager = Manager.Instance;
+            
         }
     }
 }
