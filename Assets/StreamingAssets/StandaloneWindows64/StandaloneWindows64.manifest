@@ -1,0 +1,16 @@
+ManifestFileVersion: 0
+CRC: 2816538283
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: dll.info
+      Dependencies: {}
+    Info_1:
+      Name: ui.info
+      Dependencies: {}
+    Info_2:
+      Name: prefab.info
+      Dependencies: {}
+    Info_3:
+      Name: anbi.info
+      Dependencies: {}

@@ -47,11 +47,9 @@ namespace FrameWork
             _playableGraph.Play();
         }
 
-        protected override void Update()
+        private void FixedUpdate()
         {
-            base.Update();
             _stateMachine?.Update();
-
         }
     }
 }

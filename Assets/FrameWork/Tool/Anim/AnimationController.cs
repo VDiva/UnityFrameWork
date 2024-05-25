@@ -15,7 +15,7 @@ namespace FrameWork
         public AnimLayerData[] animLayer;
 
         public string _abAnimName;
-        
+        public bool isRoot;
         protected LayerAnim[] _layerAnimArr;
         protected AnimationLayerMixerPlayable _layerMixerPlayable;
         
@@ -31,7 +31,7 @@ namespace FrameWork
         
         protected virtual void Awake()
         {
-            
+            GetComponent<Animator>().applyRootMotion = isRoot;
             _layerAnimDic = new ConcurrentDictionary<string, LayerAnim>();
             _isInit = false;
         }
@@ -91,10 +91,10 @@ namespace FrameWork
         }
 
 
-        public void SetAnim(int layer,AnimationClip animationClip,float lerpSpeed=1)
+        public void SetAnim(int layer,AnimationClip animationClip,float lerpSpeed=1,bool isSetTime=false)
         {
             _layerAnimDic.TryAdd(animationClip.name, anim);
-            _layerAnimArr[layer].SetAnim(animationClip,lerpSpeed);
+            _layerAnimArr[layer].SetAnim(animationClip,lerpSpeed,isSetTime);
         }
         
         public void SetLayerWeight(int port,float weight)

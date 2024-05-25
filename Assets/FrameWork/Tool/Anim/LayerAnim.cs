@@ -99,10 +99,14 @@ namespace FrameWork
         
         private AnimationClipPlayable _clipPlayable;
         private int _prot = -1;
-        private void SetAnim(int port,float lerpSpeed=1)
+        private void SetAnim(int port,float lerpSpeed=1,bool isSetTime=false)
         {
             if (_animationClipPlayables.TryGetValue(port, out _clipPlayable))
             {
+                if (isSetTime)
+                {
+                    _clipPlayable.SetTime(0);
+                }
                 _curAnimPlayLenght = 0;
                 if (_mixlerp>=1)
                 {
@@ -154,7 +158,7 @@ namespace FrameWork
             //InvokeRepeating("LerpAnim",0,0.02f);
         }
 
-        public void SetAnim(AnimationClip animationClip,float lerpSpeed=1f)
+        public void SetAnim(AnimationClip animationClip,float lerpSpeed=1f,bool isSetTime=false)
         {
             int curInput = _mixerPlayable.GetInputCount();
             if (_layerAnims.TryAdd(animationClip.name,_layerAnims.Count))
@@ -165,22 +169,22 @@ namespace FrameWork
                 _mixerPlayable.SetInputCount(curInput+1);
                 _curPlayable = clip;
                 _animationClipPlayables.TryAdd(_layerAnims.Count-1, clip);
-                SetAnim(_layerAnims.Count-1,lerpSpeed);
+                SetAnim(_layerAnims.Count-1,lerpSpeed,isSetTime);
                 
             }
             else
             {
-                SetAnim(_layerAnims[animationClip.name],lerpSpeed);
+                SetAnim(_layerAnims[animationClip.name],lerpSpeed,isSetTime);
             }
         }
         
         
         private int _port;
-        public void SetAnim(string animName,float lerpSpeed=1)
+        public void SetAnim(string animName,float lerpSpeed=1,bool isSetTime=false)
         {
             if (_layerAnims.TryGetValue(animName,out _port))
             {
-                SetAnim(_port);
+                SetAnim(_port,lerpSpeed,isSetTime);
                 _curAnim.Clear();
                 _curAnim.Append(animName);
                // EventManager.DispatchEvent((int)MessageType.Animation,(int)AnimMessageType.Start,new object[]{animName});

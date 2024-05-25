@@ -8,22 +8,30 @@ namespace FrameWork
         {
             return "runEnd";
         }
-        
+
         public override float Speed()
         {
-            return -1;
+            return 5;
         }
-
 
         public override void Update()
         {
             base.Update();
-            if (_animationController.GetCurAnimPlayLenght(0)>=_animationClip.length)
+            if (moveComponent.moveSpeed<=0.1f)
             {
                 _stateMachine.RunAnim<Idle>();
+            }else if (moveComponent.moveSpeed>1)
+            {
+                _stateMachine.RunAnim<Run>();
+            }else if (moveComponent.moveSpeed>0.1f)
+            {
+                _stateMachine.RunAnim<Walk>();
             }
         }
 
-        
+        public override bool IsSetTime()
+        {
+            return true;
+        }
     }
 }

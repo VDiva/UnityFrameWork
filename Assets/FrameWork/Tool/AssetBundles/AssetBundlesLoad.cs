@@ -19,7 +19,7 @@ namespace FrameWork
             AssetBundle assetBundle=null;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                string path = Config.GetAbPath();
+                string path = Application.streamingAssetsPath+Config.GetAbPath();
                 //assetBundle =AssetBundle.LoadFromFile(path+packName+"."+abEndName);
                 assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+abEndName),Config.key));
                 _assetBundles.TryAdd(packName, assetBundle);
@@ -34,7 +34,7 @@ namespace FrameWork
         
         public static void LoadAssetAsync<T>(string packName,string name,Action<T> action) where T : Object
         {
-            string path = Config.GetAbPath();
+            string path = Application.streamingAssetsPath+Config.GetAbPath();
             AssetBundle assetBundle=null;
             if (Application.platform!=RuntimePlatform.WebGLPlayer)
             {

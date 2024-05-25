@@ -19,7 +19,7 @@ namespace FrameWork
             _stateMachine = stateMachine;
             this.moveComponent = moveComponent;
             _animationClip = AssetBundlesLoad.LoadAsset<AnimationClip>(animationController._abAnimName, AnimName());
-            animationController.SetAnim(0,_animationClip,Speed());
+            animationController.SetAnim(0,_animationClip,Speed(),IsSetTime());
         }
 
 
@@ -48,7 +48,12 @@ namespace FrameWork
 
         public virtual float Speed()
         {
-            return 1;
+            return 2.5f;
+        }
+
+        public virtual bool IsSetTime()
+        {
+            return false;
         }
     }
 }
