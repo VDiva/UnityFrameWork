@@ -1,7 +1,8 @@
 {
     "name": "HotUpdate",
     "references": [
-        "GUID:5a2338bb59a731d4293fb5c2b45b7395"
+        "GUID:5a2338bb59a731d4293fb5c2b45b7395",
+        "GUID:1cb36d1a64f32ce479513e3602dc3587"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -20,7 +20,15 @@ namespace FrameWork
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
             if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
-            var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+            GameObject go=null;
+            if (Config.IsAb)
+            {
+                go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+            }
+            else
+            {
+                go = Resources.Load<GameObject>(infoAttribute.PackName + "/" + infoAttribute.PrefabName);
+            }
             _gameObject = GameObject.Instantiate(go);
             _gameObject.SetActive(false);
             _identity = _gameObject.AddComponent<Identity>();
@@ -34,7 +42,15 @@ namespace FrameWork
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
             if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
-            var go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+            GameObject go=null;
+            if (Config.IsAb)
+            {
+                go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+            }
+            else
+            {
+                go = Resources.Load<GameObject>(infoAttribute.PackName + "/" + infoAttribute.PrefabName);
+            }
             _gameObject = GameObject.Instantiate(go,trans);
             _gameObject.SetActive(false);
             _identity = _gameObject.AddComponent<Identity>();

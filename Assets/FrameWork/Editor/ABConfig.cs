@@ -80,18 +80,60 @@ namespace FrameWork
         [MenuItem("FrameWork/AssetPackaged")]
         public static void AssetPackaged()
         {
-            if (!Directory.Exists(Config.abAssetPath))
+            if (!Directory.Exists(Config.IsAb?Config.abAssetPath:Config.ResourcesPath))
             {
-                Directory.CreateDirectory(Config.abAssetPath);
+                Directory.CreateDirectory(Config.IsAb?Config.abAssetPath:Config.ResourcesPath);
             }
             
-            DirectoryInfo directoryInfo = new DirectoryInfo(Config.abAssetPath);
-            CheckDirectory(directoryInfo);
+            DirectoryInfo directoryInfo = new DirectoryInfo(Config.IsAb?Config.abAssetPath:Config.ResourcesPath);
+            if (Config.IsAb)
+            {
+                CheckDirectory(directoryInfo);
+            }
+            else
+            {
+                CheckDirectoryAsResources(directoryInfo);
+            }
             
-           
             AssetDatabase.Refresh();
         }
 
+
+
+        private static void CheckDirectoryAsResources(DirectoryInfo directoryInfo,string abName="")
+        {
+            var fileInfos = directoryInfo.GetFiles();
+            var directoryInfos=directoryInfo.GetDirectories();
+            foreach (var item in directoryInfos)
+            {
+                var str = item.FullName.Split(new string[] { "Resources\\" }, StringSplitOptions.None)[1].Replace("\\","/");
+                //_stringBuilder.AppendLine("\t\t"+str+",");
+                MyLog.Log(str);
+                CheckDirectoryAsResources(item,str);
+            }
+            
+            foreach (var item in fileInfos)
+            {
+                if (item.Extension!=".meta")
+                {
+                    CheckFileInfoAsResources(item,abName);
+                }
+            }
+        }
+
+        private static void CheckFileInfoAsResources(FileInfo fileInfo,string abName="other")
+        {
+            var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
+            var unityPath=path.Split(new string[]{"Assets"},StringSplitOptions.None);
+            AssetImporter ai=AssetImporter.GetAtPath("Assets\\"+unityPath[unityPath.Length-1]);
+            
+            
+            ai.assetBundleName = abName;
+            ai.assetBundleVariant = Config.abEndName;
+            
+            
+        }
+        
 
         private static void CheckFileInfo(FileInfo fileInfo,string abName="other")
         {
