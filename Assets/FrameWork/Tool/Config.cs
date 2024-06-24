@@ -6,14 +6,15 @@ namespace FrameWork
     public static class Config
     {
 
-        public static bool IsAb=false;
+        public static bool IsAb=true;
         public static string abEndName = "info";
         public static string abAssetPath = "Assets/FrameWork/Asset";
         public static string configName = "ABConfig.txt";
         public static string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
 
+        
         public static string[] XlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx"};
-        public static string[] dlls = new String[] { "HotUpdate.dll" };
+        public static string[] dlls = new String[] { "HotUpdate.dll"};
         public static string dataPath = Application.dataPath.Replace("Assets", "");
         public static string dllPath = dataPath+"\\HybridCLRData\\HotUpdateDlls\\";
         public static string dllCopyPath = dataPath+"\\Assets\\FrameWork\\Asset\\Dll\\";
@@ -21,7 +22,9 @@ namespace FrameWork
         public static string DownLoadUrl="http://127.0.0.1:3000";
         
         public static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
-
+        //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
+        
+        
         public static string ResourcesPath="Assets/Resources/Asset";
         
         public static string ResourcesAsset = "Asset/";

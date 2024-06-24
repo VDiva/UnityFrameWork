@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +5,8 @@ using System.Text;
 using UnityEngine;
 using UnityEditor;
 using FlexFramework.Excel;
-using FrameWork;
+
+
 using Object = UnityEngine.Object;
 
 namespace FlexReader.Editor
@@ -21,12 +21,12 @@ namespace FlexReader.Editor
 
         private string _xlsxPath;
         
-        [SerializeField]
-        private Object outputFolder;
+        // [SerializeField]
+        // private Object outputFolder;
 
-        private string _outputPath;
+        private string _outputPath="Assets/FrameWork/Scripts/Xlsx";
         
-        [MenuItem("Spawn/SpawnXlsxScriptWindows",false,-1)]
+        [MenuItem("FrameWork/SpawnXlsxScriptWindows",false,-1)]
         public static void Init()
         {
             _instance=(SpawnScriptWindows)EditorWindow.GetWindow(typeof(SpawnScriptWindows));
@@ -60,12 +60,12 @@ namespace FlexReader.Editor
             PlayerPrefs.SetString("XlsxPath",_xlsxPath);
             
             
-            EditorGUILayout.LabelField("输出目录");
-            outputFolder = EditorGUILayout.ObjectField(outputFolder, typeof(object),false);
-            if (outputFolder!=null)
-            {
-                _outputPath = Application.dataPath.Replace("Assets", "") + AssetDatabase.GetAssetPath(outputFolder);
-            }
+            // EditorGUILayout.LabelField("输出目录");
+            // outputFolder = EditorGUILayout.ObjectField(outputFolder, typeof(object),false);
+            // if (outputFolder!=null)
+            // {
+            //     _outputPath = Application.dataPath.Replace("Assets", "") + AssetDatabase.GetAssetPath(outputFolder);
+            // }
             
             
             if (GUILayout.Button("生成类代码"))
@@ -100,19 +100,17 @@ namespace FlexReader.Editor
                         var book = new WorkBook(item)[0].Rows;
                         fileName = "Xlsx_"+item.Split('/').Last().Split('.')[0];
                         var fileQuName = fileName + "_Query";
+
+
                         
                         StringBuilder stringBuilder = new StringBuilder();
+                        
                         Debug.Log(_outputPath);
                         using (StreamWriter sw=new StreamWriter(_outputPath+"\\"+fileName+".cs",false))
                         {
                             
-                            // sw.WriteLine("using System.Collections.Generic;");
-                            // sw.WriteLine("using UnityEngine;");
-                            // sw.WriteLine("using ProjectDawn.Navigation;");
-                            for (int i = 0; i < Config.XlsxSpawnUse.Length; i++)
-                            {
-                                sw.WriteLine($"using {Config.XlsxSpawnUse[i]};");
-                            }
+                            sw.WriteLine("using System.Collections.Generic;");
+                            sw.WriteLine("using UnityEngine;");
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             sw.WriteLine("\tpublic class "+fileName);
@@ -171,16 +169,9 @@ namespace FlexReader.Editor
                         
                         using (StreamWriter sw=new StreamWriter(_outputPath+"\\"+fileQuName+".cs",false))
                         {
-                            // sw.WriteLine("using System.Collections.Generic;");
-                            // sw.WriteLine("using UnityEngine;");
-                            // sw.WriteLine("using ProjectDawn.Navigation;");
-                            // sw.WriteLine("using Xlsx;");
-
-                            for (int i = 0; i < Config.XlsxSpawnUse.Length; i++)
-                            {
-                                sw.WriteLine($"using {Config.XlsxSpawnUse[i]};");
-                            }
-                            
+                            sw.WriteLine("using System.Collections.Generic;");
+                            sw.WriteLine("using UnityEngine;");
+                            sw.WriteLine("using Xlsx;");
                             sw.WriteLine("namespace Xlsx");
                             sw.WriteLine("{");
                             
@@ -229,7 +220,6 @@ namespace FlexReader.Editor
                             sw.WriteLine("}");
                         }
                     }
-                    
                     AssetDatabase.Refresh();
 
                 }
@@ -252,6 +242,11 @@ namespace FlexReader.Editor
         
         private string CheckTypeValue(string type,string value) 
         {
+
+            if (value=="null")
+            {
+                return "null";
+            }
             
             if (type.IndexOf("Dictionary")!=-1)
             {
@@ -306,10 +301,10 @@ namespace FlexReader.Editor
             switch (type)
             {
                 case "int":
-                    return value;
+                    return value==""?"0": value;
                     break;
                 case "float":
-                    return $"{value}f";
+                    return value==""?"0":$"{value}f";
                     break;
                 case "string":
                     return $"\"{value}\"";

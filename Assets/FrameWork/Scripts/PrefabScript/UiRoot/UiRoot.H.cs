@@ -1,6 +1,7 @@
 using UnityEngine;
 using FrameWork;
 using UnityEngine.UI;
+using UnityEngine.Video;
 namespace FrameWork
 {
 	public partial class UiRoot : UiActor
@@ -9,9 +10,9 @@ namespace FrameWork
 		public Canvas CanvasUiRoot;
 		public CanvasScaler CanvasScalerUiRoot;
 		public GraphicRaycaster GraphicRaycasterUiRoot;
-		public RectTransform RectTransformPopup;
+		public RectTransform RectTransformBackground;
 		public RectTransform RectTransformNormal;
 		public RectTransform RectTransformControl;
-		public RectTransform RectTransformBackground;
+		public RectTransform RectTransformPopup;
 	}
 }

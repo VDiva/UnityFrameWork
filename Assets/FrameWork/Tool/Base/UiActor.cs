@@ -7,6 +7,12 @@ namespace FrameWork
     {
         protected UiActor(): base() {}
         protected UiActor(Transform trans): base(trans) {}
+
+
+        public virtual void Open(object[] objects)
+        {
+            
+        }
         
         public override void Start()
         {

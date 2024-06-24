@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/FrameWork/Tutorial/AnimationController/AnimationController.unity
+    path: Assets/FrameWork/Scripts/Tutorial/AnimationController/AnimationController.unity
     guid: 48ae629649decc9469eed5de13b542d3
   m_configObjects: {}
