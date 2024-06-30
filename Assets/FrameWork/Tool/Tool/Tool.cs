@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -10,6 +11,37 @@ namespace FrameWork
 {
     public class Tool
     {
+
+
+        public static object ConversionType(string type,string value)
+        {
+            if (type=="int")
+            {
+                return int.Parse(value);
+            }else if (type=="string")
+            {
+                return value;
+            }else if (type=="float")
+            {
+                return float.Parse(value);
+            }else if (type=="long")
+            {
+                return long.Parse(value);
+            }else if (type=="double")
+            {
+                return double.Parse(value);
+            }else if (type=="Vector3")
+            {
+                var v = value.Split(',');
+                return new Vector3(float.Parse(v[0]),float.Parse(v[1]),float.Parse(v[2]));
+            }else if (type=="Vector2")
+            {
+                var v = value.Split(',');
+                return new Vector2(float.Parse(v[0]),float.Parse(v[1]));
+            }
+
+            return value;
+        }
         
         public static string GetMd5(string path)
         {

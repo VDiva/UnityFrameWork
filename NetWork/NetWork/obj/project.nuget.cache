@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "JMJfzHI50WeDdfPkduMwyZzJrotIzizVrUY1BMBB2M+0apJrvQ4qWLr64TCeDc1tFf651v/jHFyFkHtD2z0RGg==",
+  "success": true,
+  "projectFilePath": "C:\\Project\\Game-FrameWork\\NetWork\\NetWork\\NetWork.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\18060\\.nuget\\packages\\exceldatareader\\3.7.0\\exceldatareader.3.7.0.nupkg.sha512",
+    "C:\\Users\\18060\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

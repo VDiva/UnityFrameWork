@@ -11,8 +11,6 @@ namespace FrameWork
     public static class AssetBundlesLoad
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
-
-        
         private static string abEndName = "info";
         public static T LoadAsset<T>(string packName,string name) where T : Object
         {
@@ -86,5 +84,6 @@ namespace FrameWork
                 data?.Invoke(da);
             } ));
         }
+        
     }
 }

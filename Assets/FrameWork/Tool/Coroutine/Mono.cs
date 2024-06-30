@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections;
+using UnityEngine;
 
 namespace FrameWork
 {
@@ -16,6 +17,10 @@ namespace FrameWork
         {
             yield return null;
             action?.Invoke();
+            if (!Application.isPlaying)
+            {
+                DestroyImmediate(gameObject);
+            }
         }
     }
 }
