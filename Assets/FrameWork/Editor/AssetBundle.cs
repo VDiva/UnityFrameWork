@@ -93,6 +93,10 @@ namespace FrameWork
                     }
                 }
             }
+            else
+            {
+                Directory.CreateDirectory(path);
+            }
             BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.ChunkBasedCompression, EditorUserBuildSettings.activeBuildTarget);
             DirectoryInfo dir = new DirectoryInfo(path);
             var f = dir.GetFiles();

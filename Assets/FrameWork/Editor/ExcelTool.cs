@@ -20,6 +20,11 @@ namespace FrameWork
         public static List<string> paths = new List<string>();
         public override void OnImportAsset(AssetImportContext ctx)
         {
+            if (!Directory.Exists(xlsxPath))
+            {
+                Directory.CreateDirectory(xlsxPath);
+                return;
+            }
             if (!ctx.assetPath.StartsWith(xlsxPath)) return;
             var path = ctx.assetPath;
             var fileName = Path.GetFileNameWithoutExtension(path);
@@ -74,7 +79,11 @@ namespace FrameWork
                             }
                         }
                     }
-                    
+
+                    if (!Directory.Exists(ExcelTool.xlsxOutPath))
+                    {
+                        Directory.CreateDirectory(ExcelTool.xlsxOutPath);
+                    }
                     using (StreamWriter sw=new StreamWriter(ExcelTool.xlsxOutPath+"\\"+name+".txt",false))
                     {
                         MyLog.Log("写入");
@@ -84,7 +93,11 @@ namespace FrameWork
                     MyLog.Log(ExcelTool.paths[i]);
                 }
                 MyLog.Log("更新");
-                Mono.Instance.Frame((() => AssetBundle.UpdateAssetBundle("xlsx")));
+                Mono.Instance.Frame((() =>
+                {
+                    ABConfig.AssetPackaged();
+                    AssetBundle.UpdateAssetBundle("xlsx");
+                }));
                 
             }
             ExcelTool.paths.Clear();
@@ -96,6 +109,12 @@ namespace FrameWork
             _queryClassBuilder.Clear();
             var xlsxName = fileName.Split('_')[1];
             var xlsxQueryName = fileName+"_Query";
+
+            if (!Directory.Exists(ExcelTool.xlsxOutScriptPath))
+            {
+                Directory.CreateDirectory(ExcelTool.xlsxOutScriptPath);
+            }
+            
             using (StreamWriter sw = new StreamWriter(ExcelTool.xlsxOutScriptPath + "\\" + xlsxQueryName + ".cs", false))
             {
                 sw.WriteLine("using System.Collections.Generic;");
@@ -107,7 +126,10 @@ namespace FrameWork
                 sw.WriteLine("\t{");
                 sw.WriteLine($"\t\tpublic List<{fileName}> data=new List<{fileName}>();");
                 sw.WriteLine($"\t\tpublic XlsxData<{row[0]},{fileName}> XlsxDataAsOneKey;");
-                sw.WriteLine($"\t\tpublic XlsxData<{row[0]},{row[1]},{fileName}> XlsxDataAsTowKey;");
+                if (row.Count>=2)
+                {
+                    sw.WriteLine($"\t\tpublic XlsxData<{row[0]},{row[1]},{fileName}> XlsxDataAsTowKey;");
+                }
                 sw.WriteLine("\t\tpublic "+xlsxQueryName+"()");
                 sw.WriteLine("\t\t{");
                 sw.WriteLine($"\t\t\tvar xlsx=AssetBundlesLoad.LoadAsset<TextAsset>(\"xlsx\", \"{fileName}\");");
@@ -143,6 +165,10 @@ namespace FrameWork
         public static void SpawnClass(string fileName,List<List<object>> book)
         {
             _classBuilder.Clear();
+            if (!Directory.Exists(ExcelTool.xlsxOutScriptPath))
+            {
+                Directory.CreateDirectory(ExcelTool.xlsxOutScriptPath);
+            }
             using (StreamWriter sw=new StreamWriter(ExcelTool.xlsxOutScriptPath+"\\"+fileName+".cs",false))
             {
                 sw.WriteLine("using System.Collections.Generic;");
