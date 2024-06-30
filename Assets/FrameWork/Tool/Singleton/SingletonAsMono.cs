@@ -24,6 +24,7 @@ namespace FrameWork
                         _instance=go.AddComponent<T>();
                     }
                     
+                    DontDestroyOnLoad(_instance);
                 }
 
                 return _instance;
