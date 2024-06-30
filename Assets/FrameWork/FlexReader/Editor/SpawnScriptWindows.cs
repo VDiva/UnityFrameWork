@@ -24,7 +24,7 @@ namespace FlexReader.Editor
         // [SerializeField]
         // private Object outputFolder;
 
-        private string _outputPath="Assets/FrameWork/Scripts/Xlsx";
+        private string _outputPath="Assets/FrameWork/Scripts/OldVXlsx";
         
         [MenuItem("FrameWork/SpawnXlsxScriptWindows",false,-1)]
         public static void Init()
