@@ -18,20 +18,26 @@ namespace FrameWork
         {
             base.Start();
             
-            Registered((int)MessageType.UiMessage,(int)UiMessageType.Show,ShowUi);
-            Registered((int)MessageType.UiMessage,(int)UiMessageType.Hide,HideUi);
-            Registered((int)MessageType.UiMessage,(int)UiMessageType.Remove,RemoveUi);
+            AddListener((int)MessageType.UiMessage,(int)UiMessageType.Show,ShowUi);
+            AddListener((int)MessageType.UiMessage,(int)UiMessageType.Hide,HideUi);
+            AddListener((int)MessageType.UiMessage,(int)UiMessageType.Remove,RemoveUi);
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
             
-            Unbinding((int)MessageType.UiMessage,(int)UiMessageType.Show,ShowUi);
-            Unbinding((int)MessageType.UiMessage,(int)UiMessageType.Hide,HideUi);
-            Unbinding((int)MessageType.UiMessage,(int)UiMessageType.Remove,RemoveUi);
+            RemoveListener((int)MessageType.UiMessage,(int)UiMessageType.Show,ShowUi);
+            RemoveListener((int)MessageType.UiMessage,(int)UiMessageType.Hide,HideUi);
+            RemoveListener((int)MessageType.UiMessage,(int)UiMessageType.Remove,RemoveUi);
            
         }
+
+        public void HideUi()
+        {
+            
+        }
+        
 
         private void ShowUi(List<object> parma)
         {

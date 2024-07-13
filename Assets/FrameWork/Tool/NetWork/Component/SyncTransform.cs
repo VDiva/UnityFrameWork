@@ -57,10 +57,12 @@ namespace FrameWork
             {
                 //_dir = (transform.position - _syncLoc).normalized;
                 //transform.Translate(_dir*Time.deltaTime*positionSyncSpeed);
-                transform.position = Vector3.Lerp(_curLoc, _syncLoc, _lerpPosition);
-                transform.rotation=Quaternion.Lerp(Quaternion.Euler(_curRo), Quaternion.Euler(_syncRo), _lerpRotation);
-                 _lerpPosition += Time.deltaTime*positionSyncSpeed;
-                 _lerpRotation += Time.deltaTime * rotationSyncSpeed;
+                // transform.position = Vector3.Lerp(_curLoc, _syncLoc, _lerpPosition);
+                // transform.rotation=Quaternion.Lerp(Quaternion.Euler(_curRo), Quaternion.Euler(_syncRo), _lerpRotation);
+                //  _lerpPosition += Time.deltaTime*positionSyncSpeed;
+                //  _lerpRotation += Time.deltaTime * rotationSyncSpeed;
+                transform.position=Vector3.MoveTowards(transform.position, _syncLoc, Time.deltaTime);
+                transform.eulerAngles=Vector3.MoveTowards(transform.eulerAngles, _syncRo, Time.deltaTime);
             }
         }
 

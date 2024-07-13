@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -9,109 +10,72 @@ namespace FrameWork
     public class UiManager : SingletonAsClass<UiManager>
     {
         
-        // private Transform CanvasTransform = null;
-        //
-        // private Transform BackgroundTransform = null;
-        //
-        // private Transform NormalTransform = null;
-        //
-        // private Transform PopupTransform = null;
-        //
-        // private Transform ControlTransform = null;
-
         private int _index;
-        
-        
-        private Stack<int> _uiStack;
-        private Dictionary<Type, UiActor> _actors;
+        private Dictionary<Type, UiActor> _uiDic;
+        private Dictionary<int, Type> _typesDic;
         private List<int> _uiList;
         private Actor _uiRoot;
         public void Init()
         {
             _index = 0;
-            //_uiStack.Clear();
-            ClearAllPanel();
         }
 
         public UiManager()
         {
+            _uiDic = new Dictionary<Type, UiActor>();
+            _typesDic = new Dictionary<int, Type>();
             _uiList = new List<int>();
-            _actors = new Dictionary<Type, UiActor>();
-            _uiStack = new Stack<int>();
-            //var prefab = AssetBundlesLoad.LoadAsset<GameObject>("Ui", "UiRoot");
-            //CanvasTransform= GameObject.Instantiate(prefab)?.transform;
-            // var type = DllLoad.GetHoyUpdateDllType("FrameWork.UiRoot");
             _uiRoot = new UiRoot();
-            // if (_uiRoot!=null)
-            // {
-            //     CanvasTransform = _uiRoot.GetGameObject().transform;
-            //     if (CanvasTransform!=null)
-            //     {
-            //         BackgroundTransform =CanvasTransform.Find("Background");
-            //         NormalTransform =CanvasTransform.Find("Normal");
-            //         PopupTransform =CanvasTransform.Find("Popup");
-            //         ControlTransform =CanvasTransform.Find("Control");
-            //     }
-            // }
+            GameObject.DontDestroyOnLoad(_uiRoot.GetGameObject());
         }
 
 
         public T GetUi<T>() where T: UiActor
         {
-            if (_actors.ContainsKey(typeof(T)))
+            if (_uiDic.ContainsKey(typeof(T)))
             {
-                return (T)_actors[typeof(T)];
+                return (T)_uiDic[typeof(T)];
             }
-
             return null;
         }
 
-        public void ShowUi(int index)
+
+        public void OpenUi(int index,object[] objs=null)
         {
-            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Show,new object[]{index});
-            var msg=EventManager.GetEventMsg();
-            msg.Add(index);
-            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Show,msg);
-            if (!_uiStack.Contains(index))
+            if (_typesDic.ContainsKey(index))
             {
-                _uiStack.Push(index);
-                _uiList.Add(index);
+                OpenUi(_typesDic[index]);
             }
-            
-            //ShowUiAction?.Invoke(index);
         }
         
-        public UiActor ShowUi(string type,object[] objects=null)
+        public T OpenUi<T>(object[] objs=null) where T: UiActor
         {
-            var t = Assembly.GetExecutingAssembly().GetType(type);
-            return ShowUi(t,objects);
+            return (T)OpenUi(typeof(T), objs);
         }
 
-
         
         
-        public UiActor ShowUi(Type type,object[] objects=null)
+        public UiActor OpenUi(Type type,object[] objects=null)
         {
             if (_uiRoot.GetGameObject()==null)
             {
                 MyLog.LogError("场景中没有Canvas组件,无法显示Ui物体");
                 return null;
             }
-            
-            Type t = type;
 
-            if (_actors.TryGetValue(type,out UiActor actor))
+            if (_uiDic.ContainsKey(type))
             {
-                ShowUi(actor.GetIndex());
-                actor.Open(objects);
-                return actor;
+                _uiDic[type].SetActive(true);
+                _uiDic[type].Open(objects);
+                if (!_uiList.Contains(_uiDic[type].GetIndex()))
+                {
+                    
+                    _uiList.Add(_uiDic[type].GetIndex());
+                }
+                return _uiDic[type];
             }
             
-            
-            
-            string fullName = t.Name;
-            var uiMode=t.GetCustomAttribute<UiModeAttribute>();
-
+            var uiMode=type.GetCustomAttribute<UiModeAttribute>();
             if (uiMode==null)
             {
                 MyLog.LogError("类不具备UiModeAttribute");
@@ -119,12 +83,11 @@ namespace FrameWork
             }
            
             Transform tran=GetTransform(uiMode);
-
             var param = new object[] { tran };
             UiActor obj;
             try
             {
-                obj= (UiActor)Activator.CreateInstance(t, param);
+                obj= (UiActor)Activator.CreateInstance(type, param);
             }
             catch (Exception e)
             {
@@ -139,144 +102,93 @@ namespace FrameWork
                 MyLog.LogError("生成ui失败");
                 return null;
             }
-            
             obj.SetIndex(_index);
-            _index += 1;
-            _actors.Add(type,obj);
-            _uiStack.Push(obj.GetIndex());
+            _uiDic.Add(type,obj);
             _uiList.Add(obj.GetIndex());
-            obj.Open(objects);
-            var msg=EventManager.GetEventMsg();
-            msg.Add(obj.GetIndex());
-            EventManager.DispatchEvent((int)MessageType.UiMessage,(int)UiMessageType.Show,msg);
+            _typesDic.Add(obj.GetIndex(),type);
+            _index += 1;
             return obj;
         }
-        
-        
 
-        public T ShowUi<T>(object[] objects=null) where T: UiActor
+
+        public T HideUi<T>() where T : UiActor
         {
-            return (T)ShowUi(typeof(T),objects);
+            return (T)HideUi(typeof(T));
         }
+        
+        
+        public UiActor HideUi(Type type) 
+        {
+            if (_uiDic.ContainsKey(type))
+            {
+                var uiActor=_uiDic[type];
+                uiActor.SetActive(false);
+                _uiDic[type].SetActive(false);
+                _uiList.Remove(uiActor.GetIndex());
+                return uiActor;
+            }
+
+            return null;
+        }
+        
+        
         public void HideUi(int index)
         {
-            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
-            var msg=EventManager.GetEventMsg();
-            msg.Add(index);
-            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Hide,msg);
-            _uiList.Remove(index);
-            //HideUiAction?.Invoke(index);
+            if (_typesDic.ContainsKey(index))
+            {
+                HideUi(_typesDic[index]);
+            }
         }
 
-        
-        public void HideUi<T>()
+
+        public void RemoveUi<T>() where T: UiActor
         {
-            if (_actors.ContainsKey(typeof(T)))
+            RemoveUi(typeof(T));
+        }
+        
+        public void RemoveUi(Type type)
+        {
+            if (_uiDic.ContainsKey(type))
             {
-                
-                HideUi(_actors[typeof(T)].GetIndex());
-                //Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Hide,new object[]{_actors[typeof(T)].GetIndex()});
+                var uiActor=_uiDic[type];
+                _typesDic.Remove(uiActor.GetIndex());
+                _uiList.Remove(uiActor.GetIndex());
+                _uiDic.Remove(type);
+                GameObject.Destroy(uiActor.GetGameObject());
             }
-            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Hide,new object[]{index});
-            //HideUiAction?.Invoke(index);
+            
         }
         
         public void RemoveUi(int index)
         {
-            //EventManager.DispatchEvent(MessageType.UiMessage,UiMessageType.Remove,new object[]{index});
-            var msg=EventManager.GetEventMsg();
-            msg.Add(index);
-            Dispatch((int)MessageType.UiMessage,(int)UiMessageType.Remove,msg);
-            _uiList.Remove(index);
-            //RemoveUiAction?.Invoke(index);
-        }
-
-        public void RemoveUi<T>()
-        {
-            if (_actors.ContainsKey(typeof(T)))
+            if (_typesDic.ContainsKey(index))
             {
-                RemoveUi(_actors[typeof(T)].GetIndex());
-                _actors.Remove(typeof(T));
+                RemoveUi(_typesDic[index]);
             }
         }
 
-        public bool UiIsOpen<T>()
+
+
+        public void Back()
         {
-            if (_actors.ContainsKey(typeof(T)))
+            if (_uiList.Count>0)
             {
-                return _actors[typeof(T)].GetGameObject().activeSelf;
-            }
-
-            return false;
-        }
-        public int Back()
-        {
-            if (_uiStack.Count>0)
-            {
-                var index=_uiStack.Pop();
-
-                if (!_uiList.Contains(index))
-                {
-                    return Back();
-                }
-
-                _uiList.Remove(index);
+                var index = _uiList.Last();
                 HideUi(index);
-                return index;
             }
-            return -1;
         }
         
-        public void ClearAllPanel()
-        {
-            RemoveUi(-1);
-            //RemoveUiAction?.Invoke(-1);
-            _uiStack.Clear();
-            _uiList.Clear();
-        }
-        
-        public void HideAllPanel()
-        {
-            HideUi(-1);
-            //RemoveUiAction?.Invoke(-1);
-            _uiStack.Clear();
-            _uiList.Clear();
-        }
-
-
         public Transform GetTransform(UiModeAttribute uiModeAttribute)
         {
             Transform tran = _uiRoot.GetGameObject().transform.Find(uiModeAttribute.Mode.ToString());
-            
-
+            if (tran==null)
+            {
+                var layer=GameObject.Instantiate(_uiRoot.GetGameObject().transform.GetChild(0), _uiRoot.GetGameObject().transform);
+                layer.name = uiModeAttribute.Mode.ToString();
+                tran = layer;
+            }
             return tran;
         }
         
-        
-        protected void Registered(int eventType,int id,Action<List<object>> evt)
-        {
-            EventManager.AddListener(eventType,id,evt);
-        }
-        
-        // protected void Registered(Enum eventType,Enum id,Action<object[]> evt)
-        // {
-        //     EventManager.AddListener((int)eventType,(int)id,evt);
-        // }
-        
-        protected void Unbinding(int eventType,int id,Action<List<object>> evt)
-        {
-            EventManager.RemoveListener(eventType,id,evt);
-        }
-        
-        // protected void Unbinding(Enum eventType,Enum id,Action<object[]> evt)
-        // {
-        //     EventManager.RemoveListener(eventType,id,evt);
-        // }
-
-        
-        protected void Dispatch(int evtType, int evt, List<object> data = null)
-        {
-            EventManager.DispatchEvent((int)evtType,(int)evt,data);
-        }
     }
 }

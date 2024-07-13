@@ -13,7 +13,7 @@ namespace FrameWork
 
         private Identity _identity;
         
-        protected Transform transform => _gameObject.transform;
+        public Transform transform => _gameObject.transform;
         
         public Actor()
         {
@@ -88,19 +88,36 @@ namespace FrameWork
 
         public virtual void OnDestroy() {}
 
-        protected void Registered(int eventType,int id,Action<List<object>> evt)
+        protected void AddListener(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.AddListener(eventType,id,evt);
         }
         
-        protected void Unbinding(int eventType,int id,Action<List<object>> evt)
+        protected void RemoveListener(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.RemoveListener(eventType,id,evt);
         }
         
-        protected void Dispatch(int evtType, int evt, List<object> data = null)
+        protected void DispatchEvent(int evtType, int evt, List<object> data = null)
         {
             EventManager.DispatchEvent((int)evtType,(int)evt,data);
+        }
+        
+        
+        
+        protected void AddListener(Enum eventType,Enum id,Action<List<object>> evt)
+        {
+            EventManager.AddListener((int)(object)eventType,(int)(object)id,evt);
+        }
+        
+        protected void RemoveListener(Enum eventType,Enum id,Action<List<object>> evt)
+        {
+            EventManager.RemoveListener((int)(object)eventType,(int)(object)id,evt);
+        }
+        
+        protected void DispatchEvent(Enum evtType, Enum evt, List<object> data = null)
+        {
+            EventManager.DispatchEvent((int)(object)evtType,(int)(object)evt,data);
         }
 
     }

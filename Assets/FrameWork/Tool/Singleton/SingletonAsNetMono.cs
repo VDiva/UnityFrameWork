@@ -22,6 +22,7 @@ namespace FrameWork
                         GameObject go = new GameObject();
                         go.name = typeof(T).Name;
                         _instance=go.AddComponent<T>();
+                        DontDestroyOnLoad(go);
                     }
                     
                 }
