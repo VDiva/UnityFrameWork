@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameWork
@@ -12,12 +13,14 @@ namespace FrameWork
             }
         }
 
-        public static void SetActive(this UiActor mono, bool active)
+        public static void SetActive(this Actor mono, bool active)
         {
             if (mono.GetGameObject().activeSelf!=active)
             {
                 mono.GetGameObject().SetActive(active);
             }
         }
+
+
     }
 }

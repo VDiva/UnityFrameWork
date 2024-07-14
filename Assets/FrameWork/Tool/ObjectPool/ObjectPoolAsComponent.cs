@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameWork
@@ -9,13 +10,13 @@ namespace FrameWork
         private System.Type _type;
         private int _num;
         private int _currentNum;
-        private ConcurrentQueue<T> _objectPool;
+        private List<T> _objectPool;
         private Func<T> _func;
         private bool IsFun;
         public ObjectPoolAsComponent(Func<T> func,int num=-1)
         {
             _func = func;
-            _objectPool = new ConcurrentQueue<T>();
+            _objectPool = new List<T>();
             _type = typeof(T);
             _currentNum = 0;
             _num = num;
@@ -25,7 +26,7 @@ namespace FrameWork
         public ObjectPoolAsComponent(int num=-1)
         {
             IsFun = false;
-            _objectPool = new ConcurrentQueue<T>();
+            _objectPool = new List<T>();
             _type = typeof(T);
             _currentNum = 0;
             _num = num;
@@ -33,18 +34,28 @@ namespace FrameWork
 
         public void EnQueue(T t)
         {
-            t.gameObject.SetActive(false);
-            _objectPool.Enqueue(t);
+            if (!_objectPool.Contains(t))
+            {
+                _objectPool.Add(t);
+                t.gameObject.SetActive(false);
+            }
+            else
+            {
+                MyLog.LogError("添加重复的对象进对象池!!!!");
+            }
+            
         }
 
 
         public T DeQueue()
         {
             
-            if (_objectPool.TryDequeue(out T t))
+            if (_objectPool.Count>0)
             {
-                t.gameObject.SetActive(true);
-                return t;
+                var item = _objectPool[0];
+                _objectPool.RemoveAt(0);
+                item.gameObject.SetActive(true);
+                return item;
             }
             else
             {

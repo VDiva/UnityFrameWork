@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace FrameWork
 {
@@ -10,7 +11,7 @@ namespace FrameWork
         private System.Type _type;
         private int _num;
         private int _currentNum;
-        private ConcurrentQueue<T> _objectPool;
+        private List<T> _objectPool;
         private Func<T> _func;
         private bool IsFun;
         public int GetSize()
@@ -21,7 +22,7 @@ namespace FrameWork
         public ObjectPool(Func<T> func,int num=-1)
         {
             IsFun = true;
-            _objectPool = new ConcurrentQueue<T>();
+            _objectPool = new List<T>();
             _func = func;
             _type = typeof(T);
             _currentNum = 0;
@@ -31,7 +32,7 @@ namespace FrameWork
         public ObjectPool(int num=-1)
         {
             IsFun = false;
-            _objectPool = new ConcurrentQueue<T>();
+            _objectPool = new List<T>();
             _type = typeof(T);
             _currentNum = 0;
             _num = num;
@@ -39,16 +40,25 @@ namespace FrameWork
         
         public void EnQueue(T t)
         {
-            _objectPool.Enqueue(t);
+            if (!_objectPool.Contains(t))
+            {
+                _objectPool.Add(t);
+            }
+            else
+            {
+                MyLog.LogError("添加重复的对象进对象池!!!!");
+            }
         }
 
 
         public T DeQueue()
         {
             
-            if (_objectPool.TryDequeue(out T t))
+            if (_objectPool.Count>0)
             {
-                return t;
+                var item = _objectPool[0];
+                _objectPool.RemoveAt(0);
+                return item;
             }
             else
             {
