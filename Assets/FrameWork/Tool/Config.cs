@@ -45,6 +45,9 @@ namespace FrameWork
                 case RuntimePlatform.IPhonePlayer:
                     path = "/Ios/";
                     break;
+                case RuntimePlatform.WebGLPlayer:
+                    path = "/WebGl/";
+                    break;
             }
 
             return path;
