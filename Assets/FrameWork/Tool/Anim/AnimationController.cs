@@ -41,6 +41,8 @@ namespace FrameWork
             Init();
         }
 
+        
+        
 
         public virtual void Init()
         {
@@ -90,6 +92,13 @@ namespace FrameWork
             }
         }
 
+        public void SetSpeed(int layer,float speed)
+        {
+            if (_layerAnimArr!=null)
+            {
+                _layerAnimArr[layer].SetSpeed(speed);
+            }
+        }
 
         public void SetAnim(int layer,AnimationClip animationClip,float lerpSpeed=1,bool isSetTime=false)
         {

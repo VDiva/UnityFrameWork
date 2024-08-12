@@ -16,8 +16,12 @@ namespace FrameWork
     {
         public static string xlsxPath = "Assets/FrameWork/Xlsx";
         public static string xlsxOutPath = "Assets/FrameWork/Asset/Xlsx";
+        
+        public static string xlsxOutResourcesPath = "Assets/Resources/Xlsx";
+        
         public static string xlsxOutScriptPath = "Assets/FrameWork/Scripts/Xlsx";
         public static List<string> paths = new List<string>();
+        
         public override void OnImportAsset(AssetImportContext ctx)
         {
             if (!Directory.Exists(xlsxPath))
@@ -62,6 +66,7 @@ namespace FrameWork
                     _rows.Add(table.Rows[0].ItemArray.ToList());
                     _rows.Add(table.Rows[1].ItemArray.ToList());
                     _rows.Add(table.Rows[2].ItemArray.ToList());
+                    SpawnKey(name,table.Rows);
                     SpawnClass(name,_rows);
                     SpawnQueryClass(name,table.Rows[1].ItemArray.ToList(),table.Rows[2].ItemArray.ToList());
                     for (int k = 0; k < rowNum; k++)
@@ -75,16 +80,18 @@ namespace FrameWork
                             }
                             else
                             {
-                                _stringBuilder.Append(items[j].ToString()+" ");
+                                _stringBuilder.Append(items[j].ToString()+"|");
                             }
                         }
                     }
 
-                    if (!Directory.Exists(ExcelTool.xlsxOutPath))
+                    var outPath = Config.IsAb ? ExcelTool.xlsxOutPath : ExcelTool.xlsxOutResourcesPath;
+                    
+                    if (!Directory.Exists(outPath))
                     {
-                        Directory.CreateDirectory(ExcelTool.xlsxOutPath);
+                        Directory.CreateDirectory(outPath);
                     }
-                    using (StreamWriter sw=new StreamWriter(ExcelTool.xlsxOutPath+"\\"+name+".txt",false))
+                    using (StreamWriter sw=new StreamWriter(outPath+"\\"+name+".txt",false))
                     {
                         MyLog.Log("写入");
                         sw.Write(_stringBuilder);
@@ -93,14 +100,56 @@ namespace FrameWork
                     MyLog.Log(ExcelTool.paths[i]);
                 }
                 MyLog.Log("更新");
-                Mono.Instance.Frame((() =>
+                if (Config.IsAb)
                 {
-                    ABConfig.AssetPackaged();
-                    AssetBundle.UpdateAssetBundle("xlsx");
-                }));
+                    Mono.Instance.Frame((() =>
+                    {
+                        ABConfig.AssetPackaged();
+                        AssetBundle.UpdateAssetBundle("xlsx");
+                    }));
+                }
                 
             }
             ExcelTool.paths.Clear();
+        }
+
+        private static void SpawnKey(string fileName,DataRowCollection coll)
+        {
+            var xlsxName = fileName.Split('_')[1];
+            var xlsxKeyName = "Xlsx_"+xlsxName+"_Key";
+            var xlsxTypeName = "Xlsx_"+xlsxName+"_Type";
+            HashSet<string> key = new HashSet<string>();
+            using (StreamWriter sw = new StreamWriter(ExcelTool.xlsxOutScriptPath + "\\" + xlsxKeyName + ".cs", false))
+            {
+                sw.WriteLine("namespace Xlsx");
+                sw.WriteLine("{");
+                sw.WriteLine("\tpublic enum "+xlsxKeyName);
+                sw.WriteLine("\t{");
+                for (int i = 3; i < coll.Count; i++)
+                {
+                    if (!key.Contains(coll[i].ItemArray[0].ToString()))
+                    {
+                        sw.WriteLine($"\t\t{coll[i].ItemArray[0]},");
+                        key.Add(coll[i].ItemArray[0].ToString());
+                    }
+                    
+                }
+                
+                sw.WriteLine("\n");
+                sw.WriteLine("\t}");
+                
+                sw.WriteLine("\tpublic enum "+xlsxTypeName);
+                sw.WriteLine("\t{");
+                var row = coll[2].ItemArray;
+                for (int i = 0; i < row.Length; i++)
+                {
+                    sw.WriteLine($"\t\t{row[i]},");
+                }
+                
+                sw.WriteLine("\t}");
+                sw.WriteLine("}");
+                
+            }
         }
 
         private static StringBuilder _queryClassBuilder = new StringBuilder();
@@ -132,18 +181,28 @@ namespace FrameWork
                 }
                 sw.WriteLine("\t\tpublic "+xlsxQueryName+"()");
                 sw.WriteLine("\t\t{");
-                sw.WriteLine($"\t\t\tvar xlsx=AssetBundlesLoad.LoadAsset<TextAsset>(\"xlsx\", \"{fileName}\");");
+
+                if (Config.IsAb)
+                {
+                    sw.WriteLine($"\t\t\tvar xlsx=AssetBundlesLoad.LoadAsset<TextAsset>(\"xlsx\", \"{fileName}\");");
+                }
+                else
+                {
+                    sw.WriteLine($"\t\t\tvar xlsx=ResourcesMrg.LoadAsset<TextAsset>(\"xlsx\", \"{fileName}\");");
+                }
+                
                 sw.WriteLine("\t\t\tvar itemData=xlsx.text.Split('\\n');");
-                sw.WriteLine("\t\t\tvar fileNames = itemData[2].Split(' ');");
-                sw.WriteLine("\t\t\tvar fileTypes = itemData[1].Split(' ');");
+                sw.WriteLine("\t\t\tvar fileNames = itemData[2].Split('|');");
+                sw.WriteLine("\t\t\tvar fileTypes = itemData[1].Split('|');");
                 sw.WriteLine("\t\t\tfor (int i = 3; i < itemData.Length; i++)");
                 sw.WriteLine("\t\t\t{");
                 sw.WriteLine("\t\t\t\tif (string.IsNullOrEmpty(itemData[i]))continue;");
-                sw.WriteLine("\t\t\t\tvar items = itemData[i].Split(' ');");
+                sw.WriteLine("\t\t\t\tvar items = itemData[i].Split('|');");
                 sw.WriteLine($"\t\t\t\tvar xlsxData = new {fileName}();");
                 sw.WriteLine("\t\t\t\tvar type=xlsxData.GetType();");
                 sw.WriteLine("\t\t\t\tfor (int j = 0; j < items.Length; j++)");
                 sw.WriteLine("\t\t\t\t{");
+                sw.WriteLine("\t\t\t\t\tif (string.IsNullOrEmpty(items[j]))continue;");
                 sw.WriteLine("\t\t\t\t\ttype.GetField(fileNames[j]).SetValue(xlsxData,Tool.ConversionType(fileTypes[j],items[j]));");
                 sw.WriteLine("\t\t\t\t}");
                 sw.WriteLine("\t\t\t\tdata.Add(xlsxData);");

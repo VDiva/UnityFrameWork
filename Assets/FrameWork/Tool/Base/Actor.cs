@@ -80,14 +80,20 @@ namespace FrameWork
 
         public virtual void OnDisable() {}
 
-        public virtual void Update() {}
+        public virtual void Update(float deltaTime) {}
 
-        public virtual void FixedUpdate() {}
+        public virtual void FixedUpdate(float deltaTime) {}
 
         public virtual void LateUpdate() {}
 
         public virtual void OnDestroy() {}
 
+        public virtual void OnTriggerEnter() {}
+        public virtual void OnTriggerEnter2D() {}
+        public virtual void OnTriggerExit2D() {}
+        
+        public virtual void OnCollisionEnter() {}
+        
         protected void AddListener(int eventType,int id,Action<List<object>> evt)
         {
             EventManager.AddListener(eventType,id,evt);

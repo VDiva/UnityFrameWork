@@ -6,7 +6,7 @@ namespace FrameWork
     public static class Config
     {
 
-        public static bool IsAb=true;
+        public static bool IsAb=false;
         public static string abEndName = "info";
         public static string abAssetPath = "Assets/FrameWork/Asset";
         public static string configName = "ABConfig.txt";
@@ -21,6 +21,8 @@ namespace FrameWork
         
         public static string DownLoadUrl="http://127.0.0.1:3000";
         
+        
+        public static string[] spawnScriptUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx","UnityEngine.UI","UnityEngine.Video","Spine.Unity","TMPro","Pathfinding","ScriptCode.Move","ScriptCode.Tool"};
         public static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
         //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
         

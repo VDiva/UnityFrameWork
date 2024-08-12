@@ -91,6 +91,11 @@ namespace FrameWork
         }
         
         
+        public void SetSpeed(float speed)
+        {
+            _mixerPlayable.SetSpeed(speed);
+        }
+        
         public void Update()
         {
             LerpAnim();

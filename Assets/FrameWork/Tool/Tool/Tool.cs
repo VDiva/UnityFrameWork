@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEditor;
@@ -32,12 +34,38 @@ namespace FrameWork
                 return double.Parse(value);
             }else if (type=="Vector3")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
                 var v = value.Split(',');
                 return new Vector3(float.Parse(v[0]),float.Parse(v[1]),float.Parse(v[2]));
             }else if (type=="Vector2")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
                 var v = value.Split(',');
                 return new Vector2(float.Parse(v[0]),float.Parse(v[1]));
+            }else if (type=="string[]")
+            {
+                if (string.IsNullOrEmpty(value))
+                    return new string[]{};
+                else
+                    return value.Split(',');
+            }else if (type=="int[]")
+            {
+                if (string.IsNullOrEmpty(value))
+                    return new int[]{};
+                else
+                    return value.Split(',').Select((s => int.Parse(s) ));
+            }else if (type=="float[]")
+            {
+                if (string.IsNullOrEmpty(value))
+                    return new float[]{};
+                else
+                    return value.Split(',').Select((s => float.Parse(s) ));
             }
 
             return value;
@@ -217,6 +245,14 @@ namespace FrameWork
         public static bool CheckPlatform(RuntimePlatform runtimePlatform)
         {
             return Application.platform == runtimePlatform;
+        }
+
+
+        public static Type ByClassNameGetType(string className)
+        {
+            var assembly=Assembly.GetExecutingAssembly();
+            var type = assembly.GetType($"FrameWork.{className}.{className}");
+            return type;
         }
 
     }

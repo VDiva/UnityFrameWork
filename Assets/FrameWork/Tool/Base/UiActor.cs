@@ -11,7 +11,7 @@ namespace FrameWork
 
         public virtual void Open(object[] objects)
         {
-            
+            Time.timeScale = 0;
         }
         
         public override void Start()
@@ -33,12 +33,7 @@ namespace FrameWork
            
         }
 
-        public void HideUi()
-        {
-            
-        }
         
-
         private void ShowUi(List<object> parma)
         {
             ShowUi((int)parma[0]);
@@ -76,5 +71,14 @@ namespace FrameWork
                 GameObject.Destroy(GetGameObject());
             }
         }
+        
+        public void CloseUi()
+        {
+        }
+        
+        public virtual void OnClose()
+        {
+        }
+        
     }
 }

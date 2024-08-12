@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using BestHTTP;
 using UnityEngine;
-using UnityEngine.Networking;
 using Object = UnityEngine.Object;
 
 namespace FrameWork
@@ -78,7 +76,7 @@ namespace FrameWork
 
         private static void DownLoadAb(string path,Action<byte[]> data)
         {
-            RequestTool requestTool = new RequestTool(path, HTTPMethods.Get);
+            RequestTool requestTool = new RequestTool(path, Methods.Get);
             requestTool.Send(((byte[] da) =>
             {
                 data?.Invoke(da);

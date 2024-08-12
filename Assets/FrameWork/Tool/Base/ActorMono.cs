@@ -1,4 +1,4 @@
-using System;
+
 using UnityEngine;
 
 namespace FrameWork
@@ -14,8 +14,8 @@ namespace FrameWork
         private void Start() { _actor?.Start(); }
         private void OnEnable() { _actor?.OnEnable(); }
         private void OnDisable() { _actor?.OnDisable(); }
-        private void Update() { _actor?.Update(); }
-        private void FixedUpdate() { _actor?.FixedUpdate(); }
+        private void Update() { _actor?.Update(Time.deltaTime); }
+        private void FixedUpdate() { _actor?.FixedUpdate(Time.fixedDeltaTime); }
         private void LateUpdate() { _actor?.LateUpdate(); }
         private void OnDestroy() { _actor?.OnDestroy(); }
     }

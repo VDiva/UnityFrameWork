@@ -6,28 +6,8 @@ using UnityEngine.Playables;
 
 namespace FrameWork
 {
-    [RequireComponent(typeof(CharacterController))]
-    [RequireComponent(typeof(MoveComponent))]
     public class CustomController : AnimationController
     {
-        private CharacterController _characterController;
-        private StateMachine _stateMachine;
-        private MoveComponent _moveComponent;
-        protected override void Awake()
-        {
-            base.Awake();
-            _moveComponent = GetComponent<MoveComponent>();
-            _characterController = GetComponent<CharacterController>();
-            _stateMachine = new StateMachine(this, _characterController,_moveComponent);
-        }
-
-
-        protected override void Start()
-        {
-            base.Start();
-            _stateMachine.RunAnim<Idle>();
-        }
-
         public override void Init()
         {
             
@@ -46,10 +26,10 @@ namespace FrameWork
             _output.SetSourcePlayable(_layerAnimArr[0].GetMixer());
             _playableGraph.Play();
         }
-
-        private void FixedUpdate()
+        
+        public void SetSpeed(float speed)
         {
-            _stateMachine?.Update();
+            SetSpeed(0,speed);
         }
     }
 }

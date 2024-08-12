@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net;
-using BestHTTP;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace FrameWork
@@ -25,19 +23,21 @@ namespace FrameWork
             MyLog.Log(path);
             long statrTime = Tool.ConvertDateTimep(DateTime.Now);
             long lenght = 1;
-            RequestTool requestTool = RequestTool.Create(path, HTTPMethods.Get);
+            RequestTool requestTool = RequestTool.Create(path, Methods.Get);
             requestTool.Send((byte[] bytes) =>
             {
                 progress?.Invoke(1,0,GetFileSize(lenght),GetFileSize(lenght));
                 data?.Invoke(bytes,Path.GetFileName(path));
-            },((request, curLen, len) =>
+            }, err);
+            
+            requestTool.Progress += ((f,s) =>
             {
-                lenght = len;
+                lenght = s;
                 long curTime = Tool.ConvertDateTimep(DateTime.Now)-statrTime;
-                float speed = GetFileSize((float)curLen / curTime);
-                float pro = (float)curLen / len;
-                progress?.Invoke(pro,speed,GetFileSize(curLen),GetFileSize(len));
-            } ), err);
+                float speed = GetFileSize((float)s*f / curTime);
+                float pro = f;
+                progress?.Invoke(pro,speed,GetFileSize(s*f)+"",GetFileSize(s));
+            });
             //Mono.Instance.StartCoroutine(DownLoadAssetIEumerator(path,progress,data,err));
         }
         
@@ -111,6 +111,19 @@ namespace FrameWork
             return (size / Math.Pow(num, 4)).ToString("f2") + "T"; //T
         }
         
+        
+        public static string GetFileSize(int size)
+        {
+            if (size < num)
+                return size + "B";
+            if (size < Math.Pow(num, 2))
+                return (size / num).ToString("f2") + "K"; //kb
+            if (size < Math.Pow(num, 3))
+                return (size / Math.Pow(num, 2)).ToString("f2") + "M"; //M
+            if (size < Math.Pow(num, 4))
+                return (size / Math.Pow(num, 3)).ToString("f2") + "G"; //G
+            return (size / Math.Pow(num, 4)).ToString("f2") + "T"; //T
+        }
         
         public static float GetFileSize(float size)
         {

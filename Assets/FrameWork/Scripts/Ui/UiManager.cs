@@ -55,6 +55,7 @@ namespace FrameWork
 
         
         
+        
         public UiActor OpenUi(Type type,object[] objects=null)
         {
             if (_uiRoot.GetGameObject()==null)
@@ -102,6 +103,7 @@ namespace FrameWork
                 MyLog.LogError("生成ui失败");
                 return null;
             }
+            obj.Open(objects);
             obj.SetIndex(_index);
             _uiDic.Add(type,obj);
             _uiList.Add(obj.GetIndex());
@@ -110,6 +112,16 @@ namespace FrameWork
             return obj;
         }
 
+        
+        public bool IsOpenUi<T>()
+        {
+            if (_uiDic.ContainsKey(typeof(T)))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         public T HideUi<T>() where T : UiActor
         {
@@ -122,6 +134,7 @@ namespace FrameWork
             if (_uiDic.ContainsKey(type))
             {
                 var uiActor=_uiDic[type];
+                uiActor.OnClose();
                 uiActor.SetActive(false);
                 _uiDic[type].SetActive(false);
                 _uiList.Remove(uiActor.GetIndex());
@@ -151,6 +164,7 @@ namespace FrameWork
             if (_uiDic.ContainsKey(type))
             {
                 var uiActor=_uiDic[type];
+                uiActor.OnClose();
                 _typesDic.Remove(uiActor.GetIndex());
                 _uiList.Remove(uiActor.GetIndex());
                 _uiDic.Remove(type);
@@ -177,15 +191,30 @@ namespace FrameWork
                 HideUi(index);
             }
         }
-        
+
+        private Dictionary<string, Transform> _layerDic = new Dictionary<string, Transform>();
         public Transform GetTransform(UiModeAttribute uiModeAttribute)
         {
+
+            if (_layerDic.ContainsKey(uiModeAttribute.Mode.ToString()))
+            {
+                return _layerDic[uiModeAttribute.Mode.ToString()];
+            }
+            
             Transform tran = _uiRoot.GetGameObject().transform.Find(uiModeAttribute.Mode.ToString());
             if (tran==null)
             {
                 var layer=GameObject.Instantiate(_uiRoot.GetGameObject().transform.GetChild(0), _uiRoot.GetGameObject().transform);
                 layer.name = uiModeAttribute.Mode.ToString();
                 tran = layer;
+                _layerDic.Add(uiModeAttribute.Mode.ToString(),tran);
+            }
+            else
+            {
+                if (!_layerDic.ContainsKey(uiModeAttribute.Mode.ToString()))
+                {
+                    _layerDic.Add(uiModeAttribute.Mode.ToString(),tran);
+                }
             }
             return tran;
         }
