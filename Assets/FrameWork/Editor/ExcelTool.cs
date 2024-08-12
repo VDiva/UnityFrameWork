@@ -188,7 +188,7 @@ namespace FrameWork
                 }
                 else
                 {
-                    sw.WriteLine($"\t\t\tvar xlsx=ResourcesMrg.LoadAsset<TextAsset>(\"xlsx\", \"{fileName}\");");
+                    sw.WriteLine($"\t\t\tvar xlsx=Resources.Load<TextAsset>(\"xlsx/{fileName}\");");
                 }
                 
                 sw.WriteLine("\t\t\tvar itemData=xlsx.text.Split('\\n');");
