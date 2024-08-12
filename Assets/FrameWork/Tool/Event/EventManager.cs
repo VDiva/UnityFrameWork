@@ -81,6 +81,23 @@ namespace FrameWork
                 //action -= listener;
             }
         }
+        
+        
+        public static void AddListener(Enum eventType,Enum id,Action<List<object>> evt)
+        {
+           AddListener((int)(object)eventType,(int)(object)id,evt);
+        }
+        
+        public static void RemoveListener(Enum eventType,Enum id,Action<List<object>> evt)
+        {
+            RemoveListener((int)(object)eventType,(int)(object)id,evt);
+        }
+        
+        public static void DispatchEvent(Enum evtType, Enum evt, List<object> data = null)
+        {
+            DispatchEvent((int)(object)evtType,(int)(object)evt,data);
+        }
+        
 
         public static List<object> GetEventMsg()
         {
