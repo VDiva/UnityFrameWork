@@ -23,7 +23,7 @@ namespace FrameWork
         public void Update(float deltaTime)
         {
             
-            _time -= deltaTime;
+            _curCd -= deltaTime;
             if (_curCd<=0)
             {
                 _action?.Invoke();
@@ -35,7 +35,7 @@ namespace FrameWork
 
             if (_time!=-1)
             {
-                _curCd -= deltaTime;
+                _time -= deltaTime;
                 if (_time<=0)
                 {
                     Timer.Instance.DestroyTimer(this);
