@@ -53,7 +53,7 @@ namespace FrameWork
             _layerAnimArr = new LayerAnim[animLayer.Length];
             _playableGraph=PlayableGraph.Create(transform.root.name);
             _isInit = true;
-            GraphVisualizerClient.Show(_playableGraph);
+            //GraphVisualizerClient.Show(_playableGraph);
             _layerMixerPlayable=AnimationLayerMixerPlayable.Create(_playableGraph,animLayer.Length);
             _output=AnimationPlayableOutput.Create(_playableGraph,"AnimationControllerOut",GetComponent<Animator>());
             

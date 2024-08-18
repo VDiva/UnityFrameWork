@@ -15,51 +15,32 @@ namespace FrameWork
         }
 
         
-        public void StopIntervalCall(Action call)
+        public void DestroyTimer(TimeData timeData)
         {
-            for (int i = 0; i < _timeDatas.Count; i++)
+            if (_timeDatas.Contains(timeData))
             {
-                if (_timeDatas[i].Action==call)
-                {
-                    _objectPool.EnQueue(_timeDatas[i]);
-                    _timeDatas.Remove(_timeDatas[i]);
-                }
+                _timeDatas.Remove(timeData);
             }
         }
 
         public void IntervalCall(float time,Action call)
         {
             var data=_objectPool.DeQueue();
-            data.IsInterval = true;
-            data.Time = time;
-            data.Cd = time;
-            data.Action = call;
+            data.Init(true,time,-1,call);
             _timeDatas.Add(data);
         }
         
         public void IntervalCallAsTime(float time,float intervalTime,Action call)
         {
             var data=_objectPool.DeQueue();
-            data.IsInterval = true;
-            data.Time = time;
-            data.Cd = time;
-            data.Action = call;
+            data.Init(true,time,intervalTime,call);
             _timeDatas.Add(data);
-
-
-            var delayData = _objectPool.DeQueue();
-            delayData.Time = intervalTime;
-            delayData.Cd = intervalTime;
-            delayData.Action = (() => StopIntervalCall(call));
-            _timeDatas.Add(delayData);
         }
         
         public void DelayCall(float time,Action call)
         {
             var data=_objectPool.DeQueue();
-            data.Time = time;
-            data.Cd = time;
-            data.Action = call;
+            data.Init(false,time,-1,call);
             _timeDatas.Add(data);
         }
 
@@ -69,40 +50,9 @@ namespace FrameWork
             while (true)
             {
                 yield return null;
-                _deleteList.Clear();
                 for (int i = 0; i < _timeDatas.Count; i++)
                 {
-                    var timeData = _timeDatas[i];
-                    timeData.Time -= Time.deltaTime;
-                    if (timeData.Time<=0)
-                    {
-                        if (timeData.IsInterval)
-                        {
-                            timeData.Time = timeData.Cd;
-                            timeData.Action?.Invoke();
-                            // _timeDatas.Remove(_timeDatas[i]);
-                            // _objectPool.EnQueue(_timeDatas[i]);
-                        }
-                        else
-                        {
-                            //_objectPool.EnQueue(_timeDatas[i]);
-                            timeData.Action?.Invoke();
-                            //_timeDatas.Remove(_timeDatas[i]);
-                            if (i<_timeDatas.Count)
-                            {
-                                _deleteList.Add(timeData);
-                            }
-                        }
-                    }
-                }
-
-                if (_deleteList.Count>0)
-                {
-                    for (int i = 0; i < _deleteList.Count; i++)
-                    {
-                        _objectPool.EnQueue(_deleteList[i]);
-                        _timeDatas.Remove(_deleteList[i]);
-                    }
+                    _timeDatas[i].Update(Time.deltaTime);
                 }
             }
         }
