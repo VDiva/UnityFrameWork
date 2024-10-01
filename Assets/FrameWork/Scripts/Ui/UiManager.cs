@@ -7,20 +7,20 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class UiManager : SingletonAsClass<UiManager>
+    public static class UiManager 
     {
         
-        private int _index;
-        private Dictionary<Type, UiActor> _uiDic;
-        private Dictionary<int, Type> _typesDic;
-        private List<int> _uiList;
-        private Actor _uiRoot;
-        public void Init()
+        private static int _index;
+        private static Dictionary<Type, UiActor> _uiDic;
+        private static Dictionary<int, Type> _typesDic;
+        private static List<int> _uiList;
+        private static Actor _uiRoot;
+        public static void Init()
         {
             _index = 0;
         }
 
-        public UiManager()
+        static UiManager()
         {
             _uiDic = new Dictionary<Type, UiActor>();
             _typesDic = new Dictionary<int, Type>();
@@ -30,7 +30,9 @@ namespace FrameWork
         }
 
 
-        public T GetUi<T>() where T: UiActor
+        
+        
+        public static T GetUi<T>() where T: UiActor
         {
             if (_uiDic.ContainsKey(typeof(T)))
             {
@@ -40,7 +42,7 @@ namespace FrameWork
         }
 
 
-        public void OpenUi(int index,object[] objs=null)
+        public static void OpenUi(int index,object[] objs=null)
         {
             if (_typesDic.ContainsKey(index))
             {
@@ -48,7 +50,7 @@ namespace FrameWork
             }
         }
         
-        public T OpenUi<T>(object[] objs=null) where T: UiActor
+        public static T OpenUi<T>(object[] objs=null) where T: UiActor
         {
             return (T)OpenUi(typeof(T), objs);
         }
@@ -56,7 +58,7 @@ namespace FrameWork
         
         
         
-        public UiActor OpenUi(Type type,object[] objects=null)
+        public static UiActor OpenUi(Type type,object[] objects=null)
         {
             if (_uiRoot.GetGameObject()==null)
             {
@@ -68,6 +70,7 @@ namespace FrameWork
             {
                 _uiDic[type].SetActive(true);
                 _uiDic[type].Open(objects);
+                _uiDic[type].transform.SetAsLastSibling();
                 if (!_uiList.Contains(_uiDic[type].GetIndex()))
                 {
                     
@@ -113,7 +116,7 @@ namespace FrameWork
         }
 
         
-        public bool IsOpenUi<T>()
+        public static bool IsOpenUi<T>()
         {
             if (_uiDic.ContainsKey(typeof(T)))
             {
@@ -123,13 +126,13 @@ namespace FrameWork
             return false;
         }
 
-        public T HideUi<T>() where T : UiActor
+        public static T HideUi<T>() where T : UiActor
         {
             return (T)HideUi(typeof(T));
         }
         
         
-        public UiActor HideUi(Type type) 
+        public static UiActor HideUi(Type type) 
         {
             if (_uiDic.ContainsKey(type))
             {
@@ -145,7 +148,7 @@ namespace FrameWork
         }
         
         
-        public void HideUi(int index)
+        public static void HideUi(int index)
         {
             if (_typesDic.ContainsKey(index))
             {
@@ -154,12 +157,12 @@ namespace FrameWork
         }
 
 
-        public void RemoveUi<T>() where T: UiActor
+        public static void RemoveUi<T>() where T: UiActor
         {
             RemoveUi(typeof(T));
         }
         
-        public void RemoveUi(Type type)
+        public static void RemoveUi(Type type)
         {
             if (_uiDic.ContainsKey(type))
             {
@@ -173,7 +176,7 @@ namespace FrameWork
             
         }
         
-        public void RemoveUi(int index)
+        public static void RemoveUi(int index)
         {
             if (_typesDic.ContainsKey(index))
             {
@@ -183,7 +186,7 @@ namespace FrameWork
 
 
 
-        public void Back()
+        public static void Back()
         {
             if (_uiList.Count>0)
             {
@@ -192,8 +195,8 @@ namespace FrameWork
             }
         }
 
-        private Dictionary<string, Transform> _layerDic = new Dictionary<string, Transform>();
-        public Transform GetTransform(UiModeAttribute uiModeAttribute)
+        private static Dictionary<string, Transform> _layerDic = new Dictionary<string, Transform>();
+        public static Transform GetTransform(UiModeAttribute uiModeAttribute)
         {
 
             if (_layerDic.ContainsKey(uiModeAttribute.Mode.ToString()))

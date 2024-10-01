@@ -6,30 +6,75 @@ namespace FrameWork
     public static class Config
     {
 
+        /// <summary>
+        /// 是否是ab包方式 不是则是resources方式
+        /// </summary>
         public static bool IsAb=false;
+        
+        /// <summary>
+        /// ab包生成的结尾名
+        /// </summary>
         public static string abEndName = "info";
+        
+        /// <summary>
+        /// ab包路径
+        /// </summary>
         public static string abAssetPath = "Assets/FrameWork/Asset";
+        
+        /// <summary>
+        /// ab包版本文件名
+        /// </summary>
         public static string configName = "ABConfig.txt";
+        
+        /// <summary>
+        /// ase加密key
+        /// </summary>
         public static string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
 
-        
+        /// <summary>
+        /// 配置表生成引用
+        /// </summary>
         public static string[] XlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx"};
+        
+        /// <summary>
+        /// 热更新dll
+        /// </summary>
         public static string[] dlls = new String[] { "HotUpdate.dll"};
+        
+        
         public static string dataPath = Application.dataPath.Replace("Assets", "");
+        
+        /// <summary>
+        /// 热更新dll目录
+        /// </summary>
         public static string dllPath = dataPath+"\\HybridCLRData\\HotUpdateDlls\\";
+        
+        /// <summary>
+        /// 热更新dll复制目录
+        /// </summary>
         public static string dllCopyPath = dataPath+"\\Assets\\FrameWork\\Asset\\Dll\\";
         
+        /// <summary>
+        /// 热更新下载地址
+        /// </summary>
         public static string DownLoadUrl="http://127.0.0.1:3000";
         
-        
+        /// <summary>
+        /// 预制体生成代码引用
+        /// </summary>
         public static string[] spawnScriptUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx","UnityEngine.UI","UnityEngine.Video","Spine.Unity","TMPro","Pathfinding","ScriptCode.Move","ScriptCode.Tool"};
+        
+        /// <summary>
+        /// 预制体生成代码路径
+        /// </summary>
         public static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
         //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
         
-        
+        /// <summary>
+        /// resources 获取预制体的路径
+        /// </summary>
         public static string ResourcesPath="Assets/Resources/Asset";
-        
-        public static string ResourcesAsset = "Asset/";
+
         
         public static string GetAbPath()
         {

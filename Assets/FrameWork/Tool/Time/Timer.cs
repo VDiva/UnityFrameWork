@@ -5,20 +5,21 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class Timer: SingletonAsMono<Timer>
+    public static class Timer
     {
-        private List<TimeData> _timeDatas = new List<TimeData>();
-        private ObjectPool<TimeData> _objectPool = new ObjectPool<TimeData>();
-        private void Awake()
+        private static List<TimeData> _timeDatas = new List<TimeData>();
+        private static ObjectPool<TimeData> _objectPool = new ObjectPool<TimeData>();
+
+        static Timer()
         {
-            StartCoroutine(TimeUpdate());
+            Mono.Instance.StartCoroutine(TimeUpdate());
         }
 
         /// <summary>
         /// 删除一个定时器
         /// </summary>
         /// <param name="timeData"></param>
-        public void DestroyTimer(TimeData timeData)
+        public static void DestroyTimer(TimeData timeData)
         {
             if (_timeDatas.Contains(timeData))
             {
@@ -32,7 +33,7 @@ namespace FrameWork
         /// </summary>
         /// <param name="time">多久调用一次</param>
         /// <param name="call"></param>
-        public TimeData IntervalCall(float time,Action call)
+        public static TimeData IntervalCall(float time,Action call)
         {
             var data=_objectPool.DeQueue();
             data.Init(true,time,-1,call);
@@ -46,7 +47,7 @@ namespace FrameWork
         /// <param name="time">多久调用一次</param>
         /// <param name="intervalTime">持续多久</param>
         /// <param name="call"></param>
-        public TimeData IntervalCallAsTime(float time,float intervalTime,Action call)
+        public static TimeData IntervalCallAsTime(float time,float intervalTime,Action call)
         {
             var data=_objectPool.DeQueue();
             data.Init(true,time,intervalTime,call);
@@ -59,7 +60,7 @@ namespace FrameWork
         /// </summary>
         /// <param name="time">延迟时间</param>
         /// <param name="call"></param>
-        public TimeData DelayCall(float time,Action call)
+        public static TimeData DelayCall(float time,Action call)
         {
             var data=_objectPool.DeQueue();
             data.Init(false,time,-1,call);
@@ -67,8 +68,8 @@ namespace FrameWork
             return data;
         }
 
-        private List<TimeData> _deleteList = new List<TimeData>();
-        IEnumerator TimeUpdate()
+        private static List<TimeData> _deleteList = new List<TimeData>();
+        static IEnumerator TimeUpdate()
         {
             while (true)
             {
@@ -78,12 +79,6 @@ namespace FrameWork
                     _timeDatas[i].Update(Time.deltaTime);
                 }
             }
-        }
-
-
-        private void OnDestroy()
-        {
-            StopCoroutine(TimeUpdate());
         }
     }
 }

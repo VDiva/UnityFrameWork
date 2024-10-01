@@ -19,18 +19,38 @@ namespace FrameWork
         {
             if (type=="int")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return 0;
+                }
                 return int.Parse(value);
             }else if (type=="string")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return "";
+                }
                 return value;
             }else if (type=="float")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return 0f;
+                }
                 return float.Parse(value);
             }else if (type=="long")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return 0;
+                }
                 return long.Parse(value);
             }else if (type=="double")
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return 0f;
+                }
                 return double.Parse(value);
             }else if (type=="Vector3")
             {
@@ -59,13 +79,14 @@ namespace FrameWork
                 if (string.IsNullOrEmpty(value))
                     return new int[]{};
                 else
-                    return value.Split(',').Select((s => int.Parse(s) ));
+                    return value.Split(',').Select((s => int.Parse(s) )).ToArray();
+                    
             }else if (type=="float[]")
             {
                 if (string.IsNullOrEmpty(value))
                     return new float[]{};
                 else
-                    return value.Split(',').Select((s => float.Parse(s) ));
+                    return value.Split(',').Select((s => float.Parse(s) )).ToArray();
             }
 
             return value;

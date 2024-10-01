@@ -14,7 +14,7 @@ namespace FrameWork
     [ScriptedImporter(1, ".xlsx")]
     public class ExcelTool:ScriptedImporter
     {
-        public static string xlsxPath = "Assets/FrameWork/Xlsx";
+        public static string xlsxPath = "Assets/FrameWork/Asset/Xlsx";
         public static string xlsxOutPath = "Assets/FrameWork/Asset/Xlsx";
         
         public static string xlsxOutResourcesPath = "Assets/Resources/Xlsx";
@@ -24,6 +24,7 @@ namespace FrameWork
         
         public override void OnImportAsset(AssetImportContext ctx)
         {
+            MyLog.LogWarning("导入");
             if (!Directory.Exists(xlsxPath))
             {
                 Directory.CreateDirectory(xlsxPath);
@@ -107,6 +108,10 @@ namespace FrameWork
                         ABConfig.AssetPackaged();
                         AssetBundle.UpdateAssetBundle("xlsx");
                     }));
+                }
+                else
+                {
+                    ABConfig.AssetPackaged();
                 }
                 
             }
@@ -208,10 +213,10 @@ namespace FrameWork
                 sw.WriteLine("\t\t\t\tdata.Add(xlsxData);");
                 sw.WriteLine("\t\t\t}");
                 sw.WriteLine($"\t\t\tXlsxDataAsOneKey = new XlsxData<{row[0]},{fileName}>(\"{row2[0]}\", data);");
-                if (row.Count>=2)
-                {
-                    sw.WriteLine($"\t\t\tXlsxDataAsTowKey = new XlsxData<{row[0]},{row[1]},{fileName}>(\"{row2[0]}\",\"{row2[1]}\", data);");
-                }
+                // if (row.Count>=2)
+                // {
+                //     sw.WriteLine($"\t\t\tXlsxDataAsTowKey = new XlsxData<{row[0]},{row[1]},{fileName}>(\"{row2[0]}\",\"{row2[1]}\", data);");
+                // }
                 sw.WriteLine("\t\t}");
                 sw.WriteLine("\t}");
                 sw.WriteLine("}");

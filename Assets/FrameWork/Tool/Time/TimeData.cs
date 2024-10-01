@@ -30,7 +30,7 @@ namespace FrameWork
                 if (_isInterval)
                     _curCd = _cd;
                 else
-                    Timer.Instance.DestroyTimer(this);
+                    Timer.DestroyTimer(this);
             }
 
             if (_time!=-1)
@@ -38,7 +38,7 @@ namespace FrameWork
                 _time -= deltaTime;
                 if (_time<=0)
                 {
-                    Timer.Instance.DestroyTimer(this);
+                    Timer.DestroyTimer(this);
                 } 
             }
         }
