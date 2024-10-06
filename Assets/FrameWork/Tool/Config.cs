@@ -9,7 +9,12 @@ namespace FrameWork
         /// <summary>
         /// 是否是ab包方式 不是则是resources方式
         /// </summary>
-        public static bool IsAb=false;
+        public static bool IsAb=true;
+
+        /// <summary>
+        /// 生成ab包包名的类的位置
+        /// </summary>
+        public static string abClassPath = "Assets/FrameWork/Scripts/AssetAb";
         
         /// <summary>
         /// ab包生成的结尾名

@@ -10,7 +10,6 @@ namespace FrameWork
         [RuntimeInitializeOnLoadMethod]
         public static void Run()
         {
-            
         }
     }
 }

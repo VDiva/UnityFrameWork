@@ -1,0 +1,5 @@
+Asset存放资源 会被打进ab包 自动生成文件夹名字的类用于查询资源的ab包名 类名叫AssetAb Dll文件夹用于存放热更新dll Xlsx文件用于存放xlsx文件转txt的文本数据
+Editor 用于存放引擎扩展工具
+Plugins 用于存放插件
+Tool 用于存放常用工具类
+Xlsx 用于存放xlsx表格 会自动生成类和查询类

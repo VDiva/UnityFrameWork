@@ -14,6 +14,10 @@ namespace FrameWork
     public class Tool
     {
 
+        public static string GetAbName(string key)
+        {
+            return System.Type.GetType("FrameWork.AssetAb")?.GetField(key).GetValue(null).ToString()??"";
+        }
 
         public static object ConversionType(string type,string value)
         {
@@ -104,6 +108,17 @@ namespace FrameWork
                     sb.Append(md5Info[i].ToString("x2"));
                 return sb.ToString();
             }
+        }
+        
+        
+        public static string GetMd5AsString(string key)
+        {
+            MD5 md5 = new MD5CryptoServiceProvider();
+            byte[] md5Info = md5.ComputeHash(Encoding.UTF8.GetBytes(key));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < md5Info.Length; i++)
+                sb.Append(md5Info[i].ToString("x2"));
+            return sb.ToString();
         }
         
         public static long ConvertDateTimep(DateTime time)

@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using FrameWork.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -88,7 +91,18 @@ namespace FrameWork
             DirectoryInfo directoryInfo = new DirectoryInfo(Config.IsAb?Config.abAssetPath:Config.ResourcesPath);
             if (Config.IsAb)
             {
-                CheckDirectory(directoryInfo);
+                if (!Directory.Exists(Config.abClassPath))
+                {
+                    Directory.CreateDirectory(Config.abClassPath);
+                }
+                using (StreamWriter swMode=new StreamWriter(Config.abClassPath+"/AssetAb.cs",false))
+                {
+                    swMode.WriteLine("namespace FrameWork\n{");
+                    swMode.WriteLine("\tpublic static class AssetAb\n\t{");
+                    CheckDirectory(directoryInfo,swMode);
+                    swMode.WriteLine("\t}");
+                    swMode.WriteLine("}");
+                }
             }
             else
             {
@@ -135,40 +149,50 @@ namespace FrameWork
         }
         
 
-        private static void CheckFileInfo(FileInfo fileInfo,string abName="other")
+        
+        private static void CheckFileInfo(FileInfo fileInfo,StreamWriter sw,string abName="other")
         {
             var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
             var unityPath=path.Split(new string[]{"Assets"},StringSplitOptions.None);
             AssetImporter ai=AssetImporter.GetAtPath("Assets\\"+unityPath[unityPath.Length-1]);
+
             
-            
-            ai.assetBundleName = abName;
+            var id = Tool.GetMd5AsString(fileInfo.Name);
+            sw.WriteLine($"\t\t\tpublic static string {fileInfo.Name.Split('.')[0]} = \"{id}\";");
+            ai.assetBundleName = id;
             ai.assetBundleVariant = Config.abEndName;
             
             
         }
-
-        private static void CheckDirectory(DirectoryInfo directoryInfo,string abName="")
+        
+        private static void CheckDirectory(DirectoryInfo directoryInfo,StreamWriter sw, string abName = "")
         {
+
             var fileInfos = directoryInfo.GetFiles();
-            var directoryInfos=directoryInfo.GetDirectories();
-            foreach (var item in directoryInfos)
-            {
-                var str = item.FullName.Split(new string[] { "Asset\\" }, StringSplitOptions.None)[1].Replace("\\","_");
-                //_stringBuilder.AppendLine("\t\t"+str+",");
-                CheckDirectory(item,str);
-            }
-            
+            var directoryInfos = directoryInfo.GetDirectories();
+            if (!string.IsNullOrEmpty(abName))sw.WriteLine($"\t\tpublic static class {abName}\n"+"\t\t{");
             foreach (var item in fileInfos)
             {
-                if (item.Extension!=".meta")
+                if (item.Extension != ".meta")
                 {
-                    CheckFileInfo(item,abName);
+                    CheckFileInfo(item,sw, abName);
                 }
             }
+            if (!string.IsNullOrEmpty(abName))sw.WriteLine("\t\t}");
+            
+            foreach (var item in directoryInfos)
+            {
+                var str = item.FullName.Split(new string[] { "Asset\\" }, StringSplitOptions.None)[1].Replace("\\", "_");
+                //_stringBuilder.AppendLine("\t\t"+str+",");
+                CheckDirectory(item,sw, str);
+            }
+            
+            
+            
+            
         }
-        
-        
+
+
         public static string GetMd5(string path)
         {
             using (FileStream fs=new FileStream(path,FileMode.Open))

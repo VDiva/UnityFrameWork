@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace FrameWork
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
         public static void Detection(string abConfigPath,Action<List<AbPackDate>,byte[]> versionInfo,Action<string> err=null)
         {
-            DownLoad.DownLoadAsset(Config.DownLoadUrl+Config.GetAbDictoryPath()+Config.configName,(
+            DownLoad.DownLoadAsset(Config.DownLoadUrl+abConfigPath+Config.configName,(
                 (f1,f2,s1,s2) =>
                 { } ),(
                 (bytes, s) =>
@@ -27,40 +28,30 @@ namespace FrameWork
 
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
-                    
-                    FileInfo fileInfo = new FileInfo(abConfigPath+  Config.configName);
-                    List<AbPackDate> newInfoList=new List<AbPackDate>();
-                    List<AbPackDate> oldInfoList=new List<AbPackDate>();
-                    
-                    if (fileInfo.Exists)
+                    FileInfo oldFileInfo = new FileInfo(abConfigPath+  Config.configName);
+
+                    if (oldFileInfo.Exists)
                     {
                         string oldInfo=File.ReadAllText(abConfigPath+ Config.configName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
-                        
-                        
-                        foreach (var item in newInfo)
-                        {
-                            string[] strings = item.Split(' ');
-                            newInfoList.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
-                        }
-                        foreach (var item in oldInfos)
-                        {
-                            string[] strings = item.Split(' ');
-                            oldInfoList.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
-                        }
+                        List<AbPackDate> infoList=new List<AbPackDate>();
 
-                        foreach (var newIn in newInfoList)
+                        var newId = newInfo.Select((s1 => s1.Split(' ')[2])).ToArray();
+                        var oldId = oldInfos.Select((s1 => s1.Split(' ')[2])).ToArray();
+                        List<string> downloadId = new List<string>();
+                        
+                        if (File.Exists(Application.persistentDataPath+abConfigPath+Config.configName))
                         {
-                            foreach (var oldIn in oldInfoList)
+                            var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.configName).Split('|');
+                            downloadId=txt.Select((s1 => s1.Split(' ')[2])).ToList();
+                        }
+                        
+                        for (int i = 0; i < newId.Length; i++)
+                        {
+                            if (!oldId.Contains(newId[i])&&!downloadId.Contains(newId[i]))
                             {
-                                if (!ListHasValue(oldInfoList, newIn.Name))
-                                {
-                                    infos.Add(newIn);
-                                }
-                                if (newIn.Name.Equals(oldIn.Name)&& !newIn.Md5.Equals(oldIn.Md5))
-                                {
-                                    infos.Add(newIn);
-                                }
+                                string[] strings = newInfo[i].Split(' ');
+                                infos.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
                             }
                         }
                         versionInfo(infos,bytes);
@@ -72,7 +63,6 @@ namespace FrameWork
                             string[] strings = item.Split(' ');
                             infos.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
                         }
-                        
                         versionInfo(infos,bytes);
                     }
                 }),err);

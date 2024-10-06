@@ -13,8 +13,6 @@ namespace FrameWork
         [MenuItem("FrameWork/AB/CreatAssetBundle")]
         public static void CreatAssetBundle()
         {
-
-            
             var path = Application.streamingAssetsPath + GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget);
             
             if (!Directory.Exists(path))
