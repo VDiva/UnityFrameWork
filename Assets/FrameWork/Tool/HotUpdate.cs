@@ -53,6 +53,9 @@ namespace FrameWork
                 else
                 {
                     MyLog.Log("未检测到更新包");
+                    File.WriteAllBytes(
+                        Application.persistentDataPath + "/" + Config.GetAbPath() + Config.configName,
+                        bytes);
                     Run();
                 }
             }),(s =>
@@ -67,8 +70,8 @@ namespace FrameWork
         private void Run()
         {
             //var assembly=DllLoad.Load("RiptideNetworking.dll.bytes");
-            var type=DllLoad.LoadType("HotUpdate.dll.bytes", "FrameWork.Main");
-            type.GetMethod("Run")?.Invoke(null, null);  
+            // var type=DllLoad.LoadType("HotUpdate.dll.bytes", "FrameWork.Main");
+            // type.GetMethod("Run")?.Invoke(null, null);  
         }
         
     }

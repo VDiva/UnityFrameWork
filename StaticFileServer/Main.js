@@ -12,6 +12,8 @@ app.get("/:path/:fileName", (req, res) => {
 
 
     const fileUrl = './public/'+req.params.path+"/"+req.params.fileName; // 文件路径
+
+    console.log(fileUrl);
     res.header("Access-Control-Allow-Origin", "*");
 
     // 指定文件类型（例如：application/pdf）

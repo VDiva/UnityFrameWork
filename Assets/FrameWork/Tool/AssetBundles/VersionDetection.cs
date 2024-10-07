@@ -12,7 +12,6 @@ namespace FrameWork
 {
     public static class VersionDetection
     {
-        
         /// <summary>
         /// 版本检测并对比md5码检测那些ab包需要更新 并返回最新的版本文件自己数据
         /// </summary>
@@ -28,22 +27,23 @@ namespace FrameWork
 
                     string info = Encoding.UTF8.GetString(bytes);
                     string[] newInfo = info.Split('|');
-                    FileInfo oldFileInfo = new FileInfo(abConfigPath+  Config.configName);
+                    var newId = newInfo.Select((s1 => s1.Split(' ')[2])).ToArray();
+                    var newName=newInfo.Select((s1 => s1.Split(' ')[0])).ToArray();
+                    //FileInfo oldFileInfo = new FileInfo(Application.streamingAssetsPath+abConfigPath+  Config.configName);
 
-                    if (oldFileInfo.Exists)
+                    if (File.Exists(Application.streamingAssetsPath+abConfigPath+  Config.configName))
                     {
-                        string oldInfo=File.ReadAllText(abConfigPath+ Config.configName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(Application.streamingAssetsPath+abConfigPath+  Config.configName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
-                        List<AbPackDate> infoList=new List<AbPackDate>();
-
-                        var newId = newInfo.Select((s1 => s1.Split(' ')[2])).ToArray();
+                        
                         var oldId = oldInfos.Select((s1 => s1.Split(' ')[2])).ToArray();
                         List<string> downloadId = new List<string>();
-                        
+                        List<string> downloadName = new List<string>();
                         if (File.Exists(Application.persistentDataPath+abConfigPath+Config.configName))
                         {
                             var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.configName).Split('|');
                             downloadId=txt.Select((s1 => s1.Split(' ')[2])).ToList();
+                            downloadName=txt.Select((s1 => s1.Split(' ')[0])).ToList();
                         }
                         
                         for (int i = 0; i < newId.Length; i++)
@@ -54,20 +54,55 @@ namespace FrameWork
                                 infos.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
                             }
                         }
+                        
+                        
+                        for (int i = 0; i < downloadName.Count; i++)
+                        {
+                            if (!newName.Contains(downloadName[i]))
+                            {
+                                MyLog.Log("删除旧资源:"+Application.persistentDataPath+abConfigPath+downloadName[i]);
+                                File.Delete(Application.persistentDataPath+abConfigPath+downloadName[i]);
+                            }
+                        }
+                        
                         versionInfo(infos,bytes);
                     }
                     else
                     {
-                        foreach (var item in newInfo)
+                        
+                        List<string> downloadId = new List<string>();
+                        List<string> downloadName = new List<string>();
+                        if (File.Exists(Application.persistentDataPath+abConfigPath+Config.configName))
                         {
-                            string[] strings = item.Split(' ');
-                            infos.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
+                            var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.configName).Split('|');
+                            downloadId=txt.Select((s1 => s1.Split(' ')[2])).ToList();
+                            downloadName=txt.Select((s1 => s1.Split(' ')[0])).ToList();
                         }
+
+                        if (!string.IsNullOrEmpty(info))
+                        {
+                            for (int i = 0; i < newId.Length; i++)
+                            {
+                                if (!downloadId.Contains(newId[i]))
+                                {
+                                    string[] strings = newInfo[i].Split(' ');
+                                    infos.Add(new AbPackDate(){Name = strings[0],Size = long.Parse(strings[1]),Md5 = strings[2]});
+                                }
+                            }
+                        }
+                        
+                        for (int i = 0; i < downloadName.Count; i++)
+                        {
+                            if (!newName.Contains(downloadName[i]))
+                            {
+                                MyLog.Log("删除旧资源:"+Application.persistentDataPath+abConfigPath+downloadName[i]);
+                                File.Delete(Application.persistentDataPath+abConfigPath+downloadName[i]);
+                            }
+                        }
+                        
                         versionInfo(infos,bytes);
                     }
                 }),err);
-            
-            
         }
 
         public static void Detection(Action<List<AbPackDate>, byte[]> versionInfo, Action<string> err = null)
