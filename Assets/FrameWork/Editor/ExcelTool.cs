@@ -171,9 +171,15 @@ namespace FrameWork
             
             using (StreamWriter sw = new StreamWriter(ExcelTool.xlsxOutScriptPath + "\\" + xlsxQueryName + ".cs", false))
             {
-                sw.WriteLine("using System.Collections.Generic;");
-                sw.WriteLine("using UnityEngine;");
-                sw.WriteLine("using FrameWork;");
+                // sw.WriteLine("using System.Collections.Generic;");
+                // sw.WriteLine("using UnityEngine;");
+                // sw.WriteLine("using FrameWork;");
+
+                for (int i = 0; i < Config.XlsxSpawnUse.Length; i++)
+                {
+                    sw.WriteLine("using "+Config.XlsxSpawnUse[i]+";");
+                }
+                
                 sw.WriteLine("namespace Xlsx");
                 sw.WriteLine("{");
                 sw.WriteLine("\tpublic class "+xlsxQueryName+$":SingletonAsClass<{xlsxQueryName}>");
@@ -235,8 +241,14 @@ namespace FrameWork
             }
             using (StreamWriter sw=new StreamWriter(ExcelTool.xlsxOutScriptPath+"\\"+fileName+".cs",false))
             {
-                sw.WriteLine("using System.Collections.Generic;");
-                sw.WriteLine("using UnityEngine;");
+                // sw.WriteLine("using System.Collections.Generic;");
+                // sw.WriteLine("using UnityEngine;");
+                
+                for (int i = 0; i < Config.XlsxSpawnUse.Length; i++)
+                {
+                    sw.WriteLine("using "+Config.XlsxSpawnUse[i]+";");
+                }
+                
                 sw.WriteLine("namespace Xlsx");
                 sw.WriteLine("{");
                 sw.WriteLine("\tpublic class "+fileName);
@@ -289,87 +301,6 @@ namespace FrameWork
                 sw.WriteLine("\t}");
                 sw.WriteLine("}");
             }
-        }
-        
-        
-        
-        private string CheckTypeValue(string type,string value) 
-        {
-
-            if (value=="null")
-            {
-                return "null";
-            }
-            
-            if (type.IndexOf("Dictionary")!=-1)
-            {
-                
-                return $"new {type}(){{{value}}}";
-            }
-            
-            if (type.IndexOf("[]")!=-1)
-            {
-                string zhi = "";
-                zhi += $"new {type}{{";
-                string[] zhis = value.Split(',');
-                switch (type)
-                {
-                    case "float[]":
-                        
-                        for (int i = 0; i < zhis.Length; i++)
-                        {
-                            if (i<zhis.Length)
-                            {
-                                zhi += zhis[i] + "f,";
-                            }
-                            else
-                            {
-                                zhi += zhis[i] + "f";
-                            }
-                        }
-                        
-                        break;
-                    case "string[]":
-                        for (int i = 0; i < zhis.Length; i++)
-                        {
-                            if (i<zhis.Length)
-                            {
-                                zhi += $"\"{zhis[i]}\",";
-                            }
-                            else
-                            {
-                                zhi += $"\"{zhis[i]}\"";
-                            }
-                        }
-                        break;
-                    case "int[]":
-                        zhi += value;
-                        break;
-                }
-                zhi += "}";
-                return zhi;
-            }
-
-            
-            switch (type)
-            {
-                case "int":
-                    return value==""?"0": value;
-                    break;
-                case "float":
-                    return value==""?"0":$"{value}f";
-                    break;
-                case "string":
-                    return $"\"{value}\"";
-                    break;
-                case "Vector2":
-                    return $"new Vector2({value})";
-                    break;
-                case "Vector3":
-                    return $"new Vector3({value})";
-                    break;
-            }
-            return value;
         }
         
         public static DataSet GetTabelData(string path)

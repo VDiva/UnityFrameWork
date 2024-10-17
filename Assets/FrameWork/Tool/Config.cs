@@ -39,7 +39,7 @@ namespace FrameWork
         /// <summary>
         /// 配置表生成引用
         /// </summary>
-        public static string[] XlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx"};
+        public static string[] XlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx","FrameWork"};
         
         /// <summary>
         /// 热更新dll
