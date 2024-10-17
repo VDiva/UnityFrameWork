@@ -23,7 +23,7 @@ namespace FrameWork
             GameObject go=null;
             if (Config.IsAb)
             {
-                go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+                go=ABLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
             }
             else
             {
@@ -45,7 +45,7 @@ namespace FrameWork
             GameObject go=null;
             if (Config.IsAb)
             {
-                go=AssetBundlesLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
+                go=ABLoad.LoadAsset<GameObject>(infoAttribute.PackName, infoAttribute.PrefabName);
             }
             else
             {

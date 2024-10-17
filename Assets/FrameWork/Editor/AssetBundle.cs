@@ -13,6 +13,7 @@ namespace FrameWork
         [MenuItem("FrameWork/AB包/创建AB包")]
         public static void CreatAssetBundle()
         {
+            ABConfig.AssetPackaged();
             var path = Application.streamingAssetsPath + GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget);
             
             if (!Directory.Exists(path))
@@ -41,7 +42,7 @@ namespace FrameWork
         }
         
  
-        [MenuItem("Assets/FrameWork/AB/UpdateAb")]
+        [MenuItem("Assets/FrameWork/AB包/更新AB包")]
         public static void UpdateAssetBundle()
         {
             var path = Application.streamingAssetsPath + GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget);

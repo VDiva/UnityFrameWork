@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace FrameWork
 {
-    public static class AssetBundlesLoad
+    public static class ABLoad
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
         //private static string abEndName = "info";
@@ -15,9 +15,10 @@ namespace FrameWork
             AssetBundle assetBundle=null;
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
-                if (File.Exists(Application.persistentDataPath+packName+"."+Config.abEndName))
+                string newPath = Application.streamingAssetsPath+Config.GetAbPath();
+                if (File.Exists(newPath+packName+"."+Config.abEndName))
                 {
-                    assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(Application.persistentDataPath+packName+"."+Config.abEndName),Config.key));
+                    assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(newPath+packName+"."+Config.abEndName),Config.key));
                     _assetBundles.TryAdd(packName, assetBundle);
                 }
                 else
@@ -43,10 +44,10 @@ namespace FrameWork
             {
                 if (!_assetBundles.TryGetValue(packName,out assetBundle))
                 {
-                    
-                    if (File.Exists(Application.persistentDataPath+packName+"."+Config.abEndName))
+                    string newPath = Application.streamingAssetsPath+Config.GetAbPath();
+                    if (File.Exists(newPath+packName+"."+Config.abEndName))
                     {
-                        assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(Application.persistentDataPath+packName+"."+Config.abEndName),Config.key));
+                        assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(newPath+packName+"."+Config.abEndName),Config.key));
                         _assetBundles.TryAdd(packName, assetBundle);
                     }
                     else

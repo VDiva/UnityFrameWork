@@ -109,7 +109,11 @@ namespace FrameWork
                 return sb.ToString();
             }
         }
-        
+
+        // public string GetAbPackName(string name)
+        // {
+        //     
+        // }
         
         public static string GetMd5AsString(string key)
         {

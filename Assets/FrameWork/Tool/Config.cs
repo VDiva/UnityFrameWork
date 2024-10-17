@@ -67,7 +67,7 @@ namespace FrameWork
         /// <summary>
         /// 预制体生成代码引用
         /// </summary>
-        public static string[] spawnScriptUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx","UnityEngine.UI","UnityEngine.Video","Spine.Unity","TMPro","Pathfinding","ScriptCode.Move","ScriptCode.Tool"};
+        public static string[] spawnScriptUse = new string[] {"System.Collections.Generic","UnityEngine","UnityEngine.UI"};
         
         /// <summary>
         /// 预制体生成代码路径

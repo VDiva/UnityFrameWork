@@ -91,7 +91,8 @@ namespace FrameWork
             UiActor obj;
             try
             {
-                obj= (UiActor)Activator.CreateInstance(type, param);
+                var ui = Activator.CreateInstance(type, param);
+                obj= (UiActor)ui;
             }
             catch (Exception e)
             {
