@@ -10,7 +10,7 @@ namespace FrameWork
     {
         
         
-        [MenuItem("FrameWork/AB/CreatAssetBundle")]
+        [MenuItem("FrameWork/AB包/创建AB包")]
         public static void CreatAssetBundle()
         {
             var path = Application.streamingAssetsPath + GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget);

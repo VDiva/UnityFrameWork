@@ -9,7 +9,7 @@ namespace FrameWork.Editor
     public class PrefabToScript: UnityEditor.Editor
     {
 
-        [MenuItem("Assets/FrameWork/Prefab/CreateScrip")]
+        [MenuItem("Assets/FrameWork/预制体/生成代码")]
         public static void CreateScript()
         {
             var obj = Selection.activeGameObject;

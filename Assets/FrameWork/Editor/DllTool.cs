@@ -9,7 +9,7 @@ namespace FrameWork
     public class DllTool: UnityEditor.Editor
     {
         
-        [MenuItem("FrameWork/Dll/Update")]
+        [MenuItem("FrameWork/程序集/更新程序集")]
         public static void Update()
         {
             
@@ -40,7 +40,7 @@ namespace FrameWork
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("FrameWork/Dll/SpawnAll")]
+        [MenuItem("FrameWork/程序集/构建所有程序集")]
         public static void SpawnAll()
         {
             PrebuildCommand.GenerateAll();

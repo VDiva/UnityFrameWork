@@ -13,7 +13,7 @@ namespace FrameWork
     public class ABConfig : UnityEditor.Editor
     {
 
-        [MenuItem("FrameWork/Config/CreateConfig")]
+        [MenuItem("FrameWork/配置/创建ab包版本文件")]
         public static void CreateConfig()
         {
             CreateConfig(Application.streamingAssetsPath+AssetBundle.GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget));
@@ -80,7 +80,7 @@ namespace FrameWork
         }
 
 
-        [MenuItem("FrameWork/AssetPackaged")]
+        [MenuItem("FrameWork/更新文件AB包名")]
         public static void AssetPackaged()
         {
             if (!Directory.Exists(Config.IsAb?Config.abAssetPath:Config.ResourcesPath))
