@@ -11,7 +11,7 @@ namespace FrameWork
         private int Index=-999999;
         private GameObject _gameObject;
 
-        private Identity _identity;
+        //private Identity _identity;
         
         public Transform transform => _gameObject.transform;
         
@@ -31,7 +31,7 @@ namespace FrameWork
             }
             _gameObject = GameObject.Instantiate(go);
             _gameObject.SetActive(false);
-            _identity = _gameObject.AddComponent<Identity>();
+            //_identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
             _gameObject.SetActive(true);
@@ -53,14 +53,14 @@ namespace FrameWork
             }
             _gameObject = GameObject.Instantiate(go,trans);
             _gameObject.SetActive(false);
-            _identity = _gameObject.AddComponent<Identity>();
+            //_identity = _gameObject.AddComponent<Identity>();
             var actorMono=_gameObject.AddComponent<ActorMono>();
             actorMono.SetActor(this);
             _gameObject.SetActive(true);
         }
 
 
-        public Identity GetIdentity() { return _identity; }
+        //public Identity GetIdentity() { return _identity; }
         
         
         public GameObject GetGameObject() { return _gameObject; }

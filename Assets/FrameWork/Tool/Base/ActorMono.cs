@@ -8,8 +8,8 @@ namespace FrameWork
         private Actor _actor;
         public void SetActor(Actor actor) { _actor = actor; }
         public int GetIndex() { return _actor.GetIndex(); }
-        public ushort GetObjId() { return _actor.GetIdentity().GetObjId(); }
-        public ushort GetClientId() { return _actor.GetIdentity().GetClientId(); }
+        //public ushort GetObjId() { return _actor.GetIdentity().GetObjId(); }
+        //public ushort GetClientId() { return _actor.GetIdentity().GetClientId(); }
         private void Awake() { _actor?.Awake(); }
         private void Start() { _actor?.Start(); }
         private void OnEnable() { _actor?.OnEnable(); }
