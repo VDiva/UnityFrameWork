@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "/gXCQHJZhj7cNZEjYIpMmitMI2/Kp92qT7gETgQzaoEM1MzCUTDj955gpMfwhxR2ymfD6DO99Ykn0StPVyugkg==",
+  "success": true,
+  "projectFilePath": "D:\\GameProject\\Game-FrameWork\\NetWork\\NetWork\\NetWork.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\18060\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\18060\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
