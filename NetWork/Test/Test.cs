@@ -8,9 +8,6 @@ public class Test
     {
         NetWork.SatrtServer(8888,100);
         Console.WriteLine("----------------------------------");
-
-
-        
         Console.ReadKey();
     }
 }

@@ -7,6 +7,15 @@ public static class NetWork
 {
     private static Server _server;
     private static Client _client;
+
+    public static Action<object, ServerConnectedEventArgs> OnClientConnected;
+    public static Action<object, ServerDisconnectedEventArgs> OnClientDisconnected;
+    public static Action<object, ServerConnectionFailedEventArgs> OnConnectionFailed;
+    public static Action<object, MessageReceivedEventArgs> OnMessageReceived;
+    
+    public static Action<object, EventArgs> OnConnected;
+    public static Action<object, EventArgs> OnDisconnected;
+    
     public static void SatrtServer(int port, int maxConnect)
     {
         _server = new Server();
@@ -21,22 +30,22 @@ public static class NetWork
 
     private static void ClientConnected(object obj,ServerConnectedEventArgs connectedEventArgs)
     {
-        Console.WriteLine($"客户端ID:{connectedEventArgs.Client.Id}---链接到服务器");
+        OnClientConnected?.Invoke(obj,connectedEventArgs);
     }
     
     private static void ClientDisconnected(object obj,ServerDisconnectedEventArgs serverDisconnectedEvent)
     {
-        Console.WriteLine($"客户端ID:{serverDisconnectedEvent.Client.Id}---断开服务器");
+        OnClientDisconnected?.Invoke(obj,serverDisconnectedEvent);
     }
     
     private static void ConnectionFailed(object obj,ServerConnectionFailedEventArgs serverConnectionFailed)
     {
-        Console.WriteLine($"服务器开启失败");
+        OnConnectionFailed?.Invoke(obj,serverConnectionFailed);
     }
     
     private static void MessageReceived(object obj,MessageReceivedEventArgs messageReceivedEvent)
     {
-        Console.WriteLine($"接受到消息{messageReceivedEvent.Message.GetString()}");
+        OnMessageReceived?.Invoke(obj,messageReceivedEvent);
     }
     
 
@@ -54,7 +63,7 @@ public static class NetWork
     {
         _client = new Client();
         _client.Connected += Connected;
-        _client.ConnectionFailed += ConnectionFailed;
+        _client.Disconnected += Disconnected;
         _client.Connect(ip+":"+port);
         if (isUpdate)
         {
@@ -66,12 +75,12 @@ public static class NetWork
 
     private static void Connected(object obj, EventArgs eventArgs)
     {
-        Console.WriteLine("链接到服务器");
+        OnConnected?.Invoke(obj,eventArgs);
     }
     
-    private static void ConnectionFailed(object obj, EventArgs eventArgs)
+    private static void Disconnected(object obj, EventArgs eventArgs)
     {
-        Console.WriteLine("已断开服务器");
+        OnDisconnected?.Invoke(obj,eventArgs);
     }
     
     private static void UpdateClient()
@@ -81,6 +90,50 @@ public static class NetWork
             Task.Delay(50);
             _client.Update();
         }
+    }
+
+
+    public static void Send(Message message,ushort id,bool shouldRelease=true)
+    {
+        if (_server.IsRunning)
+        {
+            _server.Send(message, id, shouldRelease);
+        }
+    }
+    
+    public static void Send(Message message,ushort[] ids,bool shouldRelease=true)
+    {
+        if (_server.IsRunning)
+        {
+            for (int i = 0; i < ids.Length; i++)
+            {
+                _server.Send(message, ids[i], shouldRelease);
+            }
+        }
+    }
+
+    public static void SendAll(Message message, bool shouldRelease = true)
+    {
+        _server.SendToAll(message,shouldRelease);
+    }
+
+    public static void Send(Message message)
+    {
+        if (_client.IsConnected)
+        {
+            _client.Send(message);
+        }
+    }
+
+    public static Message CreateMsg(MessageSendMode sendMode)
+    {
+        return Message.Create(sendMode);
+    }
+
+
+    public static bool TryGetClient(ushort id,out Connection connection)
+    {
+        return _server.TryGetClient(id, out connection);
     }
     
 }
