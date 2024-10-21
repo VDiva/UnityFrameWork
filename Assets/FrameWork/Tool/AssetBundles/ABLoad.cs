@@ -30,7 +30,6 @@ namespace FrameWork
             }
             
             var obj=assetBundle.LoadAsset<T>(name);
-            
             return obj;
         }
         
