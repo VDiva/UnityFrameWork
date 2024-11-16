@@ -40,7 +40,7 @@ namespace FrameWork
                             }
 
                             File.WriteAllBytes(
-                                Application.persistentDataPath + "/" + Config.GetAbPath() + Config.configName,
+                                Application.persistentDataPath + "/" + Config.GetAbPath() + Config.ConfigName,
                                 bytes);
                             MyLog.Log("解压完毕正在读取资源");
                             Run();
@@ -54,7 +54,7 @@ namespace FrameWork
                 {
                     MyLog.Log("未检测到更新包");
                     File.WriteAllBytes(
-                        Application.persistentDataPath + "/" + Config.GetAbPath() + Config.configName,
+                        Application.persistentDataPath + "/" + Config.GetAbPath() + Config.ConfigName,
                         bytes);
                     Run();
                 }

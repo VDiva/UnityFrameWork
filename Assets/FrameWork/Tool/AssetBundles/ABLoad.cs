@@ -16,15 +16,15 @@ namespace FrameWork
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
                 string newPath = Application.streamingAssetsPath+Config.GetAbPath();
-                if (File.Exists(newPath+packName+"."+Config.abEndName))
+                if (File.Exists(newPath+packName+"."+Config.AbEndName))
                 {
-                    assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(newPath+packName+"."+Config.abEndName),Config.key));
+                    assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(newPath+packName+"."+Config.AbEndName),Config.Key));
                     _assetBundles.TryAdd(packName, assetBundle);
                 }
                 else
                 {
                     string path = Application.streamingAssetsPath+Config.GetAbPath();
-                    assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+Config.abEndName),Config.key));
+                    assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+Config.AbEndName),Config.Key));
                     _assetBundles.TryAdd(packName, assetBundle);
                 }
             }
@@ -44,15 +44,15 @@ namespace FrameWork
                 if (!_assetBundles.TryGetValue(packName,out assetBundle))
                 {
                     string newPath = Application.streamingAssetsPath+Config.GetAbPath();
-                    if (File.Exists(newPath+packName+"."+Config.abEndName))
+                    if (File.Exists(newPath+packName+"."+Config.AbEndName))
                     {
-                        assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(newPath+packName+"."+Config.abEndName),Config.key));
+                        assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(newPath+packName+"."+Config.AbEndName),Config.Key));
                         _assetBundles.TryAdd(packName, assetBundle);
                     }
                     else
                     {
                         string path = Application.streamingAssetsPath+Config.GetAbPath();
-                        assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+Config.abEndName),Config.key));
+                        assetBundle =AssetBundle.LoadFromMemory(Tool.Decrypt(File.ReadAllBytes(path+packName+"."+Config.AbEndName),Config.Key));
                         _assetBundles.TryAdd(packName, assetBundle);
                     }
                 }

@@ -16,9 +16,9 @@ namespace FrameWork
             CompileDllCommand.CompileDllActiveBuildTarget();
             
             
-            var dllCopyPath = Config.dllCopyPath;
-            var dlls = Config.dlls;
-            var dllPath = Config.dllPath;
+            var dllCopyPath = Config.DllCopyPath;
+            var dlls = Config.Dlls;
+            var dllPath = Config.DllPath;
             var abPath = GetPath();
             if (!Directory.Exists(dllCopyPath))
             {

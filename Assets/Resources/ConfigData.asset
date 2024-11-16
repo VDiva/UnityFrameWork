@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1855c346c0574641a9b5259ea7694146, type: 3}
+  m_Name: ConfigData
+  m_EditorClassIdentifier: 
+  IsAb: 1
+  abClassPath: Assets/FrameWork/Scripts/AssetAb
+  abEndName: info
+  abAssetPath: Assets/FrameWork/Asset
+  configName: ABConfig.txt
+  key: kljsdkkdlo4454GG00155sajuklmbkdl
+  XlsxSpawnUse:
+  - System.Collections.Generic
+  - UnityEngine
+  - Xlsx
+  - FrameWork
+  dlls:
+  - HotUpdate.dll
+  DownLoadUrl: http://127.0.0.1:3000
+  spawnScriptUse:
+  - System.Collections.Generic
+  - UnityEngine
+  - UnityEngine.UI
+  spawnScriptPath: Assets/FrameWork/Scripts/PrefabScript
+  ResourcesPath: Assets/Resources/Asset

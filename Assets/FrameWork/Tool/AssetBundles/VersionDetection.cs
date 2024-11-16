@@ -18,7 +18,7 @@ namespace FrameWork
         /// <param name="versionInfo">参数1:需要更新得资源数组 参数2:版本config文件</param>
         public static void Detection(string abConfigPath,Action<List<AbPackDate>,byte[]> versionInfo,Action<string> err=null)
         {
-            DownLoad.DownLoadAsset(Config.DownLoadUrl+abConfigPath+Config.configName,(
+            DownLoad.DownLoadAsset(Config.DownLoadUrl+abConfigPath+Config.ConfigName,(
                 (f1,f2,s1,s2) =>
                 { } ),(
                 (bytes, s) =>
@@ -31,17 +31,17 @@ namespace FrameWork
                     var newName=newInfo.Select((s1 => s1.Split(' ')[0])).ToArray();
                     //FileInfo oldFileInfo = new FileInfo(Application.streamingAssetsPath+abConfigPath+  Config.configName);
 
-                    if (File.Exists(Application.streamingAssetsPath+abConfigPath+  Config.configName))
+                    if (File.Exists(Application.streamingAssetsPath+abConfigPath+  Config.ConfigName))
                     {
-                        string oldInfo=File.ReadAllText(Application.streamingAssetsPath+abConfigPath+  Config.configName,Encoding.UTF8);
+                        string oldInfo=File.ReadAllText(Application.streamingAssetsPath+abConfigPath+  Config.ConfigName,Encoding.UTF8);
                         string[] oldInfos = oldInfo.Split('|');
                         
                         var oldId = oldInfos.Select((s1 => s1.Split(' ')[2])).ToArray();
                         List<string> downloadId = new List<string>();
                         List<string> downloadName = new List<string>();
-                        if (File.Exists(Application.persistentDataPath+abConfigPath+Config.configName))
+                        if (File.Exists(Application.persistentDataPath+abConfigPath+Config.ConfigName))
                         {
-                            var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.configName).Split('|');
+                            var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.ConfigName).Split('|');
                             downloadId=txt.Select((s1 => s1.Split(' ')[2])).ToList();
                             downloadName=txt.Select((s1 => s1.Split(' ')[0])).ToList();
                         }
@@ -72,9 +72,9 @@ namespace FrameWork
                         
                         List<string> downloadId = new List<string>();
                         List<string> downloadName = new List<string>();
-                        if (File.Exists(Application.persistentDataPath+abConfigPath+Config.configName))
+                        if (File.Exists(Application.persistentDataPath+abConfigPath+Config.ConfigName))
                         {
-                            var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.configName).Split('|');
+                            var txt=File.ReadAllText(Application.persistentDataPath+abConfigPath+Config.ConfigName).Split('|');
                             downloadId=txt.Select((s1 => s1.Split(' ')[2])).ToList();
                             downloadName=txt.Select((s1 => s1.Split(' ')[0])).ToList();
                         }

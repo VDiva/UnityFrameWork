@@ -55,7 +55,7 @@ namespace FrameWork
             string info = "";
             foreach (var item in fileInfos)
             {
-                if (item.Extension.Equals("."+Config.abEndName))
+                if (item.Extension.Equals("."+Config.AbEndName))
                 {
                     info += item.Name + " "+item.Length+" "+ GetMd5(item.FullName);
                     info += "|";
@@ -68,7 +68,7 @@ namespace FrameWork
                 Directory.CreateDirectory(path);
             }
             
-            using (StreamWriter sw=new StreamWriter(path+"/"+Config.configName,false))
+            using (StreamWriter sw=new StreamWriter(path+"/"+Config.ConfigName,false))
             {
                 sw.Write(info);
             }
@@ -83,19 +83,19 @@ namespace FrameWork
         [MenuItem("FrameWork/更新文件AB包名")]
         public static void AssetPackaged()
         {
-            if (!Directory.Exists(Config.IsAb?Config.abAssetPath:Config.ResourcesPath))
+            if (!Directory.Exists(Config.IsAb?Config.AbAssetPath:Config.ResourcesPath))
             {
-                Directory.CreateDirectory(Config.IsAb?Config.abAssetPath:Config.ResourcesPath);
+                Directory.CreateDirectory(Config.IsAb?Config.AbAssetPath:Config.ResourcesPath);
             }
             
-            DirectoryInfo directoryInfo = new DirectoryInfo(Config.IsAb?Config.abAssetPath:Config.ResourcesPath);
+            DirectoryInfo directoryInfo = new DirectoryInfo(Config.IsAb?Config.AbAssetPath:Config.ResourcesPath);
             if (Config.IsAb)
             {
-                if (!Directory.Exists(Config.abClassPath))
+                if (!Directory.Exists(Config.AbClassPath))
                 {
-                    Directory.CreateDirectory(Config.abClassPath);
+                    Directory.CreateDirectory(Config.AbClassPath);
                 }
-                using (StreamWriter swMode=new StreamWriter(Config.abClassPath+"/AssetAb.cs",false))
+                using (StreamWriter swMode=new StreamWriter(Config.AbClassPath+"/AssetAb.cs",false))
                 {
                     swMode.WriteLine("namespace FrameWork\n{");
                     swMode.WriteLine("\tpublic static class AssetAb\n\t{");
@@ -143,7 +143,7 @@ namespace FrameWork
             
             
             ai.assetBundleName = abName;
-            ai.assetBundleVariant = Config.abEndName;
+            ai.assetBundleVariant = Config.AbEndName;
             
             
         }
@@ -160,7 +160,7 @@ namespace FrameWork
             var id = Tool.GetMd5AsString(fileInfo.Name);
             sw.WriteLine($"\t\t\tpublic static string {fileInfo.Name.Split('.')[0]} = \"{id}\";");
             ai.assetBundleName = id;
-            ai.assetBundleVariant = Config.abEndName;
+            ai.assetBundleVariant = Config.AbEndName;
             
             
         }

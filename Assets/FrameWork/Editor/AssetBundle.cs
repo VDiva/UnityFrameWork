@@ -32,7 +32,7 @@ namespace FrameWork
             var files = Directory.GetFiles(path);
             for (int i = 0; i < files.Length; i++)
             {
-                var data = Tool.Encrypt(File.ReadAllBytes(files[i]), Config.key);
+                var data = Tool.Encrypt(File.ReadAllBytes(files[i]), Config.Key);
                 File.WriteAllBytes(files[i],data);
             }
             
@@ -66,7 +66,7 @@ namespace FrameWork
             {
                 if (Path.GetFileNameWithoutExtension(f[i].FullName).IndexOf(ai.assetBundleName)!=-1)
                 {
-                    var data = Tool.Encrypt(File.ReadAllBytes(f[i].FullName), Config.key);
+                    var data = Tool.Encrypt(File.ReadAllBytes(f[i].FullName), Config.Key);
                     File.WriteAllBytes(f[i].FullName,data);
                 }
             }
@@ -103,7 +103,7 @@ namespace FrameWork
             {
                 if (Path.GetFileNameWithoutExtension(f[i].FullName).IndexOf(abPackName)!=-1)
                 {
-                    var data = Tool.Encrypt(File.ReadAllBytes(f[i].FullName), Config.key);
+                    var data = Tool.Encrypt(File.ReadAllBytes(f[i].FullName), Config.Key);
                     File.WriteAllBytes(f[i].FullName,data);
                 }
             }

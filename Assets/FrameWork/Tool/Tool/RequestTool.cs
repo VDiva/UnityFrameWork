@@ -24,12 +24,12 @@ namespace FrameWork
         public Action<float,int> Progress;
         private string _url;
         private Methods _httpMethods;
-        private Dictionary<string, string> _dic;
+        private Dictionary<object, object> _dic;
         public RequestTool(string url,Methods httpMethods)
         {
             _url = url;
             _httpMethods = httpMethods;
-            _dic = new Dictionary<string, string>();
+            _dic = new Dictionary<object, object>();
         }
         
         
@@ -38,100 +38,15 @@ namespace FrameWork
             return new RequestTool(url,httpMethods);
         }
 
-        public RequestTool AddField(string key,string value)
+        public RequestTool AddField(object key,object value)
         {
             _dic.Add(key,value);
             return this;
         }
         
-        public RequestTool AddField<T,TK>(Dictionary<T,TK> dictionary)
-        {
-            foreach (var item in dictionary)
-            {
-                AddField(item.Key.ToString(),item.Value.ToString());
-            }
-            return this;
-        }
-
-        public RequestTool AddField<T,TK>(List<T> key,List<TK> value)
-        {
-            for (int i = 0; i < key.Count; i++)
-            {
-                AddField(key[i].ToString(),value[i].ToString());
-            }
-            return this;
-        }
-        
-        public RequestTool AddField<T,TK>(T[] key,TK[] value)
-        {
-            for (int i = 0; i < key.Length; i++)
-            {
-                AddField(key[i].ToString(),value[i].ToString());
-            }
-            return this;
-        }
-        
-        public RequestTool AddField(int key,int value)
-        {
-            AddField(key.ToString(),value.ToString());
-            return this;
-        }
-        
-        public RequestTool AddField(string key,int value)
-        {
-            AddField(key,value.ToString());
-            return this;
-        }
-        
-        public RequestTool AddField(int key,string value)
-        {
-            AddField(key.ToString(),value);
-            return this;
-        }
-        
-        
-        public RequestTool AddField(float key,float value)
-        {
-            AddField(key.ToString(),value.ToString());
-            return this;
-        }
-        
-        public RequestTool AddField(float key,string value)
-        {
-            AddField(key.ToString(),value);
-            return this;
-        }
-        
-        public RequestTool AddField(string key,float value)
-        {
-            AddField(key,value.ToString());
-            return this;
-        }
-        
-        
-        public RequestTool AddField(float key,int value)
-        {
-            AddField(key.ToString(),value.ToString());
-            return this;
-        }
-        
-        public RequestTool AddField(int key,float value)
-        {
-            AddField(key.ToString(),value.ToString());
-            return this;
-        }
-
-
         public void Send()
         {
-            if (_httpMethods.Equals(Methods.Get))
-            {
-                Mono.Instance.StartCoroutine(Get());
-            }
-            else
-            {
-                Mono.Instance.StartCoroutine(Post());
-            }
+            Mono.Instance.StartCoroutine(Request());
         }
 
 
@@ -139,101 +54,111 @@ namespace FrameWork
         {
             _valueString += data;
             _err += err;
-            if (_httpMethods.Equals(Methods.Get))
-            {
-                Mono.Instance.StartCoroutine(Get());
-            }
-            else
-            {
-                Mono.Instance.StartCoroutine(Post());
-            }
+            Mono.Instance.StartCoroutine(Request());
         }
         
         public void Send(Action<byte[]> data,Action<string> err=null)
         {
             _valueByte += data;
             _err += err;
-            if (_httpMethods.Equals(Methods.Get))
+            Mono.Instance.StartCoroutine(Request());
+        }
+
+
+        public void Send(Action<Texture2D> data, Action<string> err = null)
+        {
+            Mono.Instance.StartCoroutine(GetTexture());
+            IEnumerator GetTexture()
             {
-                Mono.Instance.StartCoroutine(Get());
-            }
-            else
-            {
-                Mono.Instance.StartCoroutine(Post());
+                using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(_url))
+                {
+                    www.SetRequestHeader("Content-Type", "application/json");
+                    www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_dic)));
+                    www.SendWebRequest();
+                    if (www.isHttpError|| www.isNetworkError)
+                    {
+                        err?.Invoke(www.error);
+                        MyLog.LogError(www.error);
+                        yield break;
+                    }
+
+                    var sizeStr=www.GetRequestHeader("Content-Length");
+                    int size = 0;
+                    if (!string.IsNullOrEmpty(sizeStr))
+                    {
+                        size = int.Parse(sizeStr);
+                    }
+                
+                    while (!www.isDone)
+                    {
+                        Progress?.Invoke(www.downloadProgress,size);
+                        yield return null;
+                    }
+
+                    yield return null;
+                
+                    if (www.isHttpError|| www.isNetworkError)
+                    { 
+                        err?.Invoke(www.error);
+                        MyLog.LogError(www.error);
+                        yield break;
+                    }
+                
+                
+                    if (www.isDone)
+                    {
+                        Progress?.Invoke(1,size);
+                        data?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
+                    }
+                    
+                }
             }
         }
 
 
-        IEnumerator Get()
+        IEnumerator Request()
         {
-            using (UnityWebRequest request=UnityWebRequest.Get(_url))
+            using (UnityWebRequest www=new UnityWebRequest(_url,_httpMethods==Methods.Get ? "GET" : "POST"))
             {
-                request.SetRequestHeader("Content-Type", "application/json");
-                request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_dic)));
-                request.SendWebRequest();
-                if (request.isHttpError|| request.isNetworkError)
+                www.SetRequestHeader("Content-Type", "application/json");
+                www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_dic)));
+                www.SendWebRequest();
+                if (www.isHttpError|| www.isNetworkError)
                 {
-                    MyLog.LogError(request.error);
+                    MyLog.LogError(www.error);
                     yield break;
                 }
 
-                var sizeStr=request.GetRequestHeader("Content-Length");
+                var sizeStr=www.GetRequestHeader("Content-Length");
                 int size = 0;
                 if (!string.IsNullOrEmpty(sizeStr))
                 {
                     size = int.Parse(sizeStr);
                 }
                 
-                while (!request.isDone)
+                while (!www.isDone)
                 {
-                    Progress?.Invoke(request.downloadProgress,size);
+                    Progress?.Invoke(www.downloadProgress,size);
                     yield return null;
                 }
 
                 yield return null;
-                if (request.isDone)
+                
+                if (www.isHttpError|| www.isNetworkError)
+                {
+                    MyLog.LogError(www.error);
+                    yield break;
+                }
+                
+                
+                if (www.isDone)
                 {
                     Progress?.Invoke(1,size);
-                    _valueString?.Invoke(request.downloadHandler.text);
-                    _valueByte?.Invoke(request.downloadHandler.data);
+                    _valueString?.Invoke(www.downloadHandler.text);
+                    _valueByte?.Invoke(www.downloadHandler.data);
                 }
                 
             }
         }
-        
-        
-        IEnumerator Post()
-        {
-            using (UnityWebRequest request=UnityWebRequest.Post(_url,_dic))
-            {
-                request.SetRequestHeader("Content-Type", "application/json");
-                request.SendWebRequest();
-                if (request.isHttpError|| request.isNetworkError)
-                {
-                    MyLog.LogError(request.error);
-                    yield break;
-                }
-                var sizeStr=request.GetRequestHeader("Content-Length");
-                int size = 0;
-                if (!string.IsNullOrEmpty(sizeStr))
-                {
-                    size = int.Parse(sizeStr);
-                }
-                while (!request.isDone)
-                {
-                    Progress?.Invoke(request.downloadProgress,size);
-                    yield return null;
-                }
-
-                yield return null;
-                if (request.isDone)
-                {
-                    Progress?.Invoke(1,size);
-                    _valueString?.Invoke(request.downloadHandler.text);
-                    _valueByte?.Invoke(request.downloadHandler.data);
-                }
-            }
-        }
-
     }
 }
