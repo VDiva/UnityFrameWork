@@ -182,15 +182,15 @@ namespace FrameWork
                 
                 sw.WriteLine("namespace Xlsx");
                 sw.WriteLine("{");
-                sw.WriteLine("\tpublic class "+xlsxQueryName+$":SingletonAsClass<{xlsxQueryName}>");
+                sw.WriteLine("\tpublic static class "+xlsxQueryName);
                 sw.WriteLine("\t{");
-                sw.WriteLine($"\t\tpublic List<{fileName}> data=new List<{fileName}>();");
-                sw.WriteLine($"\t\tpublic XlsxData<{row[0]},{fileName}> XlsxDataAsOneKey;");
+                sw.WriteLine($"\t\tpublic static List<{fileName}> data=new List<{fileName}>();");
+                sw.WriteLine($"\t\tpublic static XlsxData<{row[0]},{fileName}> XlsxDataAsOneKey;");
                 if (row.Count>=2)
                 {
-                    sw.WriteLine($"\t\tpublic XlsxData<{row[0]},{row[1]},{fileName}> XlsxDataAsTowKey;");
+                    sw.WriteLine($"\t\tpublic static XlsxData<{row[0]},{row[1]},{fileName}> XlsxDataAsTowKey;");
                 }
-                sw.WriteLine("\t\tpublic "+xlsxQueryName+"()");
+                sw.WriteLine("\t\tstatic "+xlsxQueryName+"()");
                 sw.WriteLine("\t\t{");
 
                 if (Config.IsAb)

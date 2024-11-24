@@ -8,3 +8,5 @@
 *.meta
 /Logs
 /Logs
+Assets/.DS_Store
+.DS_Store

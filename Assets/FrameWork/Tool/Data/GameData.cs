@@ -7,10 +7,10 @@ namespace FrameWork.Data
     {
         private static Dictionary<object, object> _dataDic = new Dictionary<object, object>();
 
-        public static void SetString(string key, string value)
+        public static void SetString(object key, object value)
         {
             _dataDic[key] = value;
-            PlayerPrefs.SetString(key,value);
+            PlayerPrefs.SetString(key.ToString(),value.ToString());
         }
         
         public static void AddValue(object key, object value)
@@ -26,6 +26,8 @@ namespace FrameWork.Data
             return (T)_dataDic[key.ToString()];
         }
 
+        
+        
         
     }
 }
