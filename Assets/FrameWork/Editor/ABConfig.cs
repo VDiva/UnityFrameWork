@@ -98,10 +98,10 @@ namespace FrameWork
                 using (StreamWriter swMode=new StreamWriter(Config.AbClassPath+"/AssetAb.cs",false))
                 {
                     swMode.WriteLine("namespace FrameWork\n{");
-                    swMode.WriteLine("\tpublic static class AssetAb\n\t{");
+                   // swMode.WriteLine("\tpublic static class AssetAb\n\t{");
                     CheckDirectory(directoryInfo,swMode);
                     swMode.WriteLine("\t}");
-                    swMode.WriteLine("}");
+                    //swMode.WriteLine("}");
                 }
             }
             else
@@ -157,7 +157,7 @@ namespace FrameWork
             AssetImporter ai=AssetImporter.GetAtPath("Assets\\"+unityPath[unityPath.Length-1]);
 
             
-            var id = Tool.GetMd5AsString(fileInfo.Name);
+            var id = Tool.GetMd5AsString(Path.GetFileNameWithoutExtension(path));
             sw.WriteLine($"\t\t\tpublic static string {fileInfo.Name.Split('.')[0]} = \"{id}\";");
             ai.assetBundleName = id;
             ai.assetBundleVariant = Config.AbEndName;

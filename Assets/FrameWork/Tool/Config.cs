@@ -40,6 +40,19 @@ namespace FrameWork
         /// </summary>
         public static string Key{get{return _configData.key;}}
 
+
+        
+        public static string XlsxPath{get{return _configData.xlsxPath;}}
+        
+        public static string XlsxOutPath{get{return _configData.xlsxOutPath;}}
+        
+        public static string XlsxOutResourcesPath{get{return _configData.xlsxOutResourcesPath;}}
+        
+        public static string XlsxOutScriptPath{get{return _configData.xlsxOutScriptPath;}}
+        
+        
+        
+        
         /// <summary>
         /// 配置表生成引用
         /// </summary>

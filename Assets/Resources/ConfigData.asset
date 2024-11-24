@@ -9,26 +9,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1855c346c0574641a9b5259ea7694146, type: 3}
+  m_Script: {fileID: 11500000, guid: 86672490e7310a24dad5c0d1b93770b8, type: 3}
   m_Name: ConfigData
   m_EditorClassIdentifier: 
-  IsAb: 1
+  isAb: 1
   abClassPath: Assets/FrameWork/Scripts/AssetAb
   abEndName: info
   abAssetPath: Assets/FrameWork/Asset
   configName: ABConfig.txt
   key: kljsdkkdlo4454GG00155sajuklmbkdl
-  XlsxSpawnUse:
+  xlsxSpawnUse:
   - System.Collections.Generic
   - UnityEngine
   - Xlsx
   - FrameWork
+  xlsxPath: Assets/FrameWork/Xlsx
+  xlsxOutPath: Assets/FrameWork/Asset/Xlsx
+  xlsxOutResourcesPath: Assets/Resources/Xlsx
+  xlsxOutScriptPath: Assets/FrameWork/Scripts/Xlsx
   dlls:
   - HotUpdate.dll
-  DownLoadUrl: http://127.0.0.1:3000
+  downLoadUrl: http://127.0.0.1:3000
   spawnScriptUse:
   - System.Collections.Generic
   - UnityEngine
   - UnityEngine.UI
   spawnScriptPath: Assets/FrameWork/Scripts/PrefabScript
-  ResourcesPath: Assets/Resources/Asset
+  resourcesPath: Assets/Resources/Asset

@@ -14,23 +14,25 @@ namespace FrameWork
     [ScriptedImporter(1, ".xlsx")]
     public class ExcelTool:ScriptedImporter
     {
-        public static string xlsxPath = "Assets/FrameWork/Asset/Xlsx";
-        public static string xlsxOutPath = "Assets/FrameWork/Asset/Xlsx";
-        
-        public static string xlsxOutResourcesPath = "Assets/Resources/Xlsx";
-        
-        public static string xlsxOutScriptPath = "Assets/FrameWork/Scripts/Xlsx";
+        // public static string xlsxPath = _configData.XlsxPath;
+        // public static string xlsxOutPath = _configData.XlsxOutPath;
+        //
+        // public static string xlsxOutResourcesPath = Config.XlsxOutResourcesPath;
+        //
+        // public static string xlsxOutScriptPath = Config.XlsxOutScriptPath;
         public static List<string> paths = new List<string>();
-        
+
+        public static ConfigData ConfigData;
         public override void OnImportAsset(AssetImportContext ctx)
         {
+            ConfigData=Resources.Load<ConfigData>("ConfigData");
             MyLog.LogWarning("导入");
-            if (!Directory.Exists(xlsxPath))
+            if (!Directory.Exists(ConfigData.xlsxPath))
             {
-                Directory.CreateDirectory(xlsxPath);
+                Directory.CreateDirectory(ConfigData.xlsxPath);
                 return;
             }
-            if (!ctx.assetPath.StartsWith(xlsxPath)) return;
+            if (!ctx.assetPath.StartsWith(ConfigData.xlsxPath)) return;
             var path = ctx.assetPath;
             var fileName = Path.GetFileNameWithoutExtension(path);
             if (fileName.StartsWith("~$")) return;
@@ -86,7 +88,7 @@ namespace FrameWork
                         }
                     }
 
-                    var outPath = Config.IsAb ? ExcelTool.xlsxOutPath : ExcelTool.xlsxOutResourcesPath;
+                    var outPath = Config.IsAb ? ExcelTool.ConfigData.xlsxOutPath : ExcelTool.ConfigData.xlsxOutResourcesPath;
                     
                     if (!Directory.Exists(outPath))
                     {
@@ -103,11 +105,8 @@ namespace FrameWork
                 MyLog.Log("更新");
                 if (Config.IsAb)
                 {
-                    Mono.Instance.Frame((() =>
-                    {
-                        ABConfig.AssetPackaged();
-                        AssetBundle.UpdateAssetBundle("xlsx");
-                    }));
+                    ABConfig.AssetPackaged();
+                    AssetBundle.UpdateAssetBundle("xlsx");
                 }
                 else
                 {
@@ -124,7 +123,15 @@ namespace FrameWork
             var xlsxKeyName = "Xlsx_"+xlsxName+"_Key";
             var xlsxTypeName = "Xlsx_"+xlsxName+"_Type";
             HashSet<string> key = new HashSet<string>();
-            using (StreamWriter sw = new StreamWriter(ExcelTool.xlsxOutScriptPath + "\\" + xlsxKeyName + ".cs", false))
+
+            var outPath = ExcelTool.ConfigData.xlsxOutScriptPath;
+            
+            if (!Directory.Exists(outPath))
+            {
+                Directory.CreateDirectory(outPath);
+            }
+            
+            using (StreamWriter sw = new StreamWriter(outPath + "\\" + xlsxKeyName + ".cs", false))
             {
                 sw.WriteLine("namespace Xlsx");
                 sw.WriteLine("{");
@@ -164,12 +171,14 @@ namespace FrameWork
             var xlsxName = fileName.Split('_')[1];
             var xlsxQueryName = fileName+"_Query";
 
-            if (!Directory.Exists(ExcelTool.xlsxOutScriptPath))
+            var outPath = ExcelTool.ConfigData.xlsxOutScriptPath;
+            
+            if (!Directory.Exists(outPath))
             {
-                Directory.CreateDirectory(ExcelTool.xlsxOutScriptPath);
+                Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw = new StreamWriter(ExcelTool.xlsxOutScriptPath + "\\" + xlsxQueryName + ".cs", false))
+            using (StreamWriter sw = new StreamWriter(outPath + "\\" + xlsxQueryName + ".cs", false))
             {
                 // sw.WriteLine("using System.Collections.Generic;");
                 // sw.WriteLine("using UnityEngine;");
@@ -195,7 +204,7 @@ namespace FrameWork
 
                 if (Config.IsAb)
                 {
-                    sw.WriteLine($"\t\t\tvar xlsx=AssetBundlesLoad.LoadAsset<TextAsset>(\"xlsx\", \"{fileName}\");");
+                    sw.WriteLine($"\t\t\tvar xlsx=ABLoad.LoadAsset<TextAsset>(Tool.GetMd5AsString(\"{fileName}\"), \"{fileName}\");");
                 }
                 else
                 {
@@ -235,11 +244,14 @@ namespace FrameWork
         public static void SpawnClass(string fileName,List<List<object>> book)
         {
             _classBuilder.Clear();
-            if (!Directory.Exists(ExcelTool.xlsxOutScriptPath))
+            var outPath = ExcelTool.ConfigData.xlsxOutScriptPath;
+
+            if (!Directory.Exists(outPath))
             {
-                Directory.CreateDirectory(ExcelTool.xlsxOutScriptPath);
+                Directory.CreateDirectory(outPath);
             }
-            using (StreamWriter sw=new StreamWriter(ExcelTool.xlsxOutScriptPath+"\\"+fileName+".cs",false))
+            
+            using (StreamWriter sw=new StreamWriter(outPath+"\\"+fileName+".cs",false))
             {
                 // sw.WriteLine("using System.Collections.Generic;");
                 // sw.WriteLine("using UnityEngine;");

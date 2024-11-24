@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -13,6 +14,7 @@ namespace FrameWork
         public static T LoadAsset<T>(string packName,string name) where T : Object
         {
             AssetBundle assetBundle=null;
+            //packName=GtePackName(packName,name);
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
             {
                 string newPath = Application.streamingAssetsPath+Config.GetAbPath();
@@ -39,6 +41,7 @@ namespace FrameWork
         {
             
             AssetBundle assetBundle=null;
+            //packName=GtePackName(packName,name);
             if (Application.platform!=RuntimePlatform.WebGLPlayer)
             {
                 if (!_assetBundles.TryGetValue(packName,out assetBundle))
@@ -85,7 +88,7 @@ namespace FrameWork
                 }
             }
         }
-
+        
         private static void DownLoadAb(string path,Action<byte[]> data)
         {
             RequestTool requestTool = new RequestTool(path, Methods.Get);
@@ -94,6 +97,6 @@ namespace FrameWork
                 data?.Invoke(da);
             } ));
         }
-        
+
     }
 }
