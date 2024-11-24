@@ -6,3 +6,5 @@
 *.csproj
 *.sln
 *.meta
+/Logs
+/Logs
