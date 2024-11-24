@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using ExcelDataReader;
 using UnityEditor;
-
+using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
 namespace FrameWork
 {
-    [UnityEditor.AssetImporters.ScriptedImporter(1, ".xlsx")]
-    public class ExcelTool:UnityEditor.AssetImporters.ScriptedImporter
+    [ScriptedImporter(1, ".xlsx")]
+    public class ExcelTool:ScriptedImporter
     {
         public static string xlsxPath = "Assets/FrameWork/Asset/Xlsx";
         public static string xlsxOutPath = "Assets/FrameWork/Asset/Xlsx";
@@ -22,7 +22,7 @@ namespace FrameWork
         public static string xlsxOutScriptPath = "Assets/FrameWork/Scripts/Xlsx";
         public static List<string> paths = new List<string>();
         
-        public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
+        public override void OnImportAsset(AssetImportContext ctx)
         {
             MyLog.LogWarning("导入");
             if (!Directory.Exists(xlsxPath))

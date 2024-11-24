@@ -8,16 +8,21 @@
       "hash": "2697eb5a90cc44f226cd4ca4ad7ea1259ab38f56"
     },
     "com.unity.cinemachine": {
-      "version": "2.10.1",
+      "version": "2.6.17",
       "depth": 0,
       "source": "registry",
+<<<<<<< HEAD
       "dependencies": {
         "com.unity.test-framework": "1.1.31"
       },
       "url": "https://packages.unity.com"
+=======
+      "dependencies": {},
+      "url": "https://packages.unity.cn"
+>>>>>>> parent of 3eafc0e (升级编辑器版本)
     },
     "com.unity.collab-proxy": {
-      "version": "2.5.1",
+      "version": "1.14.18",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -31,11 +36,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.31",
+      "version": "1.2.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.ext.nunit": "1.0.6"
+        "com.unity.test-framework": "1.1.1"
       },
       "url": "https://packages.unity.com"
     },
@@ -56,7 +61,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.1.33",
+      "version": "1.1.31",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -67,7 +72,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "3.0.6",
+      "version": "2.1.6",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -76,7 +81,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.timeline": {
-      "version": "1.6.5",
+      "version": "1.2.18",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -229,18 +234,6 @@
       "depth": 0,
       "source": "builtin",
       "dependencies": {
-        "com.unity.modules.ui": "1.0.0",
-        "com.unity.modules.imgui": "1.0.0",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.uielementsnative": "1.0.0"
-      }
-    },
-    "com.unity.modules.uielementsnative": {
-      "version": "1.0.0",
-      "depth": 1,
-      "source": "builtin",
-      "dependencies": {
-        "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
       }
