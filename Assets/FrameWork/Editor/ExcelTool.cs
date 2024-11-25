@@ -106,7 +106,24 @@ namespace FrameWork
                 if (Config.IsAb)
                 {
                     ABConfig.AssetPackaged();
-                    AssetBundle.UpdateAssetBundle("xlsx");
+                    var fileInfo = Directory.GetFiles(ExcelTool.ConfigData.xlsxOutPath).Select((s => Path.GetFileNameWithoutExtension(s))).ToList();
+
+                    for (int i = 0; i < fileInfo.Count; i++)
+                    {
+                        AssetBundle.DeleteAb(Tool.GetMd5AsString(fileInfo[i]));
+                    }
+                    
+                    Mono.Instance.Frame((() =>
+                    {
+                        AssetBundle.CreatAssetBundle();
+                        var go =GameObject.FindObjectOfType<Mono>();
+                        if (go!=null)
+                        {
+                            GameObject.Destroy(go.gameObject);
+                        }
+                    }));
+                    
+                    
                 }
                 else
                 {

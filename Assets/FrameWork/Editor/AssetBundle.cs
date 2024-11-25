@@ -112,6 +112,29 @@ namespace FrameWork
             AssetDatabase.Refresh();
             Debug.Log("AB Update Finish!");
         }
+
+
+        public static void DeleteAb(string abPackName)
+        {
+            var path = Application.streamingAssetsPath + GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget);
+            //AssetImporter ai=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
+            if (Directory.Exists(path))
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(path);
+                var file = directoryInfo.GetFiles();
+                for (int i = 0; i < file.Length; i++)
+                {
+                    if (Path.GetFileNameWithoutExtension(file[i].FullName).IndexOf(abPackName)!=-1)
+                    {
+                        File.Delete(file[i].FullName);
+                    }
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
         
         public static string GetAbDictoryPath(BuildTarget platform)
         {

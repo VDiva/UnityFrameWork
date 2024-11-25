@@ -22,10 +22,13 @@ namespace FrameWork
                         GameObject go = new GameObject();
                         go.name = typeof(T).Name;
                         _instance=go.AddComponent<T>();
-                        DontDestroyOnLoad(go);
+                    }
+
+                    if (Application.isPlaying)
+                    {
+                        DontDestroyOnLoad(_instance);
                     }
                     
-                    DontDestroyOnLoad(_instance);
                 }
 
                 return _instance;

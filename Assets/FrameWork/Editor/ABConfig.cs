@@ -155,7 +155,7 @@ namespace FrameWork
             var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
             var unityPath=path.Split(new string[]{"Assets"},StringSplitOptions.None);
             AssetImporter ai=AssetImporter.GetAtPath("Assets\\"+unityPath[unityPath.Length-1]);
-
+            if (ai==null)return;
             
             var id = Tool.GetMd5AsString(Path.GetFileNameWithoutExtension(path));
             sw.WriteLine($"\t\t\tpublic static string {fileInfo.Name.Split('.')[0]} = \"{id}\";");
