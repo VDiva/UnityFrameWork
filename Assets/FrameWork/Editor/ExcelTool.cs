@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using ExcelDataReader;
 using UnityEditor;
-using UnityEditor.Experimental.AssetImporters;
+
 using UnityEngine;
 
 namespace FrameWork
 {
-    [ScriptedImporter(1, ".xlsx")]
-    public class ExcelTool:ScriptedImporter
+    [UnityEditor.AssetImporters.ScriptedImporter(1, ".xlsx")]
+    public class ExcelTool:UnityEditor.AssetImporters.ScriptedImporter
     {
         // public static string xlsxPath = _configData.XlsxPath;
         // public static string xlsxOutPath = _configData.XlsxOutPath;
@@ -23,7 +23,7 @@ namespace FrameWork
         public static List<string> paths = new List<string>();
 
         public static ConfigData ConfigData;
-        public override void OnImportAsset(AssetImportContext ctx)
+        public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
         {
             ConfigData=Resources.Load<ConfigData>("ConfigData");
             MyLog.LogWarning("导入");
