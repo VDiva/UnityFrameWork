@@ -14,5 +14,6 @@ public class cs : MonoBehaviour
     public void Log()
     {
         Debug.Log("Hello World!");
+        
     }
 }

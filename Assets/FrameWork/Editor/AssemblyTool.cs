@@ -11,15 +11,21 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class AssemblySet: UnityEditor.Editor
+    [InitializeOnLoad]
+    public static class AssemblyTool
     {
-        [InitializeOnLoadMethod]
+        
+        static AssemblyTool()
+        {
+            InitAssemblySet();
+        }
+
         [MenuItem("FrameWork/AssemblySet")]
-        public static void InitAssembly()
+        public static void InitAssemblySet()
         {
             try
             {
-                Debug.Log("编辑程序集中....");
+                //Debug.Log("编辑程序集中....");
 
                 // Lock assemblies while they may be altered
                 EditorApplication.LockReloadAssemblies();
@@ -42,7 +48,7 @@ namespace FrameWork
                     // But always add the assembly folder to the search directories
                     //assemblySearchDirectories.Add( Path.GetDirectoryName( assembly.Location ) );
                 }
-
+                
                 // // Create resolver
                 // DefaultAssemblyResolver assemblyResolver = new DefaultAssemblyResolver();
                 // // Add all directories found in the project folder
@@ -96,9 +102,9 @@ namespace FrameWork
 
                     // Process it if it hasn't already
                     //Debug.Log("Processing " + Path.GetFileName(assemblyPath));
-                    if (AssemblySet.ProcessAssembly(assemblyDefinition))
+                    if (AssemblyTool.ProcessAssembly(assemblyDefinition))
                     {
-                        //Debug.Log("Writing to " + assemblyPath);
+                        Debug.Log("写入更新到程序集:" + assemblyPath);
                         assemblyDefinition.Write(assemblyPath, writerParameters);
                         //Debug.Log("Done writing");
                         
@@ -109,7 +115,7 @@ namespace FrameWork
                     }
                 }
 
-                Debug.Log("程序集编辑完毕....");
+                //Debug.Log("程序集编辑完毕....");
                 // Unlock now that we're done
                 EditorApplication.UnlockReloadAssemblies();
             }
@@ -144,11 +150,11 @@ namespace FrameWork
                                 ILProcessor ilProcessor = methodDefinition.Body.GetILProcessor();
 
                                 Instruction first = methodDefinition.Body.Instructions[0];
-                                ilProcessor.InsertBefore( first, Instruction.Create( OpCodes.Ldstr, "Enter " + typeDefinition.FullName + "." + methodDefinition.Name ) );
+                                ilProcessor.InsertBefore( first, Instruction.Create( OpCodes.Ldstr, "LOG 进入方法:" + typeDefinition.FullName + "." + methodDefinition.Name ) );
                                 ilProcessor.InsertBefore( first, Instruction.Create( OpCodes.Call, logMethodReference ) );
 
                                 Instruction last = methodDefinition.Body.Instructions[methodDefinition.Body.Instructions.Count - 1];
-                                ilProcessor.InsertBefore( last, Instruction.Create( OpCodes.Ldstr, "Exit " + typeDefinition.FullName + "." + methodDefinition.Name ) );
+                                ilProcessor.InsertBefore( last, Instruction.Create( OpCodes.Ldstr, "LOG 退出方法:" + typeDefinition.FullName + "." + methodDefinition.Name ) );
                                 ilProcessor.InsertBefore( last, Instruction.Create( OpCodes.Call, logMethodReference ) );
 
                                 wasProcessed = true;
