@@ -1,0 +1,14 @@
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\bin\Debug\netstandard2.1\NetWorkClient.deps.json
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\bin\Debug\netstandard2.1\NetWorkClient.dll
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\bin\Debug\netstandard2.1\NetWorkClient.pdb
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\bin\Debug\netstandard2.1\Library.dll
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\bin\Debug\netstandard2.1\Library.pdb
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.csproj.AssemblyReference.cache
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.GeneratedMSBuildEditorConfig.editorconfig
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.AssemblyInfoInputs.cache
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.AssemblyInfo.cs
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.csproj.CoreCompileInputs.cache
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.sourcelink.json
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkC.F6BE6210.Up2Date
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.dll
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\NetWorkClient\obj\Debug\netstandard2.1\NetWorkClient.pdb

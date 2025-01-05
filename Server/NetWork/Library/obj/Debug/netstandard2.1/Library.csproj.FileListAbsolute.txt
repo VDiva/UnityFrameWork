@@ -1,0 +1,10 @@
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\bin\Debug\netstandard2.1\Library.deps.json
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\bin\Debug\netstandard2.1\Library.dll
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\bin\Debug\netstandard2.1\Library.pdb
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.GeneratedMSBuildEditorConfig.editorconfig
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.AssemblyInfoInputs.cache
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.AssemblyInfo.cs
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.csproj.CoreCompileInputs.cache
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.sourcelink.json
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.dll
+D:\Porject\UnityFramework\UnityFrameWork\Server\NetWork\Library\obj\Debug\netstandard2.1\Library.pdb
