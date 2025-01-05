@@ -22,6 +22,7 @@ public class cs : MonoBehaviour
         var url = "https://w.wallhaven.cc/full/rr/wallhaven-rrmg11.jpg";
         var texture=await RequestTool.Create(url, Methods.Get).SendTaskAsTexture();
         _image.sprite = texture;
+        _image.SetNativeSize();
     }
     
 }
