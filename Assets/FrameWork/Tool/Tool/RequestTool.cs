@@ -118,7 +118,7 @@ namespace FrameWork
 
         IEnumerator Request()
         {
-            using (UnityWebRequest www=new UnityWebRequest(_url,_httpMethods==Methods.Get ? "GET" : "POST"))
+            using (UnityWebRequest www=new UnityWebRequest(_url,_httpMethods.ToString()))
             {
                 www.SetRequestHeader("Content-Type", "application/json");
                 www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_dic)));

@@ -13,10 +13,10 @@ namespace FrameWork
 {
     public class Tool
     {
-
-        public static string GetAbName(string key)
+        
+        public static string GetAbName(string name)
         {
-            return System.Type.GetType("FrameWork.AssetAb")?.GetField(key).GetValue(null).ToString()??"";
+            return GetMd5AsString(name);
         }
 
         public static object ConversionType(string type,string value)
@@ -109,11 +109,7 @@ namespace FrameWork
                 return sb.ToString();
             }
         }
-
-        // public string GetAbPackName(string name)
-        // {
-        //     
-        // }
+        
         
         public static string GetMd5AsString(string key)
         {
@@ -132,107 +128,6 @@ namespace FrameWork
             //return ((time.ToUniversalTime().Ticks - new DateTime(1970, 1, 1, 0, 0, 0, 0).Ticks) / 10000000) * 1000;
         }
         
-        
-        // public static string GetAbPath()
-        // {
-        //     string path = "";
-        //     RuntimePlatform platform = Application.platform;
-        //     switch (platform)
-        //     {
-        //         case RuntimePlatform.WindowsEditor:
-        //         case RuntimePlatform.WindowsPlayer:
-        //
-        //             if (Directory.Exists(Application.streamingAssetsPath+"/StandaloneWindows64/"))
-        //             {
-        //                 path = Application.streamingAssetsPath+"/StandaloneWindows64/";
-        //             }
-        //             else
-        //             {
-        //                 path = Application.persistentDataPath + "/StandaloneWindows64/";
-        //             }
-        //             
-        //             break;
-        //         case RuntimePlatform.Android:
-        //             path = Application.persistentDataPath + "/Android/";
-        //             break;
-        //         case RuntimePlatform.IPhonePlayer:
-        //             path = Application.persistentDataPath + "/Ios/";
-        //             break;
-        //         case RuntimePlatform.WebGLPlayer:
-        //             path = Application.persistentDataPath + "/WebGl/";
-        //             break;
-        //     }
-        //
-        //     return path;
-        // }
-
-        // public static string GetAbDictoryPath()
-        // {
-        //     string path = "";
-        //     RuntimePlatform platform = Application.platform;
-        //     switch (platform)
-        //     {
-        //         case RuntimePlatform.WindowsEditor:
-        //         case RuntimePlatform.WindowsPlayer:
-        //
-        //             path = "/StandaloneWindows64/";
-        //
-        //             break;
-        //         case RuntimePlatform.Android:
-        //             path =  "/Android/";
-        //             break;
-        //         case RuntimePlatform.IPhonePlayer:
-        //             path ="/Ios/";
-        //             break;
-        //         case RuntimePlatform.WebGLPlayer:
-        //             path = "/WebGl/";
-        //             break;
-        //     }
-        //
-        //     return path;
-        // }
-        
-        
-        // public static string GetAbPath(RuntimePlatform platform)
-        // {
-        //     string path = "";
-        //     //RuntimePlatform platform = Application.platform;
-        //     switch (platform)
-        //     {
-        //         case RuntimePlatform.WindowsEditor:
-        //         case RuntimePlatform.WindowsPlayer:
-        //
-        //             if (Directory.Exists(Application.streamingAssetsPath + "/StandaloneWindows64/"))
-        //             {
-        //                 path = Application.streamingAssetsPath + "/StandaloneWindows64/";
-        //             }
-        //             else
-        //             {
-        //                 path = Application.persistentDataPath + "/StandaloneWindows64/";
-        //             }
-        //
-        //             break;
-        //         case RuntimePlatform.Android:
-        //             path = Application.persistentDataPath + "/Android/";
-        //             break;
-        //         case RuntimePlatform.IPhonePlayer:
-        //             path = Application.persistentDataPath + "/Ios/";
-        //             break;
-        //     }
-        //
-        //     return path;
-        // }
-        
-        // public static void CopyAb(string path,string path2,string key)
-        // {
-        //     var data = File.ReadAllBytes(path);
-        //     var encryptData=Encrypt(data, key);
-        //     var newName="encrypt"+Path.GetFileName(path);
-        //     File.WriteAllBytes(path2+"/"+newName,encryptData);
-        // }
-        
-        
-        //private string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
         
         /// <summary>
         /// AES加密
@@ -294,6 +189,8 @@ namespace FrameWork
             var type = assembly.GetType($"FrameWork.{className}.{className}");
             return type;
         }
+
+        
 
     }
 }

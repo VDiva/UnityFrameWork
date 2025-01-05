@@ -10,7 +10,7 @@ public class cs : MonoBehaviour
         Log();
     }
 
-    [Log]
+    
     public void Log()
     {
         Debug.Log("Hello World!");

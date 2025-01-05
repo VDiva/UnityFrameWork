@@ -19,34 +19,7 @@ namespace FrameWork
             CreateConfig(Application.streamingAssetsPath+AssetBundle.GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget));
         }
         
-        // [MenuItem("FrameWork/CreateConfig/CreateAbAndroidConfig")]
-        // public static void CreateAbAndroidConfig()
-        // {
-        //     CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.Android));
-        // }
-        //
-        // [MenuItem("FrameWork/CreateConfig/CreateAbWindowsConfig")]
-        // public static void CreateAbWindowsConfig()
-        // {
-        //     CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.WindowsPlayer));
-        // }
-        //
-        //
-        // [MenuItem("FrameWork/CreateConfig/CreateAbIosConfig")]
-        // public static void CreateAbIosConfig()
-        // {
-        //     CreateConfig(Application.streamingAssetsPath+Config.GetAbPath(RuntimePlatform.IPhonePlayer));
-        // }
-        //
-        //
-        // [MenuItem("FrameWork/CreateConfig/All")]
-        // public static void CreateAll()
-        // {
-        //     CreateAbWindowsConfig();
-        //     CreateAbAndroidConfig();
-        // }
         
-
         private static void CreateConfig(string path)
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
@@ -95,14 +68,14 @@ namespace FrameWork
                 {
                     Directory.CreateDirectory(Config.AbClassPath);
                 }
-                using (StreamWriter swMode=new StreamWriter(Config.AbClassPath+"/AssetAb.cs",false))
-                {
-                    swMode.WriteLine("namespace FrameWork\n{");
-                   // swMode.WriteLine("\tpublic static class AssetAb\n\t{");
-                    CheckDirectory(directoryInfo,swMode);
-                    swMode.WriteLine("\t}");
-                    //swMode.WriteLine("}");
-                }
+                // using (StreamWriter swMode=new StreamWriter(Config.AbClassPath+"/AssetAb.cs",false))
+                // {
+                //     swMode.WriteLine("namespace FrameWork\n{");
+                //    // swMode.WriteLine("\tpublic static class AssetAb\n\t{");
+                //     CheckDirectory(directoryInfo,swMode);
+                //     swMode.WriteLine("\t}");
+                //     //swMode.WriteLine("}");
+                // }
             }
             else
             {

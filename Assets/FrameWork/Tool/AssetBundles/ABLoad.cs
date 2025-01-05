@@ -11,8 +11,9 @@ namespace FrameWork
     {
         private static ConcurrentDictionary<string, AssetBundle> _assetBundles=new ConcurrentDictionary<string, AssetBundle>();
         //private static string abEndName = "info";
-        public static T LoadAsset<T>(string packName,string name) where T : Object
+        public static T LoadAsset<T>(string packName,string name,bool isMd5=true) where T : Object
         {
+            if(isMd5) packName = Tool.GetAbName(packName);
             AssetBundle assetBundle=null;
             //packName=GtePackName(packName,name);
             if (!_assetBundles.TryGetValue(packName,out assetBundle))
@@ -37,9 +38,9 @@ namespace FrameWork
         
         
         
-        public static void LoadAssetAsync<T>(string packName,string name,Action<T> action) where T : Object
+        public static void LoadAssetAsync<T>(string packName,string name,bool isMd5,Action<T> action) where T : Object
         {
-            
+            if(isMd5) packName = Tool.GetAbName(packName);
             AssetBundle assetBundle=null;
             //packName=GtePackName(packName,name);
             if (Application.platform!=RuntimePlatform.WebGLPlayer)
