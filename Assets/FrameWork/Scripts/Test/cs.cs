@@ -5,43 +5,23 @@ using FrameWork;
 using NetWorkClient;
 using Riptide.Utils;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class cs : MonoBehaviour
 {
+    public Image _image;
     private void Start()
     {
-        RiptideLogger.Initialize(Debug.Log,true);
-        NetClient.Start("127.0.0.1",8888);
-    }
-
-
-    private void FixedUpdate()
-    {
-        NetClient.Update();
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            NetClient.CreateRoom("爱吃大嘴巴子",4);
-        }
         
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            NetClient.LeaveRoom();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            NetClient.MatchingRoom();
-        }
+        GetImg();
     }
 
 
-    public void Log()
+    public async void GetImg()
     {
-        Debug.Log("Hello World!");
-        
+        var url = "https://w.wallhaven.cc/full/rr/wallhaven-rrmg11.jpg";
+        var texture=await RequestTool.Create(url, Methods.Get).SendTaskAsTexture();
+        _image.sprite = texture;
     }
+    
 }
