@@ -68,7 +68,9 @@ namespace NetWorkServer.Data
             var roomId=(ushort)objects[0];
             if (roomId!=_roomID)return;
             var msg = (Message)objects[1];
-            NetServer.Send(msg, _playerList.ToArray());
+            var m = MsgMrg.CreateMsg(msg.SendMode, RoomType.Retransmission);
+            m.AddMessage(msg);
+            NetServer.Send(m, _playerList.ToArray());
         }
         
         
@@ -83,6 +85,7 @@ namespace NetWorkServer.Data
             Console.WriteLine(connection.Id+":加入房间"+_roomName+_roomID);
             
             var msg = MsgMrg.CreateMsg(MessageSendMode.Reliable, RoomType.JoinRoom);
+            msg.AddUShort(_roomID);
             msg.AddUShort(connection.Id);
             NetServer.Send(msg, _playerList.ToArray());
             _curPlayerCount += 1;

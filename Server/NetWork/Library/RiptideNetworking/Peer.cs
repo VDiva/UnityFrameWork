@@ -95,15 +95,24 @@ namespace Riptide
         /// <returns>An array containing message handler methods.</returns>
         protected MethodInfo[] FindMessageHandlers()
         {
+            string[] assemblyName = new string[] { "HotUpdate", "Tool" }; 
             string thisAssemblyName = Assembly.GetExecutingAssembly().GetName().FullName;
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => a
                     .GetReferencedAssemblies()
-                    .Any(n => n.FullName == thisAssemblyName)) // Get only assemblies that reference this assembly
+                    .Any(n => n.FullName == thisAssemblyName|| assemblyName.Any((s => n.FullName.IndexOf(s)!=-1)))) // Get only assemblies that reference this assembly
                 .SelectMany(a => a.GetTypes())
                 .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)) // Include instance methods in the search so we can show the developer an error instead of silently not adding instance methods to the dictionary
                 .Where(m => m.GetCustomAttributes(typeof(MessageHandlerAttribute), false).Length > 0)
                 .ToArray();
+            
+            // var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            // Console.WriteLine("1");
+            // return assemblies
+            //     .SelectMany(a => a.GetTypes())
+            //     .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)) // Include instance methods in the search so we can show the developer an error instead of silently not adding instance methods to the dictionary
+            //     .Where(m => m.GetCustomAttributes(typeof(MessageHandlerAttribute), false).Length > 0)
+            //     .ToArray();
         }
 
         /// <summary>Builds a dictionary of message IDs and their corresponding message handler methods.</summary>

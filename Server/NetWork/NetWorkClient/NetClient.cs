@@ -1,13 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Library.Msg;
 using Riptide;
+using Riptide.Utils;
 
 namespace NetWorkClient
 {
     public static class NetClient
     {
-        private static Client _client;
+
+        public static Action<float> ServerUpdate;
+        public static Func<float> RunTime;
+        public static Action<ushort> JoinRoomAction;
+        public static Action<ushort> LeaveRoomAction;
         
+        
+        private static List<ushort> _clientIds = new List<ushort>();
+        
+        private static Client _client;
+        private static ushort _roomId;
         
         /// <summary>
         /// 链接成功
@@ -83,9 +95,46 @@ namespace NetWorkClient
             Send(msg);
         }
         
-        public static void Retransmission(ushort roomId,Message msg)
+        public static void Retransmission(Message msg)
         {
             Send(msg,false);
+        }
+        
+        
+        public static Message GetMessageHasRoomId(MessageSendMode messageSendMode,Enum id)
+        {
+            var msg = MsgMrg.CreateMsg(messageSendMode, id);
+            msg.AddUShort(_roomId);
+            return msg;
+        }
+
+        [MessageHandler((ushort)RoomType.JoinRoom)]
+        private static void JoinRoom(Message message)
+        {
+            _roomId=message.GetUShort();
+            _clientIds.Add(message.GetUShort());
+            RiptideLogger.Log(LogType.Info, $"JoinRoom({_roomId})");
+        }
+        
+        [MessageHandler((ushort)RoomType.LeaveRoom)]
+        public static void LeaveRoom(Message msg)
+        {
+            var id=msg.GetUShort();
+            LeaveRoomAction?.Invoke(id);
+            if (id==_client.Id)
+            {
+                _clientIds.Clear();
+            }
+            RiptideLogger.Log(LogType.Info, $"LeaveRoom({id})");
+        }
+
+        
+        
+        private static float _time;
+        [MessageHandler((ushort)MsgType.Update)]
+        private static void Update(Message message)
+        {
+            ServerUpdate?.Invoke(RunTime() - _time);
         }
     }
 }

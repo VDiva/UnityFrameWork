@@ -58,7 +58,7 @@ namespace NetWorkServer.Mrg
             var eventMsg = EventSystem.GetEventMsg();
             eventMsg.Add(roomId);
             eventMsg.Add(msg);
-            EventSystem.DispatchEvent(MsgType.Room,RoomType.Retransmission);
+            EventSystem.DispatchEvent(MsgType.Room,RoomType.Retransmission,eventMsg);
         }
     }
 }

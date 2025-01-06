@@ -66,11 +66,11 @@ namespace NetWorkServer
             return null;
         }
         
-        public static void Send(Message msg,ushort[] clientId)
+        public static void Send(Message msg,ushort[] clientId,bool reliable=true)
         {
             for (int i = 0; i < clientId.Length; i++)
             {
-                _server.Send(msg, clientId[i]);
+                _server.Send(msg, clientId[i],reliable);
             }
         }
         
