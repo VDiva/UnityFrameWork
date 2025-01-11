@@ -3,7 +3,7 @@
 /Library
 /obj
 /Temp
-*.csproj
+/*.csproj
 *.meta
 /Logs
 /Logs
