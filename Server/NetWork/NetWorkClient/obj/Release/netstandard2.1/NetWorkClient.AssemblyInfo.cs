@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NetWorkClient")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f2733a61fe493e1471194f72bb8f985c0c9ce03")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7162cc386f9e5467bf9ae606a7808507a8d117f2")]
 [assembly: System.Reflection.AssemblyProductAttribute("NetWorkClient")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NetWorkClient")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
