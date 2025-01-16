@@ -10,10 +10,11 @@ namespace NetWorkClient
     public static class NetClient
     {
 
-        public static Action<float> ServerUpdate;
-        public static Func<float> RunTime;
-        public static Action<ushort> JoinRoomAction;
-        public static Action<ushort> LeaveRoomAction;
+        public static Func<float> RunTime; 
+        public static Action<float> ServerUpdate; //服务器更新帧
+        public static Action<ushort> JoinRoomAction; //加入房间
+        public static Action<ushort> LeaveRoomAction; //离开房间
+        public static Action<Message> RetransmissionAction; //房间消息
         
         
         private static List<ushort> _clientIds = new List<ushort>();
@@ -56,7 +57,7 @@ namespace NetWorkClient
             _client.MessageReceived += MessageReceived;
             _client.Disconnected += Disconnected;
             _client.Connect(ip+":"+port);
-        }
+        } 
         
         public static void Update()
         {
@@ -100,6 +101,15 @@ namespace NetWorkClient
             Send(msg,false);
         }
         
+        public static ushort GetClientId()
+        {
+            return _client.Id;
+        }
+        
+        public static List<ushort> GetClientIds()
+        {
+            return _clientIds;
+        }
         
         public static Message GetMessageHasRoomId(MessageSendMode messageSendMode,Enum id)
         {
@@ -134,7 +144,15 @@ namespace NetWorkClient
         [MessageHandler((ushort)MsgType.Update)]
         private static void Update(Message message)
         {
-            ServerUpdate?.Invoke(RunTime() - _time);
+            var curTime = RunTime();
+            ServerUpdate?.Invoke(curTime- _time);
+            _time=curTime;
+        }
+        
+        [MessageHandler((ushort)RoomType.Retransmission)]
+        private static void RetransmissionMsg(Message message)
+        {
+            RetransmissionAction?.Invoke(message);
         }
     }
 }
