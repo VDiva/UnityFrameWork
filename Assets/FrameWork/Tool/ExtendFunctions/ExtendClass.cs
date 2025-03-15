@@ -20,7 +20,26 @@ namespace FrameWork
                 mono.GetGameObject().SetActive(active);
             }
         }
+        
+        public static void SetActiveAsCheck(this GameObject mono, bool active)
+        {
+            if (mono.activeSelf!=active)
+            {
+                mono.SetActive(active);
+            }
+        }
 
 
+        
+        public static void HideChild(this Transform tran,int count)
+        {
+            for (int i = 0; i < tran.childCount; i++)
+            {
+                if (i>=count)
+                {
+                    tran.GetChild(i).gameObject.SetActiveAsCheck(false);
+                }
+            }
+        }
     }
 }

@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace FrameWork
 {
-    public class Tool
+    public static class Tool
     {
         
         public static string GetAbName(string name)
@@ -189,8 +189,5 @@ namespace FrameWork
             var type = assembly.GetType($"FrameWork.{className}.{className}");
             return type;
         }
-
-        
-
     }
 }

@@ -15,7 +15,7 @@ namespace FrameWork
         private RectTransform _scrollRectTransform;
         private Action<int,GameObject> _scrollItemCallback;
         private int _count;
-
+        public bool isInit;
         
         private void Awake()
         {
@@ -32,8 +32,24 @@ namespace FrameWork
             _scrollRect.onValueChanged.AddListener(OnValueChanged);
         }
 
+
+        public void Init()
+        {
+            for (int i = _fistIndex; i <= _lastIndex; i++)
+            {
+                Transform tran = null;
+                if (i < _scrollRect.content.childCount)
+                    tran = _scrollRect.content.GetChild(i);
+                else
+                    tran = GameObject.Instantiate(prefab, _scrollRect.content).transform;
+                tran.localPosition = GetItemPos(i);
+                _scrollItemCallback?.Invoke(i,tran.gameObject);
+            }
+        }
+
         public void Init(int count,Action<int,GameObject> callback=null)
         {
+            isInit=true;
             _count = count;
             _scrollItemCallback = callback;
             float c = _count;
