@@ -11,5 +11,15 @@ using UnityEngine.UI;
 
 public class cs : MonoBehaviour
 {
-    
+    private void Awake()
+    {
+        
+    }
+
+    [Log]
+    public void wfaa()
+    {
+        
+        Debug.Log("2");
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using NetWorkClient;
 using Riptide;
 using UnityEngine;
@@ -13,6 +14,28 @@ namespace FrameWork.Plugins.Net
         public virtual void Awake()
         {
             _identity = GetComponent<Identity>();
+
+            var methodInfos=GetType().GetMethods();
+            for (int i = 0; i < methodInfos.Length; i++)
+            {
+                if (methodInfos[i].GetCustomAttribute<NetToServerAttribute>()!=null)
+                {
+                    
+                }else if (methodInfos[i].GetCustomAttribute<NetToClientAttribute>()!=null)
+                {
+                    
+                }
+            }
+            
+            var fieldInfos = GetType().GetFields();
+
+            for (int i = 0; i < fieldInfos.Length; i++)
+            {
+                if (methodInfos[i].GetCustomAttribute<NetSyncValueAttribute>()!=null)
+                {
+                    
+                }
+            }
         }
 
         public virtual void OnEnable()
