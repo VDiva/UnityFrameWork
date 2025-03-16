@@ -114,7 +114,7 @@ namespace FrameWork
                     {
                         Progress?.Invoke(1,size);
                         var texture= ((DownloadHandlerTexture)www.downloadHandler).texture;
-                        data?.Invoke(Sprite.Create(texture,new Rect(0, 0, texture.width, texture.height), Vector2.zero));
+                        data?.Invoke(Sprite.Create(texture,new Rect(0, 0, texture.width, texture.height), Vector2.zero,48,0,SpriteMeshType.FullRect));
                     }
                     
                 }
@@ -188,7 +188,7 @@ namespace FrameWork
                     {
                         Progress?.Invoke(1,size);
                         var texture= ((DownloadHandlerTexture)www.downloadHandler).texture;
-                        tcs.SetResult(Sprite.Create(texture,new Rect(0, 0, texture.width, texture.height), Vector2.zero));
+                        tcs.SetResult(Sprite.Create(texture,new Rect(0, 0, texture.width, texture.height), Vector2.zero,48,0,SpriteMeshType.FullRect));
                     }
                     
                 }

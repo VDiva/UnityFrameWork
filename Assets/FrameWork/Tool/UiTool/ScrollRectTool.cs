@@ -25,6 +25,7 @@ namespace FrameWork
                 prefab=_scrollRect.content.GetChild(0).gameObject;
             }
             _prefabRect=prefab.GetComponent<RectTransform>();
+            _prefabRect.pivot = new Vector2(0.5f, 1);
             _scrollRectTransform = _scrollRect.GetComponent<RectTransform>();
             _scrollRect.horizontal=false;
             _scrollRect.vertical = true;
@@ -56,12 +57,13 @@ namespace FrameWork
             _scrollRect.content.pivot = new Vector2(0.5f,1);
             var width=(_prefabRect.rect.width+space)*horCount;
             var height=(_prefabRect.rect.height+space)*(c/horCount);
-            height += _prefabRect.sizeDelta.y;
+            //height += _prefabRect.sizeDelta.y;
             
             
             _scrollRect.content.sizeDelta=new Vector2(width,height);
             OnValueChanged(Vector2.zero);
             int spawnCount = (int)(_scrollRectTransform.sizeDelta.y / _prefabRect.sizeDelta.y+1)*horCount;
+            spawnCount = Mathf.Min(spawnCount, count);
             for (int i = 0; i < spawnCount; i++)
             {
                 Transform tran = null;
@@ -87,13 +89,13 @@ namespace FrameWork
             {
                 var item = _scrollRect.content.GetChild(i);
                 var loc=_scrollRect.viewport.InverseTransformPoint(item.position);
-                if (i==0)
-                {
-                    Debug.Log(loc+"---"+_scrollRectTransform.sizeDelta+"--"+_fistIndex+"--"+_lastIndex);
-                }
+                // if (i==0)
+                // {
+                //     Debug.Log(loc+"---"+_scrollRectTransform.sizeDelta+"--"+_fistIndex+"--"+_lastIndex);
+                // }
                 if (isUp)
                 {
-                    if (_lastIndex>=_count)return;
+                    if (_lastIndex>=_count-1)return;
                     if (loc.y> _prefabRect.sizeDelta.y)
                     {
                         _fistIndex += 1;
