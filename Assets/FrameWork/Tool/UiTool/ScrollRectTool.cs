@@ -31,52 +31,67 @@ namespace FrameWork
             _scrollRect.vertical = true;
             _scrollRect.content.pivot = new Vector2(0.5f,1);
             _scrollRect.onValueChanged.AddListener(OnValueChanged);
+            //_scrollRect.content.SetActive(false);
         }
 
-
-        public void Init()
+        public void MoveTo(int index)
         {
-            for (int i = _fistIndex; i <= _lastIndex; i++)
+            int startCount = index;
+            _lastLoc=GetItemPos(startCount);
+            _fistIndex = index;
+            _lastIndex=index+_spawnCount-1;
+            _scrollRect.content.anchoredPosition = new Vector2(0, -_lastLoc.y);
+            for (int i = 0; i < _spawnCount; i++)
             {
+                var j = startCount + i;
                 Transform tran = null;
-                if (i < _scrollRect.content.childCount)
-                    tran = _scrollRect.content.GetChild(i);
+                if (i < _content.childCount)
+                    tran = _content.GetChild(i);
                 else
-                    tran = GameObject.Instantiate(prefab, _scrollRect.content).transform;
-                tran.localPosition = GetItemPos(i);
-                _scrollItemCallback?.Invoke(i,tran.gameObject);
+                    tran = GameObject.Instantiate(prefab, _content).transform;
+                tran.localPosition = GetItemPos(j);
+                _scrollItemCallback?.Invoke(j,tran.gameObject);
+                tran.SetActive(true);
             }
-        }
 
-        public void Init(int count,Action<int,GameObject> callback=null)
+        }
+        
+
+        private int _spawnCount;
+        private RectTransform _content;
+        public void Init(int count,Action<int,GameObject> callback)
         {
-            isInit=true;
             _count = count;
+            _content = _scrollRect.content;
             _scrollItemCallback = callback;
             float c = _count;
-            _scrollRect.content.pivot = new Vector2(0.5f,1);
+            _content.pivot = new Vector2(0.5f,1);
             var width=(_prefabRect.rect.width+space)*horCount;
             var height=(_prefabRect.rect.height+space)*(c/horCount);
-            //height += _prefabRect.sizeDelta.y;
-            
-            
-            _scrollRect.content.sizeDelta=new Vector2(width,height);
-            OnValueChanged(Vector2.zero);
+            _content.sizeDelta=new Vector2(width,height);
             int spawnCount = (int)(_scrollRectTransform.sizeDelta.y / _prefabRect.sizeDelta.y+1)*horCount;
             spawnCount = Mathf.Min(spawnCount, count);
+            _spawnCount = spawnCount;
+            Tool.HideAllChild(_content);
             for (int i = 0; i < spawnCount; i++)
             {
                 Transform tran = null;
-                if (i < _scrollRect.content.childCount)
-                    tran = _scrollRect.content.GetChild(i);
+                if (i < _content.childCount)
+                    tran = _content.GetChild(i);
                 else
-                    tran = GameObject.Instantiate(prefab, _scrollRect.content).transform;
+                    tran = GameObject.Instantiate(prefab, _content).transform;
                 tran.localPosition = GetItemPos(i);
                 _scrollItemCallback?.Invoke(i,tran.gameObject);
+                tran.SetActive(true);
             }
 
+            _content.offsetMin = new Vector2(0, _content.offsetMin.y);
+            _content.offsetMax = new Vector2(0, _content.offsetMax.y);
+            _content.anchoredPosition=Vector2.zero;
+            _lastLoc = Vector2.zero;
             _fistIndex = 0;
             _lastIndex=spawnCount-1;
+            isInit=true;
         }
         
         private Vector2 _lastLoc;
