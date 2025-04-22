@@ -17,17 +17,17 @@ namespace FrameWork
         
         public static List<string> paths = new List<string>();
 
-        public static ConfigData ConfigData;
+        //public static ConfigData ConfigData;
         public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
         {
-            ConfigData=Resources.Load<ConfigData>("ConfigData");
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
             MyLog.LogWarning("导入");
-            if (!Directory.Exists(ConfigData.xlsxPath))
+            if (!Directory.Exists(configData.xlsxPath))
             {
-                Directory.CreateDirectory(ConfigData.xlsxPath);
+                Directory.CreateDirectory(configData.xlsxPath);
                 return;
             }
-            if (!ctx.assetPath.StartsWith(ConfigData.xlsxPath)) return;
+            if (!ctx.assetPath.StartsWith(configData.xlsxPath)) return;
             var path = ctx.assetPath;
             var fileName = Path.GetFileNameWithoutExtension(path);
             if (fileName.StartsWith("~$")) return;
@@ -60,7 +60,19 @@ namespace FrameWork
         [MenuItem("FrameWork/配置表/生成所有配置表代码")]
         public static void SpawnAllXlsx()
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(ExcelTool.ConfigData.xlsxPath);
+            
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
+            
+            if (!Directory.Exists(configData.xlsxPath))
+            {
+                MyLog.LogError(configData.xlsxPath+"---路径不存在");
+                return;
+            }
+            
+            DirectoryInfo directoryInfo = new DirectoryInfo(configData.xlsxPath);
+
+            
+            
             var  files=directoryInfo.GetFiles();
             for (int i = 0; i < files.Length; i++)
             {
@@ -81,6 +93,7 @@ namespace FrameWork
 
         private static void Spawn()
         {
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
             for (int i = 0; i < ExcelTool.paths.Count; i++)
             {
                 var dataSet=GetTabelData(ExcelTool.paths[i]);
@@ -114,7 +127,7 @@ namespace FrameWork
                     }
                 }
 
-                var outPath = Config.IsAb ? ExcelTool.ConfigData.xlsxOutPath : ExcelTool.ConfigData.xlsxOutResourcesPath;
+                var outPath = Config.IsAb ? configData.xlsxOutPath : configData.xlsxOutResourcesPath;
                 
                 if (!Directory.Exists(outPath))
                 {
@@ -132,7 +145,7 @@ namespace FrameWork
             if (Config.IsAb)
             {
                 ABConfig.AssetPackaged();
-                var fileInfo = Directory.GetFiles(ExcelTool.ConfigData.xlsxOutPath).Select((s => Path.GetFileNameWithoutExtension(s))).ToList();
+                var fileInfo = Directory.GetFiles(configData.xlsxOutPath).Select((s => Path.GetFileNameWithoutExtension(s))).ToList();
 
                 for (int i = 0; i < fileInfo.Count; i++)
                 {
@@ -159,12 +172,13 @@ namespace FrameWork
 
         private static void SpawnKey(string fileName,DataRowCollection coll)
         {
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
             var xlsxName = fileName.Split('_')[1];
             var xlsxKeyName = "Xlsx_"+xlsxName+"_Key";
             var xlsxTypeName = "Xlsx_"+xlsxName+"_Type";
             HashSet<string> key = new HashSet<string>();
 
-            var outPath = ExcelTool.ConfigData.xlsxOutScriptPath;
+            var outPath = configData.xlsxOutScriptPath;
             
             if (!Directory.Exists(outPath))
             {
@@ -207,11 +221,12 @@ namespace FrameWork
         private static StringBuilder _queryClassBuilder = new StringBuilder();
         public static void SpawnQueryClass(string fileName,List<object> row,List<object> row2)
         {
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
             _queryClassBuilder.Clear();
             var xlsxName = fileName.Split('_')[1];
             var xlsxQueryName = fileName+"_Query";
 
-            var outPath = ExcelTool.ConfigData.xlsxOutScriptPath;
+            var outPath = configData.xlsxOutScriptPath;
             
             if (!Directory.Exists(outPath))
             {
@@ -283,8 +298,9 @@ namespace FrameWork
         private static StringBuilder _classBuilder = new StringBuilder();
         public static void SpawnClass(string fileName,List<List<object>> book)
         {
+            var configData=Resources.Load<ConfigData>("ConfigData");
             _classBuilder.Clear();
-            var outPath = ExcelTool.ConfigData.xlsxOutScriptPath;
+            var outPath = configData.xlsxOutScriptPath;
 
             if (!Directory.Exists(outPath))
             {
