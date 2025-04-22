@@ -21,6 +21,14 @@ namespace FrameWork
             }
         }
         
+        public static void SetActive(this Transform mono, bool active)
+        {
+            if (mono.gameObject.activeSelf!=active)
+            {
+                mono.gameObject.SetActive(active);
+            }
+        }
+        
         public static void SetActiveAsCheck(this GameObject mono, bool active)
         {
             if (mono.activeSelf!=active)

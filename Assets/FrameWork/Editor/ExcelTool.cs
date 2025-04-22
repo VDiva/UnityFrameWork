@@ -14,12 +14,7 @@ namespace FrameWork
     [UnityEditor.AssetImporters.ScriptedImporter(1, ".xlsx")]
     public class ExcelTool:UnityEditor.AssetImporters.ScriptedImporter
     {
-        // public static string xlsxPath = _configData.XlsxPath;
-        // public static string xlsxOutPath = _configData.XlsxOutPath;
-        //
-        // public static string xlsxOutResourcesPath = Config.XlsxOutResourcesPath;
-        //
-        // public static string xlsxOutScriptPath = Config.XlsxOutScriptPath;
+        
         public static List<string> paths = new List<string>();
 
         public static ConfigData ConfigData;
@@ -55,83 +50,111 @@ namespace FrameWork
             
             if (EditorUtility.DisplayDialog("信息", "检测到有表格内容发生改变，是否重新转换", "是", "否"))
             {
-                for (int i = 0; i < ExcelTool.paths.Count; i++)
-                {
-                    var dataSet=GetTabelData(ExcelTool.paths[i]);
-                    var table = dataSet.Tables[0];
-                    var name = "Xlsx_"+Path.GetFileNameWithoutExtension(ExcelTool.paths[i]);
-                    _rows.Clear();
-                    var colNum = table.Columns.Count;
-                    var rowNum = table.Rows.Count;
-                    if (colNum == 0 || rowNum == 0)
-                        continue;
-                    _stringBuilder.Clear();
-                    _rows.Add(table.Rows[0].ItemArray.ToList());
-                    _rows.Add(table.Rows[1].ItemArray.ToList());
-                    _rows.Add(table.Rows[2].ItemArray.ToList());
-                    SpawnKey(name,table.Rows);
-                    SpawnClass(name,_rows);
-                    SpawnQueryClass(name,table.Rows[1].ItemArray.ToList(),table.Rows[2].ItemArray.ToList());
-                    for (int k = 0; k < rowNum; k++)
-                    {
-                        var items = table.Rows[k].ItemArray;
-                        for (int j = 0; j < items.Length; j++)
-                        {
-                            if (j==items.Length-1)
-                            {
-                                _stringBuilder.Append(items[j].ToString()+"\n");
-                            }
-                            else
-                            {
-                                _stringBuilder.Append(items[j].ToString()+"|");
-                            }
-                        }
-                    }
-
-                    var outPath = Config.IsAb ? ExcelTool.ConfigData.xlsxOutPath : ExcelTool.ConfigData.xlsxOutResourcesPath;
-                    
-                    if (!Directory.Exists(outPath))
-                    {
-                        Directory.CreateDirectory(outPath);
-                    }
-                    using (StreamWriter sw=new StreamWriter(outPath+"\\"+name+".txt",false))
-                    {
-                        MyLog.Log("写入");
-                        sw.Write(_stringBuilder);
-                    }
-                    
-                    MyLog.Log(ExcelTool.paths[i]);
-                }
-                MyLog.Log("更新");
-                if (Config.IsAb)
-                {
-                    ABConfig.AssetPackaged();
-                    var fileInfo = Directory.GetFiles(ExcelTool.ConfigData.xlsxOutPath).Select((s => Path.GetFileNameWithoutExtension(s))).ToList();
-
-                    for (int i = 0; i < fileInfo.Count; i++)
-                    {
-                        AssetBundle.DeleteAb(Tool.GetMd5AsString(fileInfo[i]));
-                    }
-                    
-                    Mono.Instance.Frame((() =>
-                    {
-                        AssetBundle.CreatAssetBundle();
-                        var go =GameObject.FindObjectOfType<Mono>();
-                        if (go!=null)
-                        {
-                            GameObject.Destroy(go.gameObject);
-                        }
-                    }));
-                    
-                    
-                }
-                else
-                {
-                    ABConfig.AssetPackaged();
-                }
-                
+                Spawn();
             }
             ExcelTool.paths.Clear();
+        }
+
+        
+        
+        [MenuItem("FrameWork/配置表/生成所有配置表代码")]
+        public static void SpawnAllXlsx()
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(ExcelTool.ConfigData.xlsxPath);
+            var  files=directoryInfo.GetFiles();
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                var path = file.FullName;
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                if (fileName.StartsWith("~$")) continue;
+                if (Path.GetExtension(path)!=".xlsx")continue;
+                ExcelTool.paths.Add(path); //添加到待转换列表里 等待资源加载完成后转换   
+            }
+            if (ExcelTool.paths == null
+                || ExcelTool.paths.Count == 0) return;
+            
+            Spawn();
+            ExcelTool.paths.Clear();
+        }
+        
+
+        private static void Spawn()
+        {
+            for (int i = 0; i < ExcelTool.paths.Count; i++)
+            {
+                var dataSet=GetTabelData(ExcelTool.paths[i]);
+                var table = dataSet.Tables[0];
+                var name = "Xlsx_"+Path.GetFileNameWithoutExtension(ExcelTool.paths[i]);
+                _rows.Clear();
+                var colNum = table.Columns.Count;
+                var rowNum = table.Rows.Count;
+                if (colNum == 0 || rowNum == 0)
+                    continue;
+                _stringBuilder.Clear();
+                _rows.Add(table.Rows[0].ItemArray.ToList());
+                _rows.Add(table.Rows[1].ItemArray.ToList());
+                _rows.Add(table.Rows[2].ItemArray.ToList());
+                SpawnKey(name,table.Rows);
+                SpawnClass(name,_rows);
+                SpawnQueryClass(name,table.Rows[1].ItemArray.ToList(),table.Rows[2].ItemArray.ToList());
+                for (int k = 0; k < rowNum; k++)
+                {
+                    var items = table.Rows[k].ItemArray;
+                    for (int j = 0; j < items.Length; j++)
+                    {
+                        if (j==items.Length-1)
+                        {
+                            _stringBuilder.Append(items[j].ToString()+"\n");
+                        }
+                        else
+                        {
+                            _stringBuilder.Append(items[j].ToString()+"|");
+                        }
+                    }
+                }
+
+                var outPath = Config.IsAb ? ExcelTool.ConfigData.xlsxOutPath : ExcelTool.ConfigData.xlsxOutResourcesPath;
+                
+                if (!Directory.Exists(outPath))
+                {
+                    Directory.CreateDirectory(outPath);
+                }
+                using (StreamWriter sw=new StreamWriter(outPath+"\\"+name+".txt",false))
+                {
+                    MyLog.Log("写入");
+                    sw.Write(_stringBuilder);
+                }
+                
+                MyLog.Log(ExcelTool.paths[i]);
+            }
+            MyLog.Log("更新");
+            if (Config.IsAb)
+            {
+                ABConfig.AssetPackaged();
+                var fileInfo = Directory.GetFiles(ExcelTool.ConfigData.xlsxOutPath).Select((s => Path.GetFileNameWithoutExtension(s))).ToList();
+
+                for (int i = 0; i < fileInfo.Count; i++)
+                {
+                    AssetBundle.DeleteAb(Tool.GetMd5AsString(fileInfo[i]));
+                }
+                
+                Mono.Instance.Frame((() =>
+                {
+                    AssetBundle.CreatAssetBundle();
+                    var go =GameObject.FindObjectOfType<Mono>();
+                    if (go!=null)
+                    {
+                        GameObject.Destroy(go.gameObject);
+                    }
+                }));
+                
+                
+            }
+            else
+            {
+                ABConfig.AssetPackaged();
+            }
         }
 
         private static void SpawnKey(string fileName,DataRowCollection coll)

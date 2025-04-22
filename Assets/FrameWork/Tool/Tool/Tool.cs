@@ -189,5 +189,13 @@ namespace FrameWork
             var type = assembly.GetType($"FrameWork.{className}.{className}");
             return type;
         }
+        
+        public static void HideAllChild(Transform transform)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                transform.GetChild(i).SetActive(false);
+            }
+        }
     }
 }
