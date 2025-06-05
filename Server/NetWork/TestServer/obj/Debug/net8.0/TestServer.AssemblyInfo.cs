@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("NetWorkClient")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("TestServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+58afce5167a38c91db5024596e31367b23bea04d")]
-[assembly: System.Reflection.AssemblyProductAttribute("NetWorkClient")]
-[assembly: System.Reflection.AssemblyTitleAttribute("NetWorkClient")]
+[assembly: System.Reflection.AssemblyProductAttribute("TestServer")]
+[assembly: System.Reflection.AssemblyTitleAttribute("TestServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // 由 MSBuild WriteCodeFragment 类生成。

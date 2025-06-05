@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj": {}
+    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj": {}
   },
   "projects": {
-    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
+    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
+        "projectUniqueName": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
         "projectName": "Library",
-        "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
-        "packagesPath": "C:\\Users\\smr\\.nuget\\packages\\",
-        "outputPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\obj\\",
+        "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
+        "packagesPath": "C:\\Users\\redraingame21\\.nuget\\packages\\",
+        "outputPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\redraingame21\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.1"
@@ -32,11 +32,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -62,17 +57,17 @@
         }
       }
     },
-    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj": {
+    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj",
+        "projectUniqueName": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj",
         "projectName": "NetWorkClient",
-        "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj",
-        "packagesPath": "C:\\Users\\smr\\.nuget\\packages\\",
-        "outputPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\obj\\",
+        "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\NetWorkClient.csproj",
+        "packagesPath": "C:\\Users\\redraingame21\\.nuget\\packages\\",
+        "outputPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkClient\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\redraingame21\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.1"
@@ -84,8 +79,8 @@
           "netstandard2.1": {
             "targetAlias": "netstandard2.1",
             "projectReferences": {
-              "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
-                "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj"
+              "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
+                "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj"
               }
             }
           }
@@ -94,11 +89,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
