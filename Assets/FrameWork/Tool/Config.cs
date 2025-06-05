@@ -116,6 +116,7 @@ namespace FrameWork
                     break;
             }
 
+            path += _configData.versions + "/";
             return path;
         }
         
@@ -139,7 +140,7 @@ namespace FrameWork
                     path = Application.persistentDataPath + "/WebGl/";
                     break;
             }
-
+            path += _configData.versions + "/";
             return path;
         }
         
@@ -163,7 +164,7 @@ namespace FrameWork
                     path = "/WebGl/";
                     break;
             }
-
+            path += _configData.versions + "/";
             return path;
         }
         

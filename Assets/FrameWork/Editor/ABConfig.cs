@@ -68,14 +68,7 @@ namespace FrameWork
                 {
                     Directory.CreateDirectory(Config.AbClassPath);
                 }
-                // using (StreamWriter swMode=new StreamWriter(Config.AbClassPath+"/AssetAb.cs",false))
-                // {
-                //     swMode.WriteLine("namespace FrameWork\n{");
-                //    // swMode.WriteLine("\tpublic static class AssetAb\n\t{");
-                //     CheckDirectory(directoryInfo,swMode);
-                //     swMode.WriteLine("\t}");
-                //     //swMode.WriteLine("}");
-                // }
+                CheckDirectory(directoryInfo);
             }
             else
             {
@@ -123,7 +116,7 @@ namespace FrameWork
         
 
         
-        private static void CheckFileInfo(FileInfo fileInfo,StreamWriter sw,string abName="other")
+        private static void CheckFileInfo(FileInfo fileInfo,string abName="other")
         {
             var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
             var unityPath=path.Split(new string[]{"Assets"},StringSplitOptions.None);
@@ -131,36 +124,32 @@ namespace FrameWork
             if (ai==null)return;
             
             var id = Tool.GetMd5AsString(Path.GetFileNameWithoutExtension(path));
-            sw.WriteLine($"\t\t\tpublic static string {fileInfo.Name.Split('.')[0]} = \"{id}\";");
             ai.assetBundleName = id;
             ai.assetBundleVariant = Config.AbEndName;
             
             
         }
         
-        private static void CheckDirectory(DirectoryInfo directoryInfo,StreamWriter sw, string abName = "")
+        private static void CheckDirectory(DirectoryInfo directoryInfo, string abName = "")
         {
 
             var fileInfos = directoryInfo.GetFiles();
             var directoryInfos = directoryInfo.GetDirectories();
-            if (!string.IsNullOrEmpty(abName))sw.WriteLine($"\t\tpublic static class {abName}\n"+"\t\t{");
-            foreach (var item in fileInfos)
-            {
-                if (item.Extension != ".meta")
-                {
-                    CheckFileInfo(item,sw, abName);
-                }
-            }
-            if (!string.IsNullOrEmpty(abName))sw.WriteLine("\t\t}");
             
             foreach (var item in directoryInfos)
             {
                 var str = item.FullName.Split(new string[] { "Asset\\" }, StringSplitOptions.None)[1].Replace("\\", "_");
                 //_stringBuilder.AppendLine("\t\t"+str+",");
-                CheckDirectory(item,sw, str);
+                CheckDirectory(item, str);
             }
             
-            
+            foreach (var item in fileInfos)
+            {
+                if (item.Extension!=".meta")
+                {
+                    CheckFileInfo(item,abName);
+                }
+            }
             
             
         }

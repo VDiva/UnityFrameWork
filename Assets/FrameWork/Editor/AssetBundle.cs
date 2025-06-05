@@ -138,6 +138,7 @@ namespace FrameWork
         
         public static string GetAbDictoryPath(BuildTarget platform)
         {
+            var configData=Resources.Load<ConfigData>("ConfigData");
             string path = "";
             //RuntimePlatform platform = platform;
             switch (platform)
@@ -156,7 +157,7 @@ namespace FrameWork
                     path = "/WebGl/";
                     break;
             }
-
+            path += configData.versions + "/";
             return path;
         }
 

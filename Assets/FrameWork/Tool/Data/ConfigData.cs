@@ -7,6 +7,11 @@ namespace FrameWork
     [CreateAssetMenu(fileName = "ConfigData", menuName = "FrameWork/CreateConfigData")]
     public class ConfigData: ScriptableObject
     {
+
+        /// <summary>
+        /// 游戏版本
+        /// </summary>
+        public string versions="1.0.0";
         /// <summary>
         /// 是否是ab包方式 不是则是resources方式
         /// </summary>
@@ -55,19 +60,6 @@ namespace FrameWork
         /// 热更新dll
         /// </summary>
         public string[] dlls = new String[] { "HotUpdate.dll"};
-        
-        
-        // public string dataPath = Application.dataPath.Replace("Assets", "");
-        //
-        //  /// <summary>
-        //  /// 热更新dll目录
-        //  /// </summary>
-        //  public string dllPath = dataPath+"\\HybridCLRData\\HotUpdateDlls\\";
-        //
-        //  /// <summary>
-        //  /// 热更新dll复制目录
-        //  /// </summary>
-        //  public string dllCopyPath = dataPath+"\\Assets\\FrameWork\\Asset\\Dll\\";
         
         /// <summary>
         /// 热更新下载地址

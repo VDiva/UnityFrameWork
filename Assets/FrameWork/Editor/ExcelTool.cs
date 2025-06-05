@@ -20,7 +20,7 @@ namespace FrameWork
         //public static ConfigData ConfigData;
         public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
         {
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/FrameWork/Resources/ConfigData.asset");
             MyLog.LogWarning("导入");
             if (!Directory.Exists(configData.xlsxPath))
             {
@@ -61,7 +61,7 @@ namespace FrameWork
         public static void SpawnAllXlsx()
         {
             
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/FrameWork/Resources/ConfigData.asset");
             
             if (!Directory.Exists(configData.xlsxPath))
             {
@@ -93,7 +93,7 @@ namespace FrameWork
 
         private static void Spawn()
         {
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/FrameWork/Resources/ConfigData.asset");
             for (int i = 0; i < ExcelTool.paths.Count; i++)
             {
                 var dataSet=GetTabelData(ExcelTool.paths[i]);
@@ -171,7 +171,7 @@ namespace FrameWork
 
         private static void SpawnKey(string fileName,DataRowCollection coll)
         {
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/FrameWork/Resources/ConfigData.asset");
             var xlsxName = fileName.Split('_')[1];
             var xlsxKeyName = "Xlsx_"+xlsxName+"_Key";
             var xlsxTypeName = "Xlsx_"+xlsxName+"_Type";
@@ -220,7 +220,7 @@ namespace FrameWork
         private static StringBuilder _queryClassBuilder = new StringBuilder();
         public static void SpawnQueryClass(string fileName,List<object> row,List<object> row2)
         {
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/Resources/ConfigData.asset");
+            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/FrameWork/Resources/ConfigData.asset");
             _queryClassBuilder.Clear();
             var xlsxName = fileName.Split('_')[1];
             var xlsxQueryName = fileName+"_Query";
