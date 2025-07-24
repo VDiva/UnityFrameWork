@@ -1,4 +1,5 @@
 ﻿using System;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,10 +38,35 @@ namespace FrameWork
         public void MoveTo(int index)
         {
             int startCount = index;
-            _lastLoc=GetItemPos(startCount);
-            _fistIndex = index;
-            _lastIndex=index+_spawnCount-1;
-            _scrollRect.content.anchoredPosition = new Vector2(0, -_lastLoc.y);
+
+
+            int maxCount = (int)(_count - (_spawnCount-1));
+            int minCount = (int)((_spawnCount-1));
+            if (startCount<=maxCount&& startCount>=minCount)
+            {
+                startCount =index- Mathf.FloorToInt( (_spawnCount-1) / 2f);
+            }else if (startCount>=_count-_spawnCount)
+            {
+                startCount = _count - _spawnCount;
+            }else if (startCount<(_spawnCount-1))
+            {
+                startCount = 0;
+            }
+            
+            _lastLoc=-GetItemPos(startCount);
+            _fistIndex = startCount;
+            _lastIndex=startCount+_spawnCount-1;
+            _scrollRect.content.anchoredPosition = new Vector2(0, _lastLoc.y);
+            if (index>_count-(_spawnCount-1))
+            {
+                _scrollRect.verticalNormalizedPosition = 0;
+            }
+            
+            // if (index<_spawnCount-1)
+            // {
+            //     _scrollRect.verticalNormalizedPosition = 1;
+            // }
+            
             for (int i = 0; i < _spawnCount; i++)
             {
                 var j = startCount + i;
@@ -56,7 +82,6 @@ namespace FrameWork
 
         }
         
-
         private int _spawnCount;
         private RectTransform _content;
         public void Init(int count,Action<int,GameObject> callback)
@@ -97,7 +122,7 @@ namespace FrameWork
         private Vector2 _lastLoc;
         private int _fistIndex;
         private int _lastIndex;
-        private void OnValueChanged(Vector2 pos)
+        public void OnValueChanged(Vector2 pos)
         {
             bool isUp = _scrollRect.content.localPosition.y > _lastLoc.y;
             for (int i = 0; i < _scrollRect.content.childCount; i++)
@@ -136,7 +161,16 @@ namespace FrameWork
 
             _lastLoc = _scrollRect.content.localPosition;
         }
-        
+
+
+        // public void InitLoc()
+        // {
+        //     var loc = _lastLoc;
+        //     while (!Mathf.Approximately(loc.x,_scrollRect.content.localPosition.x)|| !Mathf.Approximately(loc.y,_scrollRect.content.localPosition.y))
+        //     {
+        //         OnValueChanged(Vector2.zero);
+        //     }
+        // }
         
         public Vector2 GetItemPos(int index)
         {
