@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj": {}
+    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj": {}
   },
   "projects": {
-    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
+    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
+        "projectUniqueName": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
         "projectName": "Library",
-        "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
-        "packagesPath": "C:\\Users\\redraingame21\\.nuget\\packages\\",
-        "outputPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\obj\\",
+        "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj",
+        "packagesPath": "C:\\Users\\smr\\.nuget\\packages\\",
+        "outputPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\redraingame21\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.1"
@@ -32,6 +32,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -57,17 +62,17 @@
         }
       }
     },
-    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj": {
+    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj",
+        "projectUniqueName": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj",
         "projectName": "NetWorkServer",
-        "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj",
-        "packagesPath": "C:\\Users\\redraingame21\\.nuget\\packages\\",
-        "outputPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\obj\\",
+        "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj",
+        "packagesPath": "C:\\Users\\smr\\.nuget\\packages\\",
+        "outputPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\redraingame21\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.1"
@@ -79,8 +84,8 @@
           "netstandard2.1": {
             "targetAlias": "netstandard2.1",
             "projectReferences": {
-              "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
-                "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj"
+              "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
+                "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj"
               }
             }
           }
@@ -89,6 +94,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -114,17 +124,17 @@
         }
       }
     },
-    "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj": {
+    "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj",
+        "projectUniqueName": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj",
         "projectName": "TestServer",
-        "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj",
-        "packagesPath": "C:\\Users\\redraingame21\\.nuget\\packages\\",
-        "outputPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\TestServer\\obj\\",
+        "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\TestServer\\TestServer.csproj",
+        "packagesPath": "C:\\Users\\smr\\.nuget\\packages\\",
+        "outputPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\TestServer\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\redraingame21\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -136,11 +146,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
-                "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj"
+              "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj": {
+                "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\Library\\Library.csproj"
               },
-              "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj": {
-                "projectPath": "F:\\Unity\\Self\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj"
+              "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj": {
+                "projectPath": "D:\\Porject\\UnityFramework\\UnityFrameWork\\Server\\NetWork\\NetWorkServer\\NetWorkServer.csproj"
               }
             }
           }
@@ -149,6 +159,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
