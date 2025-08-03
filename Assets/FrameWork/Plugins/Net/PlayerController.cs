@@ -44,6 +44,11 @@ namespace FrameWork
                 FrameSyncManager.Instance.UnregisterSyncObject(this);
             }
         }
+
+        public void SetPlayerId(int id)
+        {
+            playerId = id;
+        }
         
         // 逻辑帧更新（所有客户端在同一帧执行相同计算）
         public void OnLogicFrameUpdate(List<InputData> inputs, float deltaTime)
