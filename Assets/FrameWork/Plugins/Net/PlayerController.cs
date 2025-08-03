@@ -1,29 +1,33 @@
 ﻿using System.Collections.Generic;
+using TrueSync;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class PlayerController : MonoBehaviour,ISyncable
+    [RequireComponent(typeof(TSTransform))]
+    public class PlayerController : TrueSyncBehaviour,ISyncable
     {
         [SerializeField] private int playerId;
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float jumpForce = 7f;
         
         // 逻辑位置（用于计算）
-        private Vector3 logicPosition;
+        private TSVector logicPosition;
         // 逻辑旋转
-        private Quaternion logicRotation;
+        private TSQuaternion logicRotation;
         // 逻辑速度
-        private Vector3 logicVelocity;
+        private TSVector logicVelocity;
         
         // 玩家ID属性
         public int PlayerId => playerId;
-        
+
+        private TSTransform _tsTransform;
         private void Awake()
         {
+            _tsTransform = GetComponent<TSTransform>();
             // 初始化逻辑位置和旋转（与渲染位置一致）
-            logicPosition = transform.position;
-            logicRotation = transform.rotation;
+            logicPosition = _tsTransform.position;
+            logicRotation = _tsTransform.rotation;
             
             // 注册到帧同步管理器
             if (FrameSyncManager.Instance != null)
@@ -69,31 +73,29 @@ namespace FrameWork
             logicPosition += logicVelocity * deltaTime;
             
             // 平滑过渡到逻辑位置（渲染插值）
-            transform.position = Vector3.Lerp(transform.position, logicPosition, 
-                Time.deltaTime / FrameSyncManager.FrameInterval * 2f);
+            _tsTransform.position = TSVector.Lerp(_tsTransform.position, logicPosition, Time.deltaTime / FrameSyncManager.FrameInterval * 2f);
             
             // 更新旋转
             if (logicVelocity.sqrMagnitude > 0.1f)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(logicVelocity);
-                logicRotation = Quaternion.Lerp(logicRotation, targetRotation, deltaTime * 10f);
+                TSQuaternion targetRotation = TSQuaternion.LookRotation(logicVelocity);
+                logicRotation = TSQuaternion.Lerp(logicRotation, targetRotation, deltaTime * 10f);
             }
-            transform.rotation = Quaternion.Lerp(transform.rotation, logicRotation, 
-                Time.deltaTime / FrameSyncManager.FrameInterval * 2f);
+            _tsTransform.rotation = TSQuaternion.Lerp(_tsTransform.rotation, logicRotation, Time.deltaTime / FrameSyncManager.FrameInterval * 2f);
         }
         
         // 处理移动
         private void HandleMovement(InputData input, float deltaTime)
         {
             // 计算移动方向
-            Vector3 moveDir = new Vector3(input.moveX, 0, input.moveZ).normalized;
+            TSVector moveDir = new TSVector(input.moveX, 0, input.moveZ).normalized;
             
             // 计算目标速度
-            Vector3 targetVelocity = moveDir * moveSpeed;
+            TSVector targetVelocity = moveDir * moveSpeed;
             targetVelocity.y = logicVelocity.y; // 保留Y方向速度（重力/跳跃）
             
             // 平滑过渡到目标速度
-            logicVelocity = Vector3.Lerp(logicVelocity, targetVelocity, deltaTime * 10f);
+            logicVelocity = TSVector.Lerp(logicVelocity, targetVelocity, deltaTime * 10f);
         }
         
         // 处理跳跃
@@ -123,20 +125,21 @@ namespace FrameWork
         // 检测是否在地面上
         private bool IsGrounded()
         {
-            return Physics.Raycast(logicPosition, Vector3.down, 0.15f);
+            return TSPhysics.Raycast(logicPosition, TSVector.down, out var hit,0.15f);
         }
         
         // 处理碰撞（简化版）
         private void HandleCollision(float deltaTime)
         {
             // 简单的射线检测处理碰撞
-            Vector3 moveDir = logicVelocity.normalized;
-            float moveDistance = logicVelocity.magnitude * deltaTime;
+            TSVector moveDir = logicVelocity.normalized;
+            FP moveDistance = logicVelocity.magnitude * deltaTime;
             
-            if (Physics.Raycast(logicPosition, moveDir, out RaycastHit hit, moveDistance))
+            
+            if (TSPhysics.Raycast(logicPosition, moveDir, out var hit, moveDistance))
             {
                 // 碰到障碍物，沿法线方向滑动
-                Vector3 slideDir = Vector3.ProjectOnPlane(moveDir, hit.normal);
+                TSVector slideDir = TSVector.ProjectOnPlane(moveDir, hit.normal);
                 logicVelocity = slideDir * logicVelocity.magnitude;
             }
         }
@@ -144,8 +147,9 @@ namespace FrameWork
         // 设置初始位置（确保所有客户端初始位置一致）
         public void SetInitialPosition(Vector3 position)
         {
-            logicPosition = position;
-            transform.position = position;
+            var tsVer=new TSVector(position.x, position.y, position.z);
+            logicPosition = tsVer;
+            _tsTransform.position = tsVer;
         }
         
     }

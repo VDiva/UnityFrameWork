@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TrueSync;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class FrameSyncManager : SingletonAsMono<FrameSyncManager>
+    [RequireComponent(typeof(TrueSyncManager))]
+    public class FrameSyncManager : MonoBehaviour
     {
+
+        public static FrameSyncManager Instance;
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         // 逻辑帧率
         public const int LogicFrameRate = 30;
         // 每帧间隔时间

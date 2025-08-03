@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NetWorkClient;
 using Riptide;
+using TrueSync;
 using UnityEngine;
 
 namespace FrameWork
@@ -19,8 +20,14 @@ namespace FrameWork
         }
 
 
+        private static void SpawnPlayer()
+        {
+            
+        }
+        
         private static void InputData(string json)
         {
+            if (FrameSyncManager.Instance==null)return;
             FrameSyncManager.Instance.ReceiveInput(FrameWork.InputData.Deserialize(json));
         }
         
