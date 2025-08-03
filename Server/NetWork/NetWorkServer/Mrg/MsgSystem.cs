@@ -60,5 +60,16 @@ namespace NetWorkServer.Mrg
             eventMsg.Add(msg);
             EventSystem.DispatchEvent(MsgType.Room,RoomType.Retransmission,eventMsg);
         }
+        
+        
+        [MessageHandler((ushort)RoomType.InputData)]
+        public static void InputData(ushort id, Message msg)
+        {
+            var roomId = msg.GetUShort();
+            var eventMsg = EventSystem.GetEventMsg();
+            eventMsg.Add(roomId);
+            eventMsg.Add(msg);
+            EventSystem.DispatchEvent(MsgType.Room,RoomType.InputData,eventMsg);
+        }
     }
 }

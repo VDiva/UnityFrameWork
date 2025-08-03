@@ -11,10 +11,10 @@ namespace NetWorkClient
     {
 
         public static Func<float> RunTime; 
-        public static Action<float> ServerUpdate; //服务器更新帧
         public static Action<ushort> JoinRoomAction; //加入房间
         public static Action<ushort> LeaveRoomAction; //离开房间
         public static Action<Message> RetransmissionAction; //房间消息
+        public static Action<string> InputDataAction; //输入消息
         
         
         private static List<ushort> _clientIds = new List<ushort>();
@@ -42,16 +42,10 @@ namespace NetWorkClient
         /// </summary>
         public static event EventHandler<DisconnectedEventArgs> Disconnected;
         
-        // /// <summary>Invoked when another <i>non-local</i> client connects.</summary>
-        // public event EventHandler<ClientConnectedEventArgs> ClientConnected;
-        // /// <summary>Invoked when another <i>non-local</i> client disconnects.</summary>
-        // public event EventHandler<ClientDisconnectedEventArgs> ClientDisconnected;
-        
-
+      
         public static void Start(string ip, int port)
         {
             _client = new Client();
-
             _client.Connected += Connected;
             _client.ConnectionFailed += ConnectionFailed;
             _client.MessageReceived += MessageReceived;
@@ -122,7 +116,9 @@ namespace NetWorkClient
         private static void JoinRoom(Message message)
         {
             _roomId=message.GetUShort();
-            _clientIds.Add(message.GetUShort());
+            var clinetId = message.GetUShort();
+            _clientIds.Add(clinetId);
+            JoinRoomAction?.Invoke(clinetId);
             RiptideLogger.Log(LogType.Info, $"JoinRoom({_roomId})");
         }
         
@@ -137,22 +133,24 @@ namespace NetWorkClient
             }
             RiptideLogger.Log(LogType.Info, $"LeaveRoom({id})");
         }
-
-        
-        
-        private static float _time;
-        [MessageHandler((ushort)MsgType.Update)]
-        private static void Update(Message message)
-        {
-            var curTime = RunTime();
-            ServerUpdate?.Invoke(curTime- _time);
-            _time=curTime;
-        }
         
         [MessageHandler((ushort)RoomType.Retransmission)]
         private static void RetransmissionMsg(Message message)
         {
             RetransmissionAction?.Invoke(message);
+        }
+        
+        [MessageHandler((ushort)RoomType.InputData)]
+        private static void InputData(Message message)
+        {
+            InputDataAction?.Invoke(message.GetString());
+        }
+        
+        public static void SenInputData(string json)
+        {
+            var msg=MsgMrg.CreateMsg(MessageSendMode.Reliable, RoomType.InputData);
+            msg.AddString(json);
+            Send(msg);
         }
     }
 }

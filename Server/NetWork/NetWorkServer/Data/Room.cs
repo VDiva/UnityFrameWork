@@ -20,6 +20,7 @@ namespace NetWorkServer.Data
             EventSystem.AddListener(MsgType.Room,RoomType.JoinRoom,JoinRoom);
             EventSystem.AddListener(MsgType.Room,RoomType.LeaveRoom,LeaveRoom);
             EventSystem.AddListener(MsgType.Room,RoomType.Retransmission,Retransmission);
+            EventSystem.AddListener(MsgType.Room,RoomType.InputData,InputData);
         }
         
         public void Init(string roomName, ushort roomID, ushort roomMaxPlayers)
@@ -73,7 +74,17 @@ namespace NetWorkServer.Data
             NetServer.Send(m, _playerList.ToArray());
         }
         
-        
+        //输入转发
+        private void InputData(List<object> objects)
+        {
+            if (!_isOpen)return;
+            var roomId=(ushort)objects[0];
+            if (roomId!=_roomID)return;
+            var msg = (Message)objects[1];
+            var m = MsgMrg.CreateMsg(msg.SendMode, RoomType.InputData);
+            m.AddMessage(msg);
+            NetServer.Send(m, _playerList.ToArray());
+        }
         
         private void JoinRoom(List<object> objects)
         {

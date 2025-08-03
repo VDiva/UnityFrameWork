@@ -1,62 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using NetWorkClient;
+using Riptide;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-namespace FrameWork.Plugins.Net
+namespace FrameWork
 {
-    public class NetMrg : NetBehaviour
+    public static class NetMrg
     {
-        
-        public static NetMrg Instance;
-        
-        public GameObject prefab;
-        
-        protected ObjectPool<GameObject> Pool=new ObjectPool<GameObject>();
-        protected List<ushort> Players=new List<ushort>();
-        protected Dictionary<ushort,GameObject> PlayerGos=new Dictionary<ushort, GameObject>();
-        protected override void JoinRoom(ushort id)
+
+        static NetMrg()
         {
-            base.JoinRoom(id);
-            if (prefab==null)return;
-            Players.Add(id);
-            SpawnPlayer(id);
+            NetClient.Connected += OnConnectedToServer;
+            NetClient.Disconnected += OnDisConnectedToServer;
+            NetClient.JoinRoomAction += JoinRoom;
+            NetClient.LeaveRoomAction += LeaveRoom;
+            NetClient.InputDataAction += InputData;
         }
 
-        protected override void LeaveRoom(ushort id)
-        {
-            base.LeaveRoom(id);
-            Players.Remove(id);
-            PlayerGos.Remove(id);
-        }
 
-        public virtual void SpawnPlayer(ushort id)
+        private static void InputData(string json)
         {
-            if (prefab==null)return;
-            var pos=NetPosition.Transforms[Random.Range(0, NetPosition.Transforms.Count)];
-            var go = Instantiate(prefab,pos.position,Quaternion.identity);
-            var identity=go.GetComponent<Identity>();
-            if (identity==null)
-            {
-                identity=go.AddComponent<Identity>();
-            }
-            
-            PlayerGos.TryAdd(id, go);
+            FrameSyncManager.Instance.ReceiveInput(FrameWork.InputData.Deserialize(json));
         }
         
-        public override void Awake()
+        private static void LeaveRoom(ushort clientId)
         {
-            base.Awake();
-            DontDestroyOnLoad(this.gameObject);
-            Instance = this;
-            NetClient.RunTime = (() => Time.time);
+            RoomMrg.Instance.LeaveRoom(clientId);
+        }
+
+        private static void JoinRoom(ushort clientId)
+        {
+            RoomMrg.Instance.JoinRoom(clientId);
         }
         
-
-        private void Update()
+        
+        private static void OnConnectedToServer(object sender, EventArgs e)
         {
-            NetClient.Update();
+            RoomMrg.Instance.OnServerConnect();
+        }
+
+        
+        private static void OnDisConnectedToServer(object sender, EventArgs e)
+        {
+            RoomMrg.Instance.OnServerDisconnect();
+        }
+        
+        public static void LinkServer()
+        {
+            NetClient.Start(Config.ServerIp,Config.ServerPort);
+            var updateServer = UpdateServer.Instance;
         }
     }
 }

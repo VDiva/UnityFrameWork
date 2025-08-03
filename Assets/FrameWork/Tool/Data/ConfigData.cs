@@ -81,5 +81,15 @@ namespace FrameWork
         /// resources 获取预制体的路径
         /// </summary>
         public string resourcesPath="Assets/Resources/Asset";
+        
+        /// <summary>
+        /// 服务器ip
+        /// </summary>
+        public string serverIp = "127.0.0.1";
+        
+        /// <summary>
+        /// 服务器端口
+        /// </summary>
+        public int serverPort = 8888;
     }
 }

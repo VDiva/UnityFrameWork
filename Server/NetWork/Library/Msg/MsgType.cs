@@ -21,7 +21,7 @@ namespace Library.Msg
         
         
         RoomRecycle=1500,
-        
+        InputData=2000,
         
     }
 

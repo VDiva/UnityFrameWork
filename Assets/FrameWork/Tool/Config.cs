@@ -10,6 +10,16 @@ namespace FrameWork
         {
             _configData=Resources.Load<ConfigData>("ConfigData");
         }
+        
+        /// <summary>
+        /// 服务器ip
+        /// </summary>
+        public static string ServerIp=> _configData.serverIp;
+        
+        /// <summary>
+        /// 服务器端口
+        /// </summary>
+        public static int ServerPort=> _configData.serverPort;
         /// <summary>
         /// 是否是ab包方式 不是则是resources方式
         /// </summary>
