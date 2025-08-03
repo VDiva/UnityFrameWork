@@ -205,16 +205,17 @@ namespace TrueSync {
          *  @brief Do a base matrix transformation to draw correctly all collider gizmos.
          **/
         public virtual void OnDrawGizmos() {
-            if (!this.enabled) {
+            if (!this.enabled|| Application.isPlaying) {
                 return;
             }
 
+            
             Vector3 position = _body != null ? _body.Position.ToVector() : (transform.position + ScaledCenter.ToVector());
             Quaternion rotation = _body != null ? _body.Orientation.ToQuaternion() : transform.rotation;
 
             Gizmos.color = Color.yellow;
 
-			Matrix4x4 cubeTransform = Matrix4x4.TRS(position, rotation, GetGizmosSize());
+            Matrix4x4 cubeTransform = Matrix4x4.TRS(position, rotation, GetGizmosSize());
             Matrix4x4 oldGizmosMatrix = Gizmos.matrix;
 
             Gizmos.matrix *= cubeTransform;
@@ -222,6 +223,7 @@ namespace TrueSync {
             DrawGizmos();
 
             Gizmos.matrix = oldGizmosMatrix;
+            
         }
 
         /**
