@@ -183,16 +183,20 @@ namespace FrameWork.Editor
         {
             foreach (var item in trans.GetComponents<Component>())
             {
-                swMode.WriteLine("\t\tpublic "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
+                if (item.GetComponent<AddScripts>())
+                {
+                    swMode.WriteLine("\t\tpublic "+item.GetType().Name+" "+(item.GetType().Name+item.gameObject.name).Replace(" ","")+";");
 
-                if (isRoot)
-                {
-                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"GetGameObject().transform.GetComponent<"+item.GetType().Name+">();");
+                    if (isRoot)
+                    {
+                        swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"GetGameObject().transform.GetComponent<"+item.GetType().Name+">();");
+                    }
+                    else
+                    {
+                        swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"GetGameObject().transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
+                    }
                 }
-                else
-                {
-                    swView.WriteLine("\t\t\t"+(item.GetType().Name+item.gameObject.name).Replace(" ","")+" = "+"GetGameObject().transform.Find(\""+path+"\").GetComponent<"+item.GetType().Name+">();");
-                }
+                
             }
 
             for (int i = 0; i < trans.childCount; i++)

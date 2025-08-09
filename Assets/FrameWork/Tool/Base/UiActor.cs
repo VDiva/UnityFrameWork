@@ -74,6 +74,7 @@ namespace FrameWork
         
         public void CloseUi()
         {
+            UiManager.HideUi(GetIndex());
         }
         
         public virtual void OnClose()

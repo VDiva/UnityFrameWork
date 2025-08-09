@@ -276,7 +276,7 @@ namespace FrameWork
                 sw.WriteLine("\t\t\t\tvar type=xlsxData.GetType();");
                 sw.WriteLine("\t\t\t\tfor (int j = 0; j < items.Length; j++)");
                 sw.WriteLine("\t\t\t\t{");
-                sw.WriteLine("\t\t\t\t\tif (string.IsNullOrEmpty(items[j]))continue;");
+                //sw.WriteLine("\t\t\t\t\tif (string.IsNullOrEmpty(items[j]))continue;");
                 sw.WriteLine("\t\t\t\t\ttype.GetField(fileNames[j]).SetValue(xlsxData,Tool.ConversionType(fileTypes[j],items[j]));");
                 sw.WriteLine("\t\t\t\t}");
                 sw.WriteLine("\t\t\t\tdata.Add(xlsxData);");
