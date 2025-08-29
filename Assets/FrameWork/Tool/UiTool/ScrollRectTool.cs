@@ -93,7 +93,7 @@ namespace FrameWork
             var width=(_prefabRect.rect.width+space)*horCount;
             var height=(_prefabRect.rect.height+space)*(c/horCount);
             _content.sizeDelta=new Vector2(width,height);
-            int spawnCount = (int)(_scrollRectTransform.sizeDelta.y / _prefabRect.sizeDelta.y+1)*horCount;
+            int spawnCount = (int)(_scrollRectTransform.rect.height / _prefabRect.rect.height+1)*horCount;
             spawnCount = Mathf.Min(spawnCount, count);
             _spawnCount = spawnCount;
             Tool.HideAllChild(_content);
@@ -135,7 +135,7 @@ namespace FrameWork
                 if (isUp)
                 {
                     if (_lastIndex>=_count-1)return;
-                    if (loc.y> _prefabRect.sizeDelta.y)
+                    if (loc.y> _prefabRect.rect.height)
                     {
                         _fistIndex += 1;
                         _lastIndex += 1;
@@ -146,7 +146,7 @@ namespace FrameWork
                 else
                 {
                     if (_fistIndex<=0)return;
-                    if (Mathf.Abs(loc.y)>_scrollRectTransform.sizeDelta.y)
+                    if (Mathf.Abs(loc.y)>_scrollRectTransform.rect.height)
                     {
                         _fistIndex -= 1;
                         _lastIndex -= 1;
@@ -174,9 +174,9 @@ namespace FrameWork
         public Vector2 GetItemPos(int index)
         {
             float c = index;
-            var y = (int)(c / horCount) * (_prefabRect.sizeDelta.y + space);
-            var leftLoc = (horCount-1) / 2f * _prefabRect.sizeDelta.x;
-            var x = -leftLoc + c % horCount * (_prefabRect.sizeDelta.x + space);
+            var y = (int)(c / horCount) * (_prefabRect.rect.height + space);
+            var leftLoc = (horCount-1) / 2f * _prefabRect.rect.width;
+            var x = -leftLoc + c % horCount * (_prefabRect.rect.width + space);
             return new Vector2(x, -y);
         }
         
