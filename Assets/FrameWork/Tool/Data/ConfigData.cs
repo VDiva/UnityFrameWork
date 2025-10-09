@@ -42,19 +42,19 @@ namespace FrameWork
         /// </summary>
         public string key = "kljsdkkdlo4454GG00155sajuklmbkdl";
 
-        /// <summary>
-        /// 配置表生成引用
-        /// </summary>
-        public string[] xlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx","FrameWork"};
+        // /// <summary>
+        // /// 配置表生成引用
+        // /// </summary>
+        // public string[] xlsxSpawnUse = new string[] {"System.Collections.Generic","UnityEngine","Xlsx","FrameWork"};
 
-        //配置表文件文件夹
-        public string xlsxPath = "Assets/FrameWork/Xlsx";
-        
-        public string xlsxOutPath = "Assets/FrameWork/Asset/Xlsx";
-        
-        public string xlsxOutResourcesPath = "Assets/Resources/Xlsx";
-        
-        public string xlsxOutScriptPath = "Assets/FrameWork/Scripts/Xlsx";
+        // //配置表文件文件夹
+        // public string xlsxPath = "Assets/FrameWork/Xlsx";
+        //
+        // public string xlsxOutPath = "Assets/FrameWork/Asset/Xlsx";
+        //
+        // public string xlsxOutResourcesPath = "Assets/Resources/Xlsx";
+        //
+        // public string xlsxOutScriptPath = "Assets/FrameWork/Scripts/Xlsx";
         
         /// <summary>
         /// 热更新dll

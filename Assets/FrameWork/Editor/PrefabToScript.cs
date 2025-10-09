@@ -8,6 +8,22 @@ namespace FrameWork.Editor
 {
     public class PrefabToScript: UnityEditor.Editor
     {
+        
+        /// <summary>
+        /// 预制体生成代码引用
+        /// </summary>
+        private static string[] spawnScriptUse = new string[] {"System.Collections.Generic","UnityEngine","UnityEngine.UI"};
+        
+        /// <summary>
+        /// 预制体生成代码路径
+        /// </summary>
+        private static string spawnScriptPath = "Assets/FrameWork/Scripts/PrefabScript";
+        //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
+        
+        /// <summary>
+        /// resources 获取预制体的路径
+        /// </summary>
+        public static string resourcesPath="Assets/Resources/Asset";
 
         [MenuItem("Assets/FrameWork/预制体/生成代码")]
         public static void CreateScript()
@@ -26,8 +42,8 @@ namespace FrameWork.Editor
         
         private static void Init(string scriptName)
         {
-            ABConfig.AssetPackaged();
-            string path = Config.SpawnScriptPath;
+            ABEditor.AssetPackaged();
+            string path = spawnScriptPath;
             string name = Selection.activeGameObject.name;
             Transform trans = Selection.activeGameObject.transform;
             int count = trans.childCount;
@@ -54,9 +70,9 @@ namespace FrameWork.Editor
                             // sw.WriteLine("using FrameWork;");
                             // sw.WriteLine("using Spine.Unity;");
                             // sw.WriteLine("using UnityEngine.UI;");
-                            for (int i = 0; i < Config.SpawnScriptUse.Length; i++)
+                            for (int i = 0; i < spawnScriptUse.Length; i++)
                             {
-                                sw.WriteLine($"using {Config.SpawnScriptUse[i]};");
+                                sw.WriteLine($"using {spawnScriptUse[i]};");
                             }
                             
                             
@@ -76,9 +92,9 @@ namespace FrameWork.Editor
                     // swMode.WriteLine("using UnityEngine.UI;");
                     // swMode.WriteLine("using UnityEngine.Video;");
                     
-                    for (int i = 0; i < Config.SpawnScriptUse.Length; i++)
+                    for (int i = 0; i < spawnScriptUse.Length; i++)
                     {
-                        swMode.WriteLine($"using {Config.SpawnScriptUse[i]};");
+                        swMode.WriteLine($"using {spawnScriptUse[i]};");
                     }
                     
                     swMode.WriteLine("namespace FrameWork\n{");
@@ -90,9 +106,9 @@ namespace FrameWork.Editor
                     // swView.WriteLine("using UnityEngine.UI;");
                     // swView.WriteLine("using UnityEngine.Video;");
                     
-                    for (int i = 0; i < Config.SpawnScriptUse.Length; i++)
+                    for (int i = 0; i < spawnScriptUse.Length; i++)
                     {
-                        swView.WriteLine($"using {Config.SpawnScriptUse[i]};");
+                        swView.WriteLine($"using {spawnScriptUse[i]};");
                     }
                     
                     swView.WriteLine("namespace FrameWork\n{");
@@ -125,9 +141,9 @@ namespace FrameWork.Editor
                     // swAttr.WriteLine("using UnityEngine.UI;");
                     // swAttr.WriteLine("using UnityEngine.Video;");
                     
-                    for (int i = 0; i < Config.SpawnScriptUse.Length; i++)
+                    for (int i = 0; i < spawnScriptUse.Length; i++)
                     {
-                        swAttr.WriteLine($"using {Config.SpawnScriptUse[i]};");
+                        swAttr.WriteLine($"using {spawnScriptUse[i]};");
                     }
                     
                     swAttr.WriteLine("namespace FrameWork\n{");
@@ -154,9 +170,9 @@ namespace FrameWork.Editor
                     // swAttr.WriteLine("using UnityEngine.UI;");
                     // swAttr.WriteLine("using UnityEngine.Video;");
                     
-                    for (int i = 0; i < Config.SpawnScriptUse.Length; i++)
+                    for (int i = 0; i < spawnScriptUse.Length; i++)
                     {
-                        swAttr.WriteLine($"using {Config.SpawnScriptUse[i]};");
+                        swAttr.WriteLine($"using {spawnScriptUse[i]};");
                     }
                     
                     swAttr.WriteLine("namespace FrameWork\n{");
@@ -168,12 +184,7 @@ namespace FrameWork.Editor
                     swAttr.WriteLine("}");
                 }
             }
-
-            if (Config.IsAb)
-            {
-                AssetImporter assetImporter=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(Selection.activeGameObject));
-                AssetBundle.UpdateAssetBundle(assetImporter.assetBundleName);
-            }
+            ABEditor.AssetPackaged();
             AssetDatabase.Refresh();
 
         }

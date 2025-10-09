@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ba9f812650224e4ab75d240bec8704c, type: 3}
+  m_Script: {fileID: 11500000, guid: 65bbb0a126cdedb45a1e26709d44d1a7, type: 3}
   m_Name: ConfigData
   m_EditorClassIdentifier: 
+  versions: 1.0.0
   isAb: 1
   abClassPath: Assets/FrameWork/Scripts/AssetAb
   abEndName: info
@@ -36,3 +37,5 @@ MonoBehaviour:
   - UnityEngine.UI
   spawnScriptPath: Assets/FrameWork/Scripts/PrefabScript
   resourcesPath: Assets/Resources/Asset
+  serverIp: 127.0.0.1
+  serverPort: 8888

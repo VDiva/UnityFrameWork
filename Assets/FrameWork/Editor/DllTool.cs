@@ -35,8 +35,8 @@ namespace FrameWork
                 }
             }
             
-            AssetBundle.CreatAssetBundle();
-            ABConfig.CreateConfig();
+            //AssetBundle.CreatAssetBundle();
+            ABEditor.CreateConfig();
             AssetDatabase.Refresh();
         }
 

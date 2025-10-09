@@ -24,22 +24,7 @@ namespace FrameWork
         /// 是否是ab包方式 不是则是resources方式
         /// </summary>
         public static bool IsAb => _configData.isAb;
-
-        /// <summary>
-        /// 生成ab包包名的类的位置
-        /// </summary>
-        public static string AbClassPath => _configData.abClassPath;
-
-        /// <summary>
-        /// ab包生成的结尾名
-        /// </summary>
-        public static string AbEndName => _configData.abEndName;
-
-        /// <summary>
-        /// ab包路径
-        /// </summary>
-        public static string AbAssetPath => _configData.abAssetPath;
-
+        
         /// <summary>
         /// ab包版本文件名
         /// </summary>
@@ -51,19 +36,19 @@ namespace FrameWork
         public static string Key => _configData.key;
 
 
-        public static string XlsxPath => _configData.xlsxPath;
+        // public static string XlsxPath => _configData.xlsxPath;
+        //
+        // public static string XlsxOutPath => _configData.xlsxOutPath;
+        //
+        // public static string XlsxOutResourcesPath => _configData.xlsxOutResourcesPath;
+        //
+        // public static string XlsxOutScriptPath => _configData.xlsxOutScriptPath;
 
-        public static string XlsxOutPath => _configData.xlsxOutPath;
 
-        public static string XlsxOutResourcesPath => _configData.xlsxOutResourcesPath;
-
-        public static string XlsxOutScriptPath => _configData.xlsxOutScriptPath;
-
-
-        /// <summary>
-        /// 配置表生成引用
-        /// </summary>
-        public static string[] XlsxSpawnUse => _configData.xlsxSpawnUse;
+        // /// <summary>
+        // /// 配置表生成引用
+        // /// </summary>
+        // public static string[] XlsxSpawnUse => _configData.xlsxSpawnUse;
 
         /// <summary>
         /// 热更新dll
@@ -88,21 +73,21 @@ namespace FrameWork
         /// </summary>
         public static string DownLoadUrl => _configData.downLoadUrl;
 
-        /// <summary>
-        /// 预制体生成代码引用
-        /// </summary>
-        public static string[] SpawnScriptUse => _configData.spawnScriptUse;
-
-        /// <summary>
-        /// 预制体生成代码路径
-        /// </summary>
-        public static string SpawnScriptPath => _configData.spawnScriptPath;
-        //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
-        
-        /// <summary>
-        /// resources 获取预制体的路径
-        /// </summary>
-        public static string ResourcesPath => _configData.resourcesPath;
+        // /// <summary>
+        // /// 预制体生成代码引用
+        // /// </summary>
+        // public static string[] SpawnScriptUse => _configData.spawnScriptUse;
+        //
+        // /// <summary>
+        // /// 预制体生成代码路径
+        // /// </summary>
+        // public static string SpawnScriptPath => _configData.spawnScriptPath;
+        // //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
+        //
+        // /// <summary>
+        // /// resources 获取预制体的路径
+        // /// </summary>
+        // public static string ResourcesPath => _configData.resourcesPath;
 
 
         public static string GetAbPath()
