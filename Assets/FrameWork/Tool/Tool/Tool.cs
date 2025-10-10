@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace FrameWork
                 {
                     return 0f;
                 }
-                return float.Parse(value);
+                return float.Parse(value,CultureInfo.InvariantCulture);
             }else if (type=="long")
             {
                 if (string.IsNullOrEmpty(value))
@@ -55,7 +56,7 @@ namespace FrameWork
                 {
                     return 0f;
                 }
-                return double.Parse(value);
+                return double.Parse(value,CultureInfo.InvariantCulture);
             }else if (type=="Vector3")
             {
                 if (string.IsNullOrEmpty(value))
@@ -63,7 +64,7 @@ namespace FrameWork
                     return null;
                 }
                 var v = value.Split(',');
-                return new Vector3(float.Parse(v[0]),float.Parse(v[1]),float.Parse(v[2]));
+                return new Vector3(float.Parse(v[0],CultureInfo.InvariantCulture),float.Parse(v[1],CultureInfo.InvariantCulture),float.Parse(v[2],CultureInfo.InvariantCulture));
             }else if (type=="Vector2")
             {
                 if (string.IsNullOrEmpty(value))
@@ -71,7 +72,7 @@ namespace FrameWork
                     return null;
                 }
                 var v = value.Split(',');
-                return new Vector2(float.Parse(v[0]),float.Parse(v[1]));
+                return new Vector2(float.Parse(v[0],CultureInfo.InvariantCulture),float.Parse(v[1],CultureInfo.InvariantCulture));
             }else if (type=="string[]")
             {
                 if (string.IsNullOrEmpty(value))
@@ -90,7 +91,7 @@ namespace FrameWork
                 if (string.IsNullOrEmpty(value))
                     return new float[]{};
                 else
-                    return value.Split(',').Select((s => float.Parse(s) )).ToArray();
+                    return value.Split(',').Select((s => float.Parse(s,CultureInfo.InvariantCulture) )).ToArray();
             }
 
             return value;

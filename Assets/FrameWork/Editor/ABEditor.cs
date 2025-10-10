@@ -66,7 +66,10 @@ namespace FrameWork
             var guid = AssetDatabase.AssetPathToGUID(abAssetPath+"/"+abPath+"/"+fileInfo.Name);
             Debug.Log(guid);
             var addressableAsset=setting.CreateOrMoveEntry(guid, group);
-            addressableAsset.address = fileInfo.Name.Split(".")[0];
+            if (addressableAsset!=null)
+            {
+                addressableAsset.address = fileInfo.Name.Split(".")[0];
+            }
         }
         
         private static void CheckDirectory(DirectoryInfo directoryInfo, string abName = "")
