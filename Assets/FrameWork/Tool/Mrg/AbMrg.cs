@@ -1,7 +1,7 @@
 ﻿
 using System;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
+// using UnityEngine.AddressableAssets;
+// using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace FrameWork
 {
@@ -9,22 +9,23 @@ namespace FrameWork
     {
         public static void LoadAsync<T>(string name,Action<T> handle)
         {
-            Addressables.LoadAssetAsync<T>(name).Completed += (h =>
-            {
-                handle?.Invoke(h.Result);
-            });
+            // Addressables.LoadAssetAsync<T>(name).Completed += (h =>
+            // {
+            //     handle?.Invoke(h.Result);
+            // });
         }
         
         public static T Load<T>(string name)
         {
-            var assetAsync=Addressables.LoadAssetAsync<T>(name);
-            var t = assetAsync.WaitForCompletion();
-            return (T)t;
+            // var assetAsync=Addressables.LoadAssetAsync<T>(name);
+            // var t = assetAsync.WaitForCompletion();
+            // return (T)t;
+            return default(T);
         }
 
         public static void Release(object obj)
         {
-            Addressables.Release(obj);
+            //Addressables.Release(obj);
         }
     } 
 }
