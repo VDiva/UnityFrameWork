@@ -34,22 +34,7 @@ namespace FrameWork
         /// ase加密key
         /// </summary>
         public static string Key => _configData.key;
-
-
-        // public static string XlsxPath => _configData.xlsxPath;
-        //
-        // public static string XlsxOutPath => _configData.xlsxOutPath;
-        //
-        // public static string XlsxOutResourcesPath => _configData.xlsxOutResourcesPath;
-        //
-        // public static string XlsxOutScriptPath => _configData.xlsxOutScriptPath;
-
-
-        // /// <summary>
-        // /// 配置表生成引用
-        // /// </summary>
-        // public static string[] XlsxSpawnUse => _configData.xlsxSpawnUse;
-
+        
         /// <summary>
         /// 热更新dll
         /// </summary>
@@ -72,24 +57,7 @@ namespace FrameWork
         /// 热更新下载地址
         /// </summary>
         public static string DownLoadUrl => _configData.downLoadUrl;
-
-        // /// <summary>
-        // /// 预制体生成代码引用
-        // /// </summary>
-        // public static string[] SpawnScriptUse => _configData.spawnScriptUse;
-        //
-        // /// <summary>
-        // /// 预制体生成代码路径
-        // /// </summary>
-        // public static string SpawnScriptPath => _configData.spawnScriptPath;
-        // //public static string spawnXlsxScriptPath = "Assets/FrameWork/Xlsx";
-        //
-        // /// <summary>
-        // /// resources 获取预制体的路径
-        // /// </summary>
-        // public static string ResourcesPath => _configData.resourcesPath;
-
-
+        
         public static string GetAbPath()
         {
             string path = "";
@@ -115,53 +83,8 @@ namespace FrameWork
             return path;
         }
         
-        public static string GetAbPath(RuntimePlatform platform)
-        {
-            string path = "";
-            //RuntimePlatform platform = Application.platform;
-            switch (platform)
-            {
-                case RuntimePlatform.WindowsEditor:
-                case RuntimePlatform.WindowsPlayer:
-                    path ="/StandaloneWindows64/";
-                    break;
-                case RuntimePlatform.Android:
-                    path = "/Android/";
-                    break;
-                case RuntimePlatform.IPhonePlayer:
-                    path = "/Ios/";
-                    break;
-                case RuntimePlatform.WebGLPlayer:
-                    path = Application.persistentDataPath + "/WebGl/";
-                    break;
-            }
-            path += _configData.versions + "/";
-            return path;
-        }
         
-        public static string GetAbDictoryPath()
-        {
-            string path = "";
-            RuntimePlatform platform = Application.platform;
-            switch (platform)
-            {
-                case RuntimePlatform.WindowsEditor:
-                case RuntimePlatform.WindowsPlayer:
-                    path = "/StandaloneWindows64/";
-                    break;
-                case RuntimePlatform.Android:
-                    path =  "/Android/";
-                    break;
-                case RuntimePlatform.IPhonePlayer:
-                    path ="/Ios/";
-                    break;
-                case RuntimePlatform.WebGLPlayer:
-                    path = "/WebGl/";
-                    break;
-            }
-            path += _configData.versions + "/";
-            return path;
-        }
+        
         
         
         public static long ConvertDateTimep(DateTime time)
