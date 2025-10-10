@@ -55,20 +55,27 @@ namespace FrameWork
             AssetDatabase.Refresh();
         }
         
-        private static void CheckFileInfo(FileInfo fileInfo,string abPath,string abName="other")
+        private static void CheckFileInfo(FileInfo fileInfo,string dicPath,string dicName,string abName="other")
         {
             //var path = fileInfo.DirectoryName + "\\" + fileInfo.Name;
-            var group = setting.FindGroup(abPath);
+            if (string.IsNullOrEmpty(dicPath))return;
+            var group = setting.FindGroup(dicPath);
             if (group == null)
             {
-                group=setting.CreateGroup(abPath,false, false, false, new List<AddressableAssetGroupSchema> { setting.DefaultGroup.Schemas[0] }, typeof(SchemaType));
+                group=setting.CreateGroup(dicPath,false, false, false, new List<AddressableAssetGroupSchema> { setting.DefaultGroup.Schemas[0] }, typeof(SchemaType));
             }
-            var guid = AssetDatabase.AssetPathToGUID(abAssetPath+"/"+abPath+"/"+fileInfo.Name);
-            Debug.Log(guid);
-            var addressableAsset=setting.CreateOrMoveEntry(guid, group);
-            if (addressableAsset!=null)
+
+            var path = abAssetPath + "/" + dicName + "/" + fileInfo.Name;
+            
+            var guid = AssetDatabase.AssetPathToGUID(path);
+            Debug.Log(path);
+            if (!string.IsNullOrEmpty(guid))
             {
-                addressableAsset.address = fileInfo.Name.Split(".")[0];
+                var addressableAsset=setting.CreateOrMoveEntry(guid, group);
+                if (addressableAsset!=null)
+                {
+                    addressableAsset.address = fileInfo.Name.Split(".")[0];
+                }
             }
         }
         
@@ -87,7 +94,7 @@ namespace FrameWork
             {
                 if (item.Extension!=".meta")
                 {
-                    CheckFileInfo(item,directoryInfo.Name,abName);
+                    CheckFileInfo(item,directoryInfo.FullName.Split(@"\Asset\")[1].Replace("\\","_"),directoryInfo.FullName.Split(@"\Asset\")[1],abName);
                 }
             }
             
