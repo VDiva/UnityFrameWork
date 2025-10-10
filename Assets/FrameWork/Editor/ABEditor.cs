@@ -15,70 +15,8 @@ using UnityEngine.AddressableAssets;
 
 namespace FrameWork
 {
-    // [UnityEditor.AssetImporters.ScriptedImporter(1,"")]
-    // public class ABInputTool:UnityEditor.AssetImporters.ScriptedImporter
-    // {
-    //     public static List<string> paths = new List<string>();
-    //     
-    //     //public static ConfigData ConfigData;
-    //     public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
-    //     {
-    //         if (ctx.assetPath.IndexOf(ABEditor.abAssetPath, StringComparison.Ordinal)==-1) return;
-    //         Debug.Log("导入对象");
-    //         var path = ctx.assetPath;
-    //         var fileName = Path.GetFileNameWithoutExtension(path);
-    //         if (fileName.StartsWith("~$")) return;
-    //         paths.Add(path); //添加到待转换列表里 等待资源加载完成后转换
-    //     }
-    // }
-    //
-    //
-    // public class ABInputAssetPostprocessor : AssetPostprocessor
-    // {
-    //     private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets,
-    //         string[] movedAssets,
-    //         string[] movedFromAssetPaths)
-    //     {
-    //
-    //         // if (ABInputTool.paths == null
-    //         //     || ABInputTool.paths.Count == 0) return;
-    //
-    //         if (EditorUtility.DisplayDialog("信息", "检测到资源发生变换是否更新资源包", "是", "否"))
-    //         {
-    //             UpDatePack();
-    //         }
-    //
-    //         ABInputTool.paths.Clear();
-    //     }
-    //
-    //
-    //
-    //     public static void UpDatePack()
-    //     {
-    //         for (int i = 0; i < ABInputTool.paths.Count; i++)
-    //         {
-    //             var groupName= ABInputTool.paths[i];
-    //             var n = Path.GetFileNameWithoutExtension(groupName);
-    //             groupName=groupName.Split("Assets/FrameWork/Asset")[1];
-    //             groupName=groupName.Split("n")[0];
-    //             groupName = groupName.Replace("/", "");
-    //             var group = ABEditor.setting.FindGroup(groupName);
-    //             if (group == null)
-    //             {
-    //                 group=ABEditor.setting.CreateGroup(groupName,false, false, false, new List<AddressableAssetGroupSchema> { ABEditor.setting.DefaultGroup.Schemas[0] }, typeof(SchemaType));
-    //             }
-    //             var guid = AssetDatabase.AssetPathToGUID(ABEditor.abAssetPath+"/"+groupName+"/"+n);
-    //             Debug.Log(guid);
-    //             var addressableAsset=ABEditor.setting.CreateOrMoveEntry(guid, group);
-    //             addressableAsset.address = n;
-    //         }
-    //     }
-    // }
-
-
     public class ABEditor : UnityEditor.Editor
     {
-        
         public static string abAssetPath = "Assets/FrameWork/Asset";
         public static readonly AddressableAssetSettings setting = AssetDatabase.LoadAssetAtPath<AddressableAssetSettings>("Assets/AddressableAssetsData/AddressableAssetSettings.asset");
         static ABEditor()
@@ -86,13 +24,13 @@ namespace FrameWork
             AddPack();
         }
         
-        [MenuItem("FrameWork/Addressables/InstallPack")]
+        [MenuItem("FrameWork/Addressables/安装包体")]
         public static void AddPack()
         {
             Client.Add("com.unity.addressables.cn");
         }
 
-        [MenuItem("FrameWork/UpdateScript")]
+        [MenuItem("FrameWork/刷新代码")]
         public static void UpdateScript()
         {
             CompilationPipeline.RequestScriptCompilation();
@@ -150,16 +88,6 @@ namespace FrameWork
                 }
             }
             
-        }
-
-        public static string GetMd5AsString(string key)
-        {
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] md5Info = md5.ComputeHash(Encoding.UTF8.GetBytes(key));
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < md5Info.Length; i++)
-                sb.Append(md5Info[i].ToString("x2"));
-            return sb.ToString();
         }
     }
 }

@@ -12,10 +12,7 @@ namespace FrameWork
         [MenuItem("FrameWork/程序集/更新程序集")]
         public static void Update()
         {
-            
             CompileDllCommand.CompileDllActiveBuildTarget();
-            
-            
             var dllCopyPath = Config.DllCopyPath;
             var dlls = Config.Dlls;
             var dllPath = Config.DllPath;
@@ -35,8 +32,7 @@ namespace FrameWork
                 }
             }
             
-            //AssetBundle.CreatAssetBundle();
-            ABEditor.CreateConfig();
+            ABEditor.AssetPackaged();
             AssetDatabase.Refresh();
         }
 
