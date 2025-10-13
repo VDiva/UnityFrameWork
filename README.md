@@ -26,4 +26,4 @@
 
 13.ui滑动框针对数量非常多的情况下优化 上下补齐
 
-导入项目需要需要安装addressable 顶部framewor里点击安装后 取消注释AbMrg脚本中的注释 然后使用AbMrg进行读取资源
+导入项目需要需要安装addressable 顶部framewor里点击安装后 
