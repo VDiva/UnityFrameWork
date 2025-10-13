@@ -1,7 +1,11 @@
 ﻿
 using System;
-// using UnityEngine.AddressableAssets;
-// using UnityEngine.ResourceManagement.AsyncOperations;
+
+#if ADDRESSABLESCN_INSTALLED
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+#endif
+
 
 namespace FrameWork
 {
@@ -9,23 +13,32 @@ namespace FrameWork
     {
         public static void LoadAsync<T>(string name,Action<T> handle)
         {
-            // Addressables.LoadAssetAsync<T>(name).Completed += (h =>
-            // {
-            //     handle?.Invoke(h.Result);
-            // });
+#if ADDRESSABLESCN_INSTALLED
+            Addressables.LoadAssetAsync<T>(name).Completed += (h =>
+            {
+                handle?.Invoke(h.Result);
+            });
+#endif
+            
         }
         
         public static T Load<T>(string name)
         {
-            // var assetAsync=Addressables.LoadAssetAsync<T>(name);
-            // var t = assetAsync.WaitForCompletion();
-            // return (T)t;
+#if ADDRESSABLESCN_INSTALLED
+            var assetAsync=Addressables.LoadAssetAsync<T>(name);
+            var t = assetAsync.WaitForCompletion();
+            return (T)t;
+#endif
+            
             return default(T);
         }
 
         public static void Release(object obj)
         {
-            //Addressables.Release(obj);
+#if ADDRESSABLESCN_INSTALLED
+            Addressables.Release(obj);
+#endif
+            
         }
     } 
 }

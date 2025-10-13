@@ -7,27 +7,107 @@ using System.Security.Cryptography;
 using System.Text;
 using FrameWork.Editor;
 using UnityEditor;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.Compilation;
 using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
+#if ADDRESSABLESCN_INSTALLED
+using UnityEditor.AddressableAssets.Settings;
+using UnityEngine.AddressableAssets;
+#endif
 namespace FrameWork
 {
+    [InitializeOnLoad]
     public class ABEditor : UnityEditor.Editor
     {
         public static string abAssetPath = "Assets/FrameWork/Asset";
-        public static readonly AddressableAssetSettings setting = AssetDatabase.LoadAssetAtPath<AddressableAssetSettings>("Assets/AddressableAssetsData/AddressableAssetSettings.asset");
+        
         static ABEditor()
         {
-            AddPack();
+            CheckPackagesAndGenerateDefines();
         }
+        
+        
+        // 需要检查的包及其对应的宏定义
+        private static readonly Dictionary<string, string> PackageMacros = new Dictionary<string, string>
+        {
+            {"com.unity.addressables.cn", "ADDRESSABLESCN_INSTALLED"}
+        };
+        
+        
+        [MenuItem("FrameWork/Addressables/更新宏定义")]
+        static void CheckPackagesAndGenerateDefines()
+        {
+            ListRequest listRequest = Client.List();
+        
+            // 等待包列表请求完成
+            while (!listRequest.IsCompleted)
+            {
+                if (listRequest.Status == StatusCode.Failure || listRequest.Error != null)
+                {
+                    Debug.LogError($"获取包列表失败: {listRequest.Error.message}");
+                    return;
+                }
+            }
+
+            // 收集已安装包对应的宏定义
+            HashSet<string> defines = new HashSet<string>();
+            foreach (var package in listRequest.Result)
+            {
+                if (PackageMacros.TryGetValue(package.name, out string macro))
+                {
+                    defines.Add(macro);
+                    Debug.Log($"检测到已安装包: {package.name}，启用宏: {macro}");
+                }
+            }
+
+            // 更新宏定义
+            UpdateScriptingDefines(defines);
+        }
+        
+        
+        static void UpdateScriptingDefines(HashSet<string> newDefines)
+        {
+            // 获取当前的宏定义
+            BuildTargetGroup targetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+            string definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup);
+            HashSet<string> currentDefines = new HashSet<string>(definesString.Split(';'));
+
+            // 仅保留我们管理的宏定义
+            foreach (var macro in PackageMacros.Values)
+            {
+                if (!newDefines.Contains(macro))
+                {
+                    currentDefines.Remove(macro);
+                }
+            }
+
+            // 添加新的宏定义
+            foreach (var define in newDefines)
+            {
+                currentDefines.Add(define);
+            }
+
+            // 更新宏定义
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(
+                targetGroup, 
+                string.Join(";", currentDefines)
+            );
+        }
+        
         
         [MenuItem("FrameWork/Addressables/安装包体")]
         public static void AddPack()
         {
-            Client.Add("com.unity.addressables.cn");
+            var addRequest=Client.Add("com.unity.addressables.cn");
+            while (!addRequest.IsCompleted)
+            {
+                
+            }
+            
+            CheckPackagesAndGenerateDefines();
+            
         }
 
         [MenuItem("FrameWork/刷新代码")]
@@ -35,17 +115,12 @@ namespace FrameWork
         {
             CompilationPipeline.RequestScriptCompilation();
         }
-        
-        
-        [MenuItem("FrameWork/配置/创建ab包版本文件")]
-        public static void CreateConfig()
-        {
-            //CreateConfig(Application.streamingAssetsPath+AssetBundle.GetAbDictoryPath(EditorUserBuildSettings.activeBuildTarget));
-        }
+
         
         [MenuItem("FrameWork/更新资源")]
         public static void AssetPackaged()
         {
+#if ADDRESSABLESCN_INSTALLED
             if (!Directory.Exists(abAssetPath))
             {
                 Directory.CreateDirectory(abAssetPath);
@@ -53,7 +128,15 @@ namespace FrameWork
             DirectoryInfo directoryInfo = new DirectoryInfo(abAssetPath);
             CheckDirectory(directoryInfo);
             AssetDatabase.Refresh();
+#endif
         }
+        
+#if ADDRESSABLESCN_INSTALLED
+        
+        
+        public static readonly AddressableAssetSettings setting = AssetDatabase.LoadAssetAtPath<AddressableAssetSettings>("Assets/AddressableAssetsData/AddressableAssetSettings.asset");
+        
+        
         
         private static void CheckFileInfo(FileInfo fileInfo,string dicPath,string dicName,string abName="other")
         {
@@ -99,5 +182,7 @@ namespace FrameWork
             }
             
         }
+#endif
+        
     }
 }
