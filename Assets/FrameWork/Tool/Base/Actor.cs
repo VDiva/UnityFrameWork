@@ -19,7 +19,7 @@ namespace FrameWork
         {
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
-            if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
+            if (infoAttribute==null||infoAttribute.PrefabName=="")return;
             GameObject go=null;
             go=ABMrg.Load<GameObject>(infoAttribute.PrefabName);
             _gameObject = GameObject.Instantiate(go);
@@ -34,7 +34,7 @@ namespace FrameWork
         {
             var type=GetType();
             var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
-            if (infoAttribute==null||infoAttribute.PackName==""|| infoAttribute.PrefabName=="")return;
+            if (infoAttribute==null||infoAttribute.PrefabName=="")return;
             GameObject go=null;
             go=ABMrg.Load<GameObject>(infoAttribute.PrefabName);
             _gameObject = GameObject.Instantiate(go,trans);
