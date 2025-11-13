@@ -15,6 +15,7 @@ using UnityEngine;
 #if ADDRESSABLESCN_INSTALLED
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 #endif
 namespace FrameWork
 {
@@ -147,7 +148,7 @@ namespace FrameWork
             {
                 group=setting.CreateGroup(dicPath,false, false, false, new List<AddressableAssetGroupSchema> { setting.DefaultGroup.Schemas[0] }, typeof(SchemaType));
             }
-
+            group.AddSchema<BundledAssetGroupSchema>();
             var path = abAssetPath + "/" + dicName + "/" + fileInfo.Name;
             
             var guid = AssetDatabase.AssetPathToGUID(path);
