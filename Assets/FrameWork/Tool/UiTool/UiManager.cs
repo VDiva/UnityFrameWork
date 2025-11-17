@@ -172,7 +172,7 @@ namespace FrameWork
                 _typesDic.Remove(uiActor.GetIndex());
                 _uiList.Remove(uiActor.GetIndex());
                 _uiDic.Remove(type);
-                GameObject.Destroy(uiActor.GetGameObject());
+                uiActor.GetGameObject().Destroy();
             }
             
         }

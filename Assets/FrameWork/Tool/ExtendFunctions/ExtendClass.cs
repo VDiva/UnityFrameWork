@@ -49,5 +49,26 @@ namespace FrameWork
                 }
             }
         }
+
+
+        public static void Destroy(this Transform tran)
+        {
+            GameObject.Destroy(tran.gameObject);
+        }
+        
+        public static void Destroy(this MonoBehaviour tran)
+        {
+            GameObject.Destroy(tran.gameObject);
+        }
+        
+        public static void Destroy(this Actor tran)
+        {
+            GameObject.Destroy(tran.GetGameObject());
+        }
+        
+        public static void Destroy(this GameObject tran)
+        {
+            GameObject.Destroy(tran);
+        }
     }
 }
