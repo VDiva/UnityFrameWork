@@ -1,5 +1,6 @@
 ﻿
 using System;
+using UnityEngine;
 
 #if ADDRESSABLESCN_INSTALLED
 using UnityEngine.AddressableAssets;
@@ -33,10 +34,10 @@ namespace FrameWork
             return default(T);
         }
 
-        public static void Release(object obj)
+        public static void Release(GameObject obj)
         {
 #if ADDRESSABLESCN_INSTALLED
-            Addressables.Release(obj);
+            Addressables.ReleaseInstance(obj);
 #endif
             
         }

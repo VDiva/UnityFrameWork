@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2560
     height: 989
   m_ShowMode: 4
-  m_Title: Project
+  m_Title: Hierarchy
   m_RootView: {fileID: 7}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -129,7 +129,7 @@ MonoBehaviour:
   m_MinSize: {x: 500, y: 100}
   m_MaxSize: {x: 40480, y: 8096}
   vertical: 0
-  controlID: 15
+  controlID: 18
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -149,8 +149,8 @@ MonoBehaviour:
     y: 0
     width: 576
     height: 939
-  m_MinSize: {x: 276, y: 71}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
@@ -624,7 +624,7 @@ MonoBehaviour:
     m_SaveData: []
     m_OverlaysVisible: 1
   m_SearchFilter:
-    m_NameFilter: 
+    m_NameFilter: abe
     m_ClassNames: []
     m_AssetLabels: []
     m_AssetBundleNames: []
@@ -636,7 +636,7 @@ MonoBehaviour:
     m_Folders:
     - Assets/FrameWork
     m_Globs: []
-    m_OriginalText: 
+    m_OriginalText: abe
     m_FilterByTypeIntersection: 0
   m_ViewMode: 1
   m_StartGridSize: 16
@@ -705,7 +705,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -897,7 +897,7 @@ MonoBehaviour:
     m_VAllowExceedBaseRangeMax: 1
     m_ScaleWithWindow: 0
     m_HSlider: 0
-    m_VSlider: 1
+    m_VSlider: 0
     m_IgnoreScrollWheelUntilClicked: 0
     m_EnableMouseInput: 1
     m_EnableSliderZoomHorizontal: 0
@@ -910,7 +910,7 @@ MonoBehaviour:
       y: 21
       width: 677
       height: 897
-    m_Scale: {x: 0.47812498, y: 0.478125}
+    m_Scale: {x: 0.4671875, y: 0.4671875}
     m_Translation: {x: 338.5, y: 448.5}
     m_MarginLeft: 0
     m_MarginRight: 0
@@ -918,12 +918,12 @@ MonoBehaviour:
     m_MarginBottom: 0
     m_LastShownAreaInsideMargins:
       serializedVersion: 2
-      x: -707.9739
-      y: -938.0392
-      width: 1415.9478
-      height: 1876.0784
+      x: -724.5485
+      y: -960
+      width: 1449.097
+      height: 1920
     m_MinimalGUI: 1
-  m_defaultScale: 0.478125
+  m_defaultScale: 0.4671875
   m_LastWindowPixelSize: {x: 677, y: 918}
   m_ClearInEditMode: 1
   m_NoCameraWarning: 1
