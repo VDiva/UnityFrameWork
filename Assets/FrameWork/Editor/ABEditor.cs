@@ -33,11 +33,12 @@ namespace FrameWork
         // 需要检查的包及其对应的宏定义
         private static readonly Dictionary<string, string> PackageMacros = new Dictionary<string, string>
         {
-            {"com.unity.addressables.cn", "ADDRESSABLESCN_INSTALLED"}
+            {"com.unity.addressables.cn", "ADDRESSABLESCN_INSTALLED"},
+            {"com.code-philosophy.hybridclr", "HYBRIDCLR_INSTALLED"}
         };
         
         
-        [MenuItem("FrameWork/Addressables/更新宏定义")]
+        [MenuItem("FrameWork/更新宏定义")]
         static void CheckPackagesAndGenerateDefines()
         {
             ListRequest listRequest = Client.List();

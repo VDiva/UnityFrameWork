@@ -1,6 +1,10 @@
 using System;
 using System.IO;
+
+#if HYBRIDCLR_INSTALLED
 using HybridCLR.Editor.Commands;
+#endif
+
 using UnityEditor;
 using UnityEngine;
 
@@ -8,7 +12,7 @@ namespace FrameWork
 {
     public class DllTool: UnityEditor.Editor
     {
-        
+#if HYBRIDCLR_INSTALLED
         [MenuItem("FrameWork/程序集/更新程序集")]
         public static void Update()
         {
@@ -41,6 +45,8 @@ namespace FrameWork
         {
             PrebuildCommand.GenerateAll();
         }
+#endif
+        
 
 
         public static string GetPath()
