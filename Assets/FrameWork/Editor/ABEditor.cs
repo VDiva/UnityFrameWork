@@ -34,7 +34,8 @@ namespace FrameWork
         private static readonly Dictionary<string, string> PackageMacros = new Dictionary<string, string>
         {
             {"com.unity.addressables.cn", "ADDRESSABLESCN_INSTALLED"},
-            {"com.code-philosophy.hybridclr", "HYBRIDCLR_INSTALLED"}
+            {"com.code-philosophy.hybridclr", "HYBRIDCLR_INSTALLED"},
+            {"com.unity.mathematics", "MATHEMATICS"},
         };
         
         
@@ -99,14 +100,19 @@ namespace FrameWork
         }
         
         
-        [MenuItem("FrameWork/Addressables/安装包体")]
+        [MenuItem("FrameWork/安装必要包体")]
         public static void AddPack()
         {
-            var addRequest=Client.Add("com.unity.addressables.cn");
-            while (!addRequest.IsCompleted)
+
+            foreach (var item in PackageMacros.Keys)
             {
-                
+                var addRequest=Client.Add(item);
+                while (!addRequest.IsCompleted)
+                {
+                    
+                }
             }
+            
             
             CheckPackagesAndGenerateDefines();
             
