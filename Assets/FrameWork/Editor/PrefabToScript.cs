@@ -184,6 +184,33 @@ namespace FrameWork.Editor
                     swAttr.WriteLine("}");
                 }
             }
+            
+            
+            if (!File.Exists(path + "/" + name + "//" + name + ".Fun.cs"))
+            {
+                using (StreamWriter sw = new StreamWriter(path + "/" + name + "//" + name + ".Fun.cs", false))
+                {
+                    // sw.WriteLine("using UnityEngine;");
+                    // sw.WriteLine("using UnityEngine.Video;");
+                    // sw.WriteLine("using FrameWork;");
+                    // sw.WriteLine("using Spine.Unity;");
+                    // sw.WriteLine("using UnityEngine.UI;");
+                    for (int i = 0; i < spawnScriptUse.Length; i++)
+                    {
+                        sw.WriteLine($"using {spawnScriptUse[i]};");
+                    }
+
+
+                    sw.WriteLine("namespace FrameWork\n{");
+                    sw.WriteLine("\tpublic partial class " + name + " : " + scriptName);
+                    sw.WriteLine("\t{");
+
+                    sw.WriteLine("\t}");
+                    sw.WriteLine("}");
+                }
+            }
+            
+            
             ABEditor.AssetPackaged();
             AssetDatabase.Refresh();
 
