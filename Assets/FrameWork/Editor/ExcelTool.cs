@@ -356,9 +356,13 @@ namespace FrameWork
         
         public static DataSet GetTabelData(string path)
         {
-            var reader = ExcelReaderFactory.CreateOpenXmlReader(File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
-            var dataSet = reader.AsDataSet();
-            return dataSet;
+            using (var fileStream=File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                var reader = ExcelReaderFactory.CreateOpenXmlReader(fileStream);
+                var dataSet = reader.AsDataSet();
+                return dataSet;
+            }
+            
         }
     }
 }
