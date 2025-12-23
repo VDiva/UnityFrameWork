@@ -167,6 +167,7 @@ namespace FrameWork
             return resultArray;
         }
 
+        public static string Key => "kljsdkkdlo4454GG00155sajuklmbkdl";
 
         public static bool IsAndroid()
         {
