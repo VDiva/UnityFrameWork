@@ -1,0 +1,35 @@
+{
+    "Configs": [
+        {
+            "ID": 1,
+            "Name": "啊吴大维",
+            "App": {
+                "appid": 15156988,
+                "desc": "",
+                "buildoutput": "..\\output\\",
+                "contentroot": "..\\content\\",
+                "setlive": "",
+                "preview": false,
+                "local": "",
+                "depots": {}
+            },
+            "Depots": [
+                {
+                    "ID": 1,
+                    "Name": "15156988",
+                    "Depot": {
+                        "DepotID": 15156989,
+                        "FileMapping": {
+                            "LocalPath": "",
+                            "DepotPath": "",
+                            "recursive": false
+                        },
+                        "FileExclusion": ""
+                    }
+                }
+            ],
+            "ConfigBranches": [],
+            "Branches": []
+        }
+    ]
+}

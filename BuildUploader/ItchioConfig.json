@@ -1,0 +1,25 @@
+{
+    "Users": [],
+    "Channels": [
+        {
+            "ID": 1,
+            "Name": "windows"
+        },
+        {
+            "ID": 2,
+            "Name": "mac"
+        },
+        {
+            "ID": 3,
+            "Name": "linux"
+        },
+        {
+            "ID": 4,
+            "Name": "webgl"
+        },
+        {
+            "ID": 5,
+            "Name": "android"
+        }
+    ]
+}

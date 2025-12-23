@@ -1,0 +1,147 @@
+
+
+[2025-12-23 17:08:21] Startup - updater built Jun  8 2020 17:15:58
+[2025-12-23 17:08:21] Checking for update on startup
+[2025-12-23 17:08:21] Checking for available update...
+[2025-12-23 17:08:21] Downloading manifest: client-download.steampowered.com/client/steam_cmd_win32
+[2025-12-23 17:08:21] Download failed: http error 0 (client-download.steampowered.com/client/steam_cmd_win32)
+[2025-12-23 17:08:21] Downloading manifest: media.steampowered.com/client/steam_cmd_win32
+[2025-12-23 17:08:23] Package file steamcmd_public_all.zip.ea97f8fd711e4ae492274da96e83bf31eb804528 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_bins_win32.zip.vz.47a6264c302d32529fb25e0c57569a5fe3cab834_14660360 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_steamservice_win32.zip.vz.5f5b5f75c3b81dfa9a026b087f8cceccefb16504_1778193 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_steamerrorreporter_win32.zip.2b1c31b0f8cdfe741d923767976c0275509d827b missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_siteserverui_win32.zip.vz.051f68b1d1ddcfdbca70798251f082a8ede8894b_10761593 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_win32.zip.vz.3e1144545c9427d4eccdbca9162c6c0e614ffdb2_1765604 missing or incorrect size
+[2025-12-23 17:08:23] Add pending download: client-download.steampowered.com/client/steamcmd_public_all.zip.ea97f8fd711e4ae492274da96e83bf31eb804528
+[2025-12-23 17:08:23] Add pending download: client-download.steampowered.com/client/steamcmd_bins_win32.zip.vz.47a6264c302d32529fb25e0c57569a5fe3cab834_14660360
+[2025-12-23 17:08:23] Add pending download: client-download.steampowered.com/client/steamcmd_steamservice_win32.zip.vz.5f5b5f75c3b81dfa9a026b087f8cceccefb16504_1778193
+[2025-12-23 17:08:23] Add pending download: client-download.steampowered.com/client/steamcmd_steamerrorreporter_win32.zip.2b1c31b0f8cdfe741d923767976c0275509d827b
+[2025-12-23 17:08:23] Add pending download: client-download.steampowered.com/client/steamcmd_siteserverui_win32.zip.vz.051f68b1d1ddcfdbca70798251f082a8ede8894b_10761593
+[2025-12-23 17:08:23] Add pending download: client-download.steampowered.com/client/steamcmd_win32.zip.vz.3e1144545c9427d4eccdbca9162c6c0e614ffdb2_1765604
+[2025-12-23 17:08:23] Error: Download of package (steamcmd_siteserverui_win32) failed after 0 bytes (0 : 0).
+[2025-12-23 17:08:23] Error: Download of package (steamcmd_steamerrorreporter_win32) failed after 0 bytes (0 : 0).
+[2025-12-23 17:08:23] Error: Download of package (steamcmd_steamservice_win32) failed after 0 bytes (0 : 0).
+[2025-12-23 17:08:23] Error: Download of package (steamcmd_bins_win32) failed after 0 bytes (0 : 0).
+[2025-12-23 17:08:23] Error: Download of package (steamcmd_public_all) failed after 0 bytes (0 : 0).
+[2025-12-23 17:08:23] Downloading update (0 of 28,576 KB)...
+[2025-12-23 17:08:23] Error: Download of package (steamcmd_win32) failed after 0 bytes (0 : 0).
+[2025-12-23 17:08:23] Package file steamcmd_public_all.zip.ea97f8fd711e4ae492274da96e83bf31eb804528 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_bins_win32.zip.vz.47a6264c302d32529fb25e0c57569a5fe3cab834_14660360 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_steamservice_win32.zip.vz.5f5b5f75c3b81dfa9a026b087f8cceccefb16504_1778193 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_steamerrorreporter_win32.zip.2b1c31b0f8cdfe741d923767976c0275509d827b missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_siteserverui_win32.zip.vz.051f68b1d1ddcfdbca70798251f082a8ede8894b_10761593 missing or incorrect size
+[2025-12-23 17:08:23] Package file steamcmd_win32.zip.vz.3e1144545c9427d4eccdbca9162c6c0e614ffdb2_1765604 missing or incorrect size
+[2025-12-23 17:08:23] Add pending download: media.steampowered.com/client/steamcmd_public_all.zip.ea97f8fd711e4ae492274da96e83bf31eb804528
+[2025-12-23 17:08:23] Add pending download: media.steampowered.com/client/steamcmd_bins_win32.zip.vz.47a6264c302d32529fb25e0c57569a5fe3cab834_14660360
+[2025-12-23 17:08:23] Add pending download: media.steampowered.com/client/steamcmd_steamservice_win32.zip.vz.5f5b5f75c3b81dfa9a026b087f8cceccefb16504_1778193
+[2025-12-23 17:08:23] Add pending download: media.steampowered.com/client/steamcmd_steamerrorreporter_win32.zip.2b1c31b0f8cdfe741d923767976c0275509d827b
+[2025-12-23 17:08:23] Add pending download: media.steampowered.com/client/steamcmd_siteserverui_win32.zip.vz.051f68b1d1ddcfdbca70798251f082a8ede8894b_10761593
+[2025-12-23 17:08:24] Add pending download: media.steampowered.com/client/steamcmd_win32.zip.vz.3e1144545c9427d4eccdbca9162c6c0e614ffdb2_1765604
+[2025-12-23 17:08:24] Downloading update (76 of 28,576 KB)...
+[2025-12-23 17:08:24] Downloading update (474 of 28,576 KB)...
+[2025-12-23 17:08:24] Downloading update (1,509 of 28,576 KB)...
+[2025-12-23 17:08:25] Downloading update (5,653 of 28,576 KB)...
+[2025-12-23 17:08:25] Downloading update (11,701 of 28,576 KB)...
+[2025-12-23 17:08:25] Downloading update (21,476 of 28,576 KB)...
+[2025-12-23 17:08:25] Downloading update (27,379 of 28,576 KB)...
+[2025-12-23 17:08:26] Downloading update (28,576 of 28,576 KB)...
+[2025-12-23 17:08:26] Download Complete.
+[2025-12-23 17:08:26] uninstalled manifest found in D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\package\steam_cmd_win32 (1).
+[2025-12-23 17:08:26] Found pending update
+[2025-12-23 17:08:26] Applying update...
+[2025-12-23 17:08:26] Extracting package...
+[2025-12-23 17:08:27] Installing update...
+
+
+[2025-12-23 17:10:18] Startup - updater built Jun  8 2020 17:15:58
+[2025-12-23 17:10:18] Checking for update on startup
+[2025-12-23 17:10:18] Checking for available update...
+[2025-12-23 17:10:18] Downloading manifest: client-download.steampowered.com/client/steam_cmd_win32
+[2025-12-23 17:10:18] Download failed: http error 0 (client-download.steampowered.com/client/steam_cmd_win32)
+[2025-12-23 17:10:18] Downloading manifest: media.steampowered.com/client/steam_cmd_win32
+[2025-12-23 17:10:18] Download Complete.
+[2025-12-23 17:10:18] uninstalled manifest found in D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\package\steam_cmd_win32 (1).
+[2025-12-23 17:10:18] Found pending update
+[2025-12-23 17:10:18] Applying update...
+[2025-12-23 17:10:18] Extracting package...
+[2025-12-23 17:10:19] Bad NTFS transaction canary detected, using non-atomic replacement
+[2025-12-23 17:10:19] Installing update...
+[2025-12-23 17:10:20] Failed to clear up temporary update files used for rollback, continuing anyway
+[2025-12-23 17:10:20] Cleaning up...
+[2025-12-23 17:10:20] Update complete, launching...
+[2025-12-23 17:10:20] Shutdown
+
+
+[2025-12-23 17:10:20] Startup - updater built Dec 22 2025 16:45:24
+[2025-12-23 17:10:20] Startup - Steam Client launched with: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamcmd.exe
+[2025-12-23 17:10:20] Windows 10.0.26200.0, 0, 2, 256, 1, 48 
+[2025-12-23 17:10:20] Failed to load cached hosts file (File 'update_hosts_cached.vdf' not found), using defaults
+[2025-12-23 17:10:20] Using the following download hosts for Public, Realm steamglobal
+[2025-12-23 17:10:20] 1. https://client-update.steamstatic.com, /, Realm 'steamglobal', weight was 1, source = 'baked in'
+[2025-12-23 17:10:20] Checking for update on startup
+[2025-12-23 17:10:20] Checking for available updates...
+[2025-12-23 17:10:20] Downloading manifest: https://client-update.steamstatic.com/steam_cmd_win64
+[2025-12-23 17:10:20] Manifest download: send request
+[2025-12-23 17:10:20] Manifest download: waiting for download to finish
+[2025-12-23 17:10:25] Manifest download: finished
+[2025-12-23 17:10:25] Downloaded new manifest: /steam_cmd_win64 version 1766451518, installed version 0, existing pending version 0
+[2025-12-23 17:10:25] Package file steamcmd_bins_win64.zip.vz.e5f8de1f6e7fc1b5bf3e07b32c536e4f18b97ee5_14663463 missing or incorrect size
+[2025-12-23 17:10:25] Package file steamcmd_steamservice_win64.zip.vz.d3b63b2868ed720b69bbdbb7960f68c995c38fbb_2024474 missing or incorrect size
+[2025-12-23 17:10:25] Package file steamcmd_steamerrorreporter_win64.zip.059f0871bcf10825f3fc4ad0ca04244b5a8adaea missing or incorrect size
+[2025-12-23 17:10:25] Package file steamcmd_siteserverui_win64.zip.vz.199c8c3e2f402ca7daf759f3f2cb51ca9633aac0_10766091 missing or incorrect size
+[2025-12-23 17:10:25] Package file steamcmd_win64.zip.vz.2ab7cc1d7fd941fe04725b68d313602004938a46_2021908 missing or incorrect size
+[2025-12-23 17:10:25] Add pending download: https://client-update.steamstatic.com/steamcmd_bins_win64.zip.vz.e5f8de1f6e7fc1b5bf3e07b32c536e4f18b97ee5_14663463
+[2025-12-23 17:10:25] Manifest download: send request
+[2025-12-23 17:10:25] Add pending download: https://client-update.steamstatic.com/steamcmd_steamservice_win64.zip.vz.d3b63b2868ed720b69bbdbb7960f68c995c38fbb_2024474
+[2025-12-23 17:10:25] Manifest download: send request
+[2025-12-23 17:10:25] Add pending download: https://client-update.steamstatic.com/steamcmd_steamerrorreporter_win64.zip.059f0871bcf10825f3fc4ad0ca04244b5a8adaea
+[2025-12-23 17:10:25] Manifest download: send request
+[2025-12-23 17:10:25] Add pending download: https://client-update.steamstatic.com/steamcmd_siteserverui_win64.zip.vz.199c8c3e2f402ca7daf759f3f2cb51ca9633aac0_10766091
+[2025-12-23 17:10:25] Manifest download: send request
+[2025-12-23 17:10:25] Add pending download: https://client-update.steamstatic.com/steamcmd_win64.zip.vz.2ab7cc1d7fd941fe04725b68d313602004938a46_2021908
+[2025-12-23 17:10:25] Manifest download: send request
+[2025-12-23 17:10:25] Downloading update (0 of 29,017 KB)...
+[2025-12-23 17:10:26] Downloading update (79 of 29,017 KB)...
+[2025-12-23 17:10:26] Downloading update (511 of 29,017 KB)...
+[2025-12-23 17:10:26] Downloading update (2,016 of 29,017 KB)...
+[2025-12-23 17:10:26] Downloading update (5,197 of 29,017 KB)...
+[2025-12-23 17:10:27] Downloading update (10,756 of 29,017 KB)...
+[2025-12-23 17:10:27] Downloading update (17,133 of 29,017 KB)...
+[2025-12-23 17:10:27] Downloading update (22,403 of 29,017 KB)...
+[2025-12-23 17:10:28] Downloading update (26,912 of 29,017 KB)...
+[2025-12-23 17:10:28] Downloading update (29,017 of 29,017 KB)...
+[2025-12-23 17:10:28] Download complete.
+[2025-12-23 17:10:28] Saving metrics to disk (D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\package\steam_cmd_metrics.bin)
+[2025-12-23 17:10:28] uninstalled manifest found in D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\package\steam_cmd_win64 (1).
+[2025-12-23 17:10:28] Found pending update
+[2025-12-23 17:10:28] Installing update...
+[2025-12-23 17:10:28] Extracting package...
+[2025-12-23 17:10:29] Bad NTFS transaction canary detected, using non-atomic replacement
+[2025-12-23 17:10:29] Installing update...
+[2025-12-23 17:10:31] BCommitUpdatedFiles: renaming stale file ./steamcmd.exe.old -> ./steamcmd.exe.1.delete
+[2025-12-23 17:10:32] Could not remove backup file (5): ./crashhandler.dll.old
+[2025-12-23 17:10:32] Could not remove backup file (5): ./steamcmd.exe.old
+[2025-12-23 17:10:32] Failed to clean up after update, continuing...
+[2025-12-23 17:10:32] Cleaning up...
+[2025-12-23 17:10:32] Update complete, launching Steamcmd...
+[2025-12-23 17:10:32] Shutdown
+
+
+[2025-12-23 17:10:32] Startup - updater built Dec 22 2025 16:46:12
+[2025-12-23 17:10:32] Startup - Steam Client launched with: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamcmd.exe
+[2025-12-23 17:10:32] Windows 10.0.26200.0, 0, 2, 256, 1, 48 
+[2025-12-23 17:10:32] Loading cached metrics from disk (D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\package\steam_cmd_metrics.bin)
+[2025-12-23 17:10:32] Failed to load cached hosts file (File 'update_hosts_cached.vdf' not found), using defaults
+[2025-12-23 17:10:32] Using the following download hosts for Public, Realm steamglobal
+[2025-12-23 17:10:32] 1. https://client-update.steamstatic.com, /, Realm 'steamglobal', weight was 1, source = 'baked in'
+[2025-12-23 17:10:32] Checking for update on startup
+[2025-12-23 17:10:32] Checking for available updates...
+[2025-12-23 17:10:32] Downloading manifest: https://client-update.steamstatic.com/steam_cmd_win64
+[2025-12-23 17:10:32] Manifest download: send request
+[2025-12-23 17:10:32] Manifest download: waiting for download to finish
+[2025-12-23 17:10:37] Manifest download: finished
+[2025-12-23 17:10:37] Download skipped: /steam_cmd_win64 version 1766451518, installed version 1766451518, existing pending version 0
+[2025-12-23 17:10:37] Nothing to do
+[2025-12-23 17:10:37] Verifying installation...
+[2025-12-23 17:10:37] Verifying all executable checksums
+[2025-12-23 17:10:37] Verification complete

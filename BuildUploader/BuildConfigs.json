@@ -1,0 +1,103 @@
+{
+	"Version": 1,
+	"Configs": [
+		{
+			"GUID": "9d0e38",
+			"BuildName": "Debugging Build",
+			"ProductName": "Game-FrameWork",
+			"ExtraScriptingDefines": [
+				"MIRROR",
+				"MIRROR_81_OR_NEWER",
+				"MIRROR_82_OR_NEWER",
+				"MIRROR_83_OR_NEWER",
+				"MIRROR_84_OR_NEWER",
+				"MIRROR_85_OR_NEWER",
+				"MIRROR_86_OR_NEWER",
+				"MIRROR_89_OR_NEWER",
+				"MIRROR_90_OR_NEWER",
+				"MIRROR_93_OR_NEWER",
+				"EDGEGAP_PLUGIN_SERVERS",
+				"ODIN_INSPECTOR",
+				"ODIN_INSPECTOR_3",
+				"ODIN_INSPECTOR_3_1",
+				"ODIN_INSPECTOR_3_2",
+				"ODIN_INSPECTOR_3_3",
+				"INVECTOR_BASIC",
+				"INVECTOR_MELEE",
+				"INVECTOR_SHOOTER"
+			],
+			"Scenes": [
+				
+			],
+			"IsDevelopmentBuild": true,
+			"BuildScriptsOnly": false,
+			"AllowDebugging": true,
+			"ConnectProfiler": true,
+			"EnableDeepProfilingSupport": false,
+			"SwitchTargetPlatform": false,
+			"TargetPlatform": "Standalone",
+			"TargetPlatformSubTarget": 0,
+			"Target": "StandaloneWindows64",
+			"TargetArchitecture": "x64",
+			"StackTraceLogTypes": {
+				"Error": "ScriptOnly",
+				"Assert": "ScriptOnly",
+				"Warning": "ScriptOnly",
+				"Log": "ScriptOnly",
+				"Exception": "ScriptOnly"
+			},
+			"StrippingLevel": "Low",
+			"ScriptingBackend": "IL2CPP",
+			"CompressionMethod": "Default"
+		},
+		{
+			"GUID": "b91a7c",
+			"BuildName": "Release Build",
+			"ProductName": "awaw",
+			"ExtraScriptingDefines": [
+				"MIRROR",
+				"MIRROR_81_OR_NEWER",
+				"MIRROR_82_OR_NEWER",
+				"MIRROR_83_OR_NEWER",
+				"MIRROR_84_OR_NEWER",
+				"MIRROR_85_OR_NEWER",
+				"MIRROR_86_OR_NEWER",
+				"MIRROR_89_OR_NEWER",
+				"MIRROR_90_OR_NEWER",
+				"MIRROR_93_OR_NEWER",
+				"EDGEGAP_PLUGIN_SERVERS",
+				"ODIN_INSPECTOR",
+				"ODIN_INSPECTOR_3",
+				"ODIN_INSPECTOR_3_1",
+				"ODIN_INSPECTOR_3_2",
+				"ODIN_INSPECTOR_3_3",
+				"INVECTOR_BASIC",
+				"INVECTOR_MELEE",
+				"INVECTOR_SHOOTER"
+			],
+			"Scenes": [
+				
+			],
+			"IsDevelopmentBuild": false,
+			"BuildScriptsOnly": false,
+			"AllowDebugging": false,
+			"ConnectProfiler": false,
+			"EnableDeepProfilingSupport": false,
+			"SwitchTargetPlatform": false,
+			"TargetPlatform": "Standalone",
+			"TargetPlatformSubTarget": 0,
+			"Target": "StandaloneWindows64",
+			"TargetArchitecture": "x64",
+			"StackTraceLogTypes": {
+				"Error": "ScriptOnly",
+				"Assert": "None",
+				"Warning": "None",
+				"Log": "None",
+				"Exception": "ScriptOnly"
+			},
+			"StrippingLevel": "Minimal",
+			"ScriptingBackend": "IL2CPP",
+			"CompressionMethod": "Lz4"
+		}
+	]
+}
