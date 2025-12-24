@@ -145,3 +145,23 @@
 [2025-12-23 17:10:37] Verifying installation...
 [2025-12-23 17:10:37] Verifying all executable checksums
 [2025-12-23 17:10:37] Verification complete
+
+
+[2025-12-24 11:56:25] Startup - updater built Dec 22 2025 16:46:12
+[2025-12-24 11:56:25] Startup - Steam Client launched with: "D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamcmd.exe" 
+[2025-12-24 11:56:25] Windows 10.0.26200.0, 0, 2, 256, 1, 48 
+[2025-12-24 11:56:25] Loading cached metrics from disk (D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\package\steam_cmd_metrics.bin)
+[2025-12-24 11:56:25] Failed to load cached hosts file (File 'update_hosts_cached.vdf' not found), using defaults
+[2025-12-24 11:56:25] Using the following download hosts for Public, Realm steamglobal
+[2025-12-24 11:56:25] 1. https://client-update.steamstatic.com, /, Realm 'steamglobal', weight was 1, source = 'baked in'
+[2025-12-24 11:56:25] Checking for update on startup
+[2025-12-24 11:56:25] Checking for available updates...
+[2025-12-24 11:56:25] Downloading manifest: https://client-update.steamstatic.com/steam_cmd_win64
+[2025-12-24 11:56:25] Manifest download: send request
+[2025-12-24 11:56:26] Manifest download: waiting for download to finish
+[2025-12-24 11:56:27] Manifest download: finished
+[2025-12-24 11:56:27] Download skipped: /steam_cmd_win64 version 1766451518, installed version 1766451518, existing pending version 0
+[2025-12-24 11:56:27] Nothing to do
+[2025-12-24 11:56:27] Verifying installation...
+[2025-12-24 11:56:27] Verifying all executable checksums
+[2025-12-24 11:56:27] Verification complete

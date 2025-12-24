@@ -5,3 +5,10 @@
 [2025-12-23 17:10:37] [Logged Off, 0, 0] [U:1:0] CCMInterface::SetSteamID( [U:1:0] )
 [2025-12-23 17:10:37] IPv6 HTTP connectivity test (ipv6check-http.steamserver.net / 0.0.0.0:80 (127.0.0.1:7890)) - TIMEOUT
 [2025-12-23 17:10:37] IPv6 UDP connectivity test (ipv6check-udp.steamserver.net) - FAILED, no addresses resolved
+
+
+[2025-12-24 11:56:27] Client version: 1766451518
+[2025-12-24 11:56:27] Log session started
+[2025-12-24 11:56:27] [Logged Off, 0, 0] [U:1:0] CCMInterface::SetSteamID( [U:1:0] )
+[2025-12-24 11:56:27] IPv6 HTTP connectivity test (ipv6check-http.steamserver.net / 0.0.0.0:80 (127.0.0.1:7890)) - TIMEOUT
+[2025-12-24 11:56:27] IPv6 UDP connectivity test (ipv6check-udp.steamserver.net) - FAILED, no addresses resolved
