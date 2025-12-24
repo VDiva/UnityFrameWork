@@ -148,6 +148,8 @@ namespace FrameWork
             byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
             return resultArray;
         }
+
+        
  
         /// <summary>
         /// AES解密
@@ -166,9 +168,150 @@ namespace FrameWork
             byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
             return resultArray;
         }
+        
+        
+        
+        public static string Encrypt(string toEncrypt)
+        {
+            return Encrypt(toEncrypt, Key);
+        }
+        
+        public static string Decrypt(string toEncrypt)
+        {
+            return Decrypt(toEncrypt, Key);
+        }
 
         public static string Key => "kljsdkkdlo4454GG00155sajuklmbkdl";
 
+        
+        public static string GetFileDecryptName(string fileName, string end=".Png")
+        {
+            return Encrypt(fileName)+end;
+        }
+        
+        
+        
+        
+        // 加密方法
+        public static string Encrypt(string plainText, string secretKey)
+        {
+            if (string.IsNullOrEmpty(plainText)) return "";
+            if (string.IsNullOrEmpty(secretKey)) throw new ArgumentException("Key cannot be empty");
+
+            // 1. 准备 Key 和 IV (为了简化，这里使用 Key 的 MD5 值同时作为 Key 和 IV)
+            // 实际生产中建议 IV 随机生成并拼接到密文中，但为了保证只输出字母数字，固定 IV 比较好处理
+            byte[] keyBytes = GetMD5Hash(secretKey); 
+            byte[] ivBytes = keyBytes; // 这里复用 Key 作为 IV，或者你可以指定另一个固定的 16字节数组
+
+            byte[] encryptedBytes;
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = keyBytes;
+                aes.IV = ivBytes;
+                aes.Mode = CipherMode.CBC; // CBC 模式比较安全
+                aes.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter sw = new StreamWriter(cs))
+                        {
+                            sw.Write(plainText);
+                        }
+                        encryptedBytes = ms.ToArray();
+                    }
+                }
+            }
+
+            // 2. 将二进制转换为 16进制字符串 (只包含 0-9, A-F)
+            return BytesToHexString(encryptedBytes);
+        }
+
+        // 解密方法
+        public static string Decrypt(string encryptedHexString, string secretKey)
+        {
+            if (string.IsNullOrEmpty(encryptedHexString)) return "";
+            if (string.IsNullOrEmpty(secretKey)) throw new ArgumentException("Key cannot be empty");
+
+            try
+            {
+                // 1. 将 16进制字符串 转回 二进制
+                byte[] cipherTextBytes = HexStringToBytes(encryptedHexString);
+
+                // 2. 准备 Key 和 IV
+                byte[] keyBytes = GetMD5Hash(secretKey);
+                byte[] ivBytes = keyBytes;
+
+                string plaintext = null;
+
+                using (Aes aes = Aes.Create())
+                {
+                    aes.Key = keyBytes;
+                    aes.IV = ivBytes;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                    using (MemoryStream ms = new MemoryStream(cipherTextBytes))
+                    {
+                        using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                        {
+                            using (StreamReader sr = new StreamReader(cs))
+                            {
+                                plaintext = sr.ReadToEnd();
+                            }
+                        }
+                    }
+                }
+                return plaintext;
+            }
+            catch (Exception)
+            {
+                // 解密失败（通常是 Key 不对或者字符串被篡改）
+                return "解密失败：Key 错误或密文损坏";
+            }
+        }
+
+        // 辅助：计算 MD5 (用于将任意长度的 Key 变成固定的 16字节数组)
+        private static byte[] GetMD5Hash(string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                return md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+            }
+        }
+
+        // 辅助：字节数组转 16进制字符串 (结果类似 "4A12B...")
+        private static string BytesToHexString(byte[] bytes)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in bytes)
+            {
+                sb.Append(b.ToString("X2")); // X2 表示两位大写十六进制
+            }
+            return sb.ToString();
+        }
+
+        // 辅助：16进制字符串转字节数组
+        private static byte[] HexStringToBytes(string hex)
+        {
+            if (hex.Length % 2 != 0) throw new ArgumentException("Hex string length must be even.");
+            
+            byte[] bytes = new byte[hex.Length / 2];
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            }
+            return bytes;
+        }
+    
+        
+        
         public static bool IsAndroid()
         {
             return CheckPlatform(RuntimePlatform.Android);
