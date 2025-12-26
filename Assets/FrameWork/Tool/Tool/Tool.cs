@@ -309,6 +309,16 @@ namespace FrameWork
             }
             return bytes;
         }
+        
+        public static bool InCircle(int x, int y, Vector2Int circleCenter, int r)
+        {
+            return Mathf.Pow(x - circleCenter.x, 2) + Mathf.Pow(y - circleCenter.y, 2) < Mathf.Pow(r, 2);
+        }
+        
+        public static bool IsInSquare(int x, int y, int width, int height,int curX,int curY)
+        {
+            return curX >= x - width / 2 && curX <= x + width / 2 && curY >= y - height / 2 && curY <= y + height / 2;
+        }
     
         public static Vector2 GetTargetLocalLoc(RectTransform target,Vector3 pos)
         {
