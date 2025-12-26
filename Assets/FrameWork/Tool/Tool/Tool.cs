@@ -310,7 +310,11 @@ namespace FrameWork
             return bytes;
         }
     
-        
+        public static Vector2 GetTargetLocalLoc(RectTransform target,Vector3 pos)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(target, pos, null, out var position);
+            return position;
+        }
         
         public static bool IsAndroid()
         {
