@@ -14,10 +14,6 @@ namespace FrameWork
 {
     public static class Tool
     {
-        
-        
-        
-        
         public static string GetAbName(string name)
         {
             return GetMd5AsString(name);
