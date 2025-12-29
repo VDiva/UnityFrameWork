@@ -8,7 +8,7 @@
                 "desc": "",
                 "buildoutput": "..\\output\\",
                 "contentroot": "..\\content\\",
-                "setlive": "",
+                "setlive": "bate",
                 "preview": false,
                 "local": "",
                 "depots": {}
@@ -16,7 +16,7 @@
             "Depots": [
                 {
                     "ID": 1,
-                    "Name": "15156988",
+                    "Name": "Windows",
                     "Depot": {
                         "DepotID": 15156989,
                         "FileMapping": {
@@ -28,7 +28,16 @@
                     }
                 }
             ],
-            "ConfigBranches": [],
+            "ConfigBranches": [
+                {
+                    "id": 1,
+                    "name": "none"
+                },
+                {
+                    "id": 2,
+                    "name": "bate"
+                }
+            ],
             "Branches": []
         }
     ]

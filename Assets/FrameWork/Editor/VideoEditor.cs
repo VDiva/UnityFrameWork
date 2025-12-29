@@ -11,12 +11,15 @@ namespace FrameWork.Editor
     {
 
 
-        private static string _videoPath = "/Video";
-        private static string _outVideoPath = "/Assets/StreamingAssets/Video";
-
+        private static string _videoPath = "/Video/Nor";
+        private static string _outVideoPath = "/Assets/StreamingAssets/Video/Nor";
 
         
-        [MenuItem("FrameWork/加密视频文件并复制到目录下")]
+        private static string _videoPath4k = "/Video/High";
+        private static string _outVideoPath4k = "/Assets/StreamingAssets/Video/High";
+
+        
+        [MenuItem("FrameWork/加密视频文件并复制到目录下普通目录下")]
         public static void CopyVideo()
         {
             
@@ -71,6 +74,65 @@ namespace FrameWork.Editor
             
             AssetDatabase.Refresh();
         }
+        
+        
+        
+        [MenuItem("FrameWork/加密视频文件并复制到目录下4k视频目录下")]
+        public static void CopyVideo4k()
+        {
+            
+            var path=Application.dataPath.Replace("Assets", "");
+            var filePath= path + _videoPath4k;
+            var outPath = path + _outVideoPath4k;
+
+            if (!Directory.Exists(outPath))
+            {
+                Directory.CreateDirectory(outPath);
+            }
+            
+            if (!Directory.Exists(filePath))
+            {
+                Directory.CreateDirectory(filePath);
+            }
+            
+            
+            
+            var dir = new DirectoryInfo(filePath);
+            CheckDir(dir);
+            
+            void CheckDir(DirectoryInfo directoryInfo)
+            {
+                
+                var dirs= directoryInfo.GetDirectories();
+                for (int i = 0; i < dirs.Length; i++)
+                {
+                    CheckDir(dirs[i]);
+                }
+                
+                
+                var files=directoryInfo.GetFiles("*.mp4");
+                for (int i = 0; i < files.Length; i++)
+                {
+                    CheckFile(files[i]);
+                }
+            }
+
+            void CheckFile(FileInfo fileInfo)
+            {
+                //var dirName = Path.GetDirectoryName(fileInfo.FullName);
+                var outName =Tool.Encrypt(Path.GetFileNameWithoutExtension(fileInfo.Name));
+                var outP=outPath+"/" + outName+".Png";
+                
+                if (!File.Exists(outP))
+                {
+                    File.Create(outP).Close();
+                }
+                AddHeaderObfuscation(fileInfo.FullName,outP);
+            }
+            
+            AssetDatabase.Refresh();
+        }
+        
         
         
         // 简单的加密脚本：在文件头加 1024 字节的垃圾数据

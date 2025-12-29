@@ -10,3 +10,27 @@
 [2025-12-24 11:56:27] ThreadedReadFromDisk: loading appinfo cache from: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
 [2025-12-24 11:56:27] ThreadedReadFromDisk: failed to open file: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
 [2025-12-24 11:56:27] CAppInfoCacheReadFromDiskThread took 0 milliseconds to initialize
+
+
+[2025-12-29 11:08:31] Client version: 1766451518
+[2025-12-29 11:08:31] ThreadedReadFromDisk: loading appinfo cache from: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:08:31] ThreadedReadFromDisk: failed to open file: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:08:31] CAppInfoCacheReadFromDiskThread took 0 milliseconds to initialize
+
+
+[2025-12-29 11:09:03] Client version: 1766451518
+[2025-12-29 11:09:03] ThreadedReadFromDisk: loading appinfo cache from: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:09:03] ThreadedReadFromDisk: failed to open file: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:09:03] CAppInfoCacheReadFromDiskThread took 0 milliseconds to initialize
+
+
+[2025-12-29 11:09:49] Client version: 1766451518
+[2025-12-29 11:09:49] ThreadedReadFromDisk: loading appinfo cache from: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:09:49] ThreadedReadFromDisk: failed to open file: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:09:49] CAppInfoCacheReadFromDiskThread took 0 milliseconds to initialize
+
+
+[2025-12-29 11:10:06] Client version: 1766451518
+[2025-12-29 11:10:06] ThreadedReadFromDisk: loading appinfo cache from: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:10:06] ThreadedReadFromDisk: failed to open file: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder/appcache/appinfo.vdf
+[2025-12-29 11:10:06] CAppInfoCacheReadFromDiskThread took 0 milliseconds to initialize

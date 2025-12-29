@@ -1,0 +1,21 @@
+
+
+[2025-12-29 11:14:16] Client version: 1766451518
+[2025-12-29 11:14:16] Load failed: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf.
+[2025-12-29 11:14:16] Load failed: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\config\libraryfolders.vdf.
+[2025-12-29 11:14:16] Steam library folders configuration will be reset.
+[2025-12-29 11:14:16] No install folder configuration files found.
+[2025-12-29 11:14:16] Loaded 0 apps from install folder "D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2025-12-29 11:14:16] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2025-12-29 11:14:45] Client version: 1766451518
+[2025-12-29 11:14:45] Loaded Steam library folders configuration: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2025-12-29 11:14:45] Loaded 0 apps from install folder "D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2025-12-29 11:14:45] Triggered async write of Steam library folders configuration (1 libraries).
+
+
+[2025-12-29 11:15:20] Client version: 1766451518
+[2025-12-29 11:15:20] Loaded Steam library folders configuration: D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\libraryfolders.vdf
+[2025-12-29 11:15:20] Loaded 0 apps from install folder "D:\UnityHub\Project\UnityFrameWork\Assets\FrameWork\Plugins\steamworks_sdk_163\sdk\tools\ContentBuilder\builder\steamapps\appmanifest_*.acf".
+[2025-12-29 11:15:20] Triggered async write of Steam library folders configuration (1 libraries).

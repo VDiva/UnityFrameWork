@@ -1,0 +1,74 @@
+{
+	"Version": 1,
+	"GUID": "8e2104",
+	"ProfileName": "Default",
+	"Data": [
+		{
+			"enabled": true,
+			"guid": "a5b62",
+			"sources": [
+				{
+					"enabled": true,
+					"duplicateFileHandling": "Error",
+					"subFolderPath": null,
+					"sourceType": "Wireframe.BuildConfigSource",
+					"source": {
+						"BuildConfig": "b91a7c",
+						"OverrideSwitchTargetPlatform": false,
+						"TargetPlatform": "Unknown",
+						"TargetPlatformSubTarget": 0,
+						"Target": "0",
+						"TargetArchitecture": 0,
+						"CleanBuild": false
+					}
+				}
+			],
+			"allModifiers": [
+				{
+					"enabled": true,
+					"modifierType": "Wireframe.ExcludeFoldersModifier",
+					"modifier": {
+						"ExcludedUploadStep": "DoNotCopyFromSource",
+						"regexes": [
+							{
+								"Enabled": true,
+								"Regex": ".*DoNotShip",
+								"Recursive": true,
+								"SearchAllDirectories": false
+							},
+							{
+								"Enabled": true,
+								"Regex": ".*ButDontShipItWithYourGame",
+								"Recursive": true,
+								"SearchAllDirectories": false
+							}
+						]
+					}
+				}
+			],
+			"destinations": [
+				{
+					"enabled": true,
+					"destinationType": "Wireframe.SteamUploadDestination",
+					"destination": {
+						"m_createAppFile": true,
+						"m_appFileName": "",
+						"m_appFileOverwriteDesc": true,
+						"configID": 1,
+						"depotIDs": [
+							1
+						],
+						"branchID": 2,
+						"m_descriptionFormat": "{taskDescription}"
+					}
+				}
+			],
+			"actions": [
+				
+			]
+		}
+	],
+	"PostUploads": [
+		
+	]
+}
