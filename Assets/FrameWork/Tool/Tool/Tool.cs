@@ -15,6 +15,9 @@ namespace FrameWork
     public static class Tool
     {
         
+        
+        
+        
         public static string GetAbName(string name)
         {
             return GetMd5AsString(name);
@@ -168,8 +171,25 @@ namespace FrameWork
             byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
             return resultArray;
         }
-        
-        
+
+
+
+        public static string GetVideoPath(string videoName,bool isNor=true)
+        {
+            var path=Application.dataPath+"/";
+#if UNITY_EDITOR
+            if (isNor)
+                path += "Video/Nor/"+videoName+".mp4";
+            else
+                path += "Video/High/"+videoName+".mp4";
+#else
+            if (isNor)
+                path += "StreamingAssets/Video/Nor/"+Encrypt(videoName)+".Png";
+            else
+                path += "StreamingAssets/Video/High/"+Encrypt(videoName)+".Png";
+#endif
+            return path;
+        }
         
         public static string Encrypt(string toEncrypt)
         {

@@ -19,7 +19,7 @@
 						"TargetPlatformSubTarget": 0,
 						"Target": "0",
 						"TargetArchitecture": 0,
-						"CleanBuild": false
+						"CleanBuild": true
 					}
 				}
 			],

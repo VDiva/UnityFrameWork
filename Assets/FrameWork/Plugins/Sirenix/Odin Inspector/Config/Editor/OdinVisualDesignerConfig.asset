@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 188390376, guid: a4865f1ab4504ed8a368670db22f409c, type: 3}
-  m_Name: ImportSettingsConfig
+  m_Script: {fileID: 240468018, guid: a4865f1ab4504ed8a368670db22f409c, type: 3}
+  m_Name: OdinVisualDesignerConfig
   m_EditorClassIdentifier: 
-  automateBeforeBuild: 1
+  SerializedFavoriteAttributes: []
+  savePath: Assets/Plugins/Sirenix/Odin Inspector/Visual Designer/Saved

@@ -11,11 +11,11 @@ namespace FrameWork.Editor
     {
 
 
-        private static string _videoPath = "/Video/Nor";
+        private static string _videoPath = "/Assets/Video/Nor";
         private static string _outVideoPath = "/Assets/StreamingAssets/Video/Nor";
 
         
-        private static string _videoPath4k = "/Video/High";
+        private static string _videoPath4k = "/Assets/Video/High";
         private static string _outVideoPath4k = "/Assets/StreamingAssets/Video/High";
 
         
