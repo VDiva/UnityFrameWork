@@ -37,13 +37,16 @@ namespace FrameWork
         // 关键修复：添加一个显式的播放状态标记
         private bool _isPlaying = false; 
         
-        public void Init(List<ButtonNode> buttonNode, VideoClip videoClip)
+        public void Init(List<ButtonNode> buttonNode, VideoClip videoClip,float videoTime)
         {
             var window = GetWindow<VideoBtnSetWindows>();
             window.videoClip = videoClip;
             window._buttonNode = buttonNode;
+            
+            window.videoTime = videoTime;
             window.Show();
             window.OnVideoClipChanged();
+            
         }
 
         protected override void OnEnable()
@@ -300,7 +303,6 @@ namespace FrameWork
         {
             CleanupVideoPlayer();
             InitializeVideoPlayer();
-            videoTime = 0;
             _isPlaying = false;
         }
     }

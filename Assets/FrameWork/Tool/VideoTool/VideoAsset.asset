@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: Button
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 168, y: -248}
+  position: {x: 200, y: -664}
   ports:
     keys:
     - button
@@ -65,8 +65,8 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   button: {fileID: 0}
-  buttonName: "\u4F60\u597D"
-  buttonPosition: {x: 944, y: 432}
+  buttonName: "\u6309\u94AE1"
+  buttonPosition: {x: 978, y: 440}
   buttonSize: 0
 --- !u!114 &-5246007241752811962
 MonoBehaviour:
@@ -142,7 +142,7 @@ MonoBehaviour:
   m_Name: Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 168, y: -120}
+  position: {x: 200, y: -536}
   ports:
     keys:
     - buttonNode
@@ -272,9 +272,70 @@ MonoBehaviour:
       _typeConstraint: 0
       _dynamic: 0
   button: {fileID: 0}
-  buttonName: "\u5927\u5BB6\u597D"
-  buttonPosition: {x: 1516, y: 618}
+  buttonName: "\u53BB\u4ED6\u5BB6"
+  buttonPosition: {x: 1322, y: 252}
   buttonSize: 0
+--- !u!114 &-1300949088123158782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aa812e3c47dfbe49ac3e00e51e8ae45, type: 3}
+  m_Name: Video
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 184, y: -120}
+  ports:
+    keys:
+    - buttonNode
+    - inputVideoNode
+    - outVideoNode
+    values:
+    - _fieldName: buttonNode
+      _node: {fileID: -1300949088123158782}
+      _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: button
+        node: {fileID: 7585020501005301701}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: inputVideoNode
+      _node: {fileID: -1300949088123158782}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: outVideoNode
+        node: {fileID: -227796914007463331}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: outVideoNode
+      _node: {fileID: -1300949088123158782}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  buttonNode: {fileID: 0}
+  inputVideoNode: {fileID: 0}
+  outVideoNode: {fileID: 0}
+  videoClip: {fileID: 32900000, guid: cf553ea7e9d4f50459fa946d2df805ec, type: 3}
+  videoPath: \Nor\adawda/RenderHeads-1080p30-H264
+  videoLoopTime: 0
+  isEndDie: 0
+  is360Video: 0
 --- !u!114 &-227796914007463331
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -318,6 +379,9 @@ MonoBehaviour:
       - fieldName: inputVideoNode
         node: {fileID: -4796848005133392515}
         reroutePoints: []
+      - fieldName: inputVideoNode
+        node: {fileID: -1300949088123158782}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -337,9 +401,9 @@ MonoBehaviour:
   buttonNode: {fileID: 0}
   inputVideoNode: {fileID: 0}
   outVideoNode: {fileID: 0}
-  videoClip: {fileID: 32900000, guid: cf553ea7e9d4f50459fa946d2df805ec, type: 3}
-  videoPath: \Nor\adawda\RenderHeads-1080p30-H264
-  videoLoopTime: 0
+  videoClip: {fileID: 32900000, guid: 91da7386e5487ae48bdd265ee46d3981, type: 3}
+  videoPath: \Nor\RenderHeads-1080p30-H264
+  videoLoopTime: 3
   isEndDie: 0
   is360Video: 0
 --- !u!114 &11400000
@@ -366,6 +430,8 @@ MonoBehaviour:
   - {fileID: 2724844462706863014}
   - {fileID: -4796848005133392515}
   - {fileID: -5781777596567838650}
+  - {fileID: -1300949088123158782}
+  - {fileID: 7585020501005301701}
 --- !u!114 &2724844462706863014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -525,3 +591,37 @@ MonoBehaviour:
   videoLoopTime: 0
   isEndDie: 0
   is360Video: 0
+--- !u!114 &7585020501005301701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4084c3a98e134c547a64ed4e78bec7ff, type: 3}
+  m_Name: Button
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 184, y: -248}
+  ports:
+    keys:
+    - button
+    values:
+    - _fieldName: button
+      _node: {fileID: 7585020501005301701}
+      _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections:
+      - fieldName: buttonNode
+        node: {fileID: -1300949088123158782}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  button: {fileID: 0}
+  buttonName: "\u53BB\u4ED6\u5BB6\u91CC\u73A9"
+  buttonPosition: {x: 1444, y: 636}
+  buttonSize: 0

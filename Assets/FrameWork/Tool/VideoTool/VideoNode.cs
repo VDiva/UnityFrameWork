@@ -49,7 +49,7 @@ public class VideoNode : Node
 		var allBtn = GetOutputPort("outVideoNode").GetOutNode();
 		var videoNodes=allBtn.Select((node => (VideoNode)node)).ToList();
 		var btnNodes=videoNodes.Select((node => node.GetInputValue<ButtonNode>("buttonNode"))).ToList();
-		EditorWindow.GetWindow<VideoBtnSetWindows>().Init(btnNodes,videoClip);
+		EditorWindow.GetWindow<VideoBtnSetWindows>().Init(btnNodes,videoClip,videoLoopTime);
 	}
 	private void VideoChange()
 	{
