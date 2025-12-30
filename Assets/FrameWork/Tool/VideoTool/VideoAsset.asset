@@ -32,7 +32,7 @@ MonoBehaviour:
       _dynamic: 0
   button: {fileID: 0}
   buttonName: "\u6309\u94AE1"
-  buttonPosition: {x: 338, y: 66}
+  buttonPosition: {x: 490, y: 108}
   buttonSize: 0
 --- !u!114 &-5246007241752811962
 MonoBehaviour:
@@ -236,7 +236,7 @@ MonoBehaviour:
       _dynamic: 0
   button: {fileID: 0}
   buttonName: "\u53BB\u4ED6\u5BB6"
-  buttonPosition: {x: -398, y: 50}
+  buttonPosition: {x: -420, y: 168}
   buttonSize: 0
 --- !u!114 &-1300949088123158782
 MonoBehaviour:
@@ -547,5 +547,5 @@ MonoBehaviour:
       _dynamic: 0
   button: {fileID: 0}
   buttonName: "\u53BB\u4ED6\u5BB6\u91CC\u73A9"
-  buttonPosition: {x: -400, y: -124}
+  buttonPosition: {x: -438, y: -210}
   buttonSize: 0
