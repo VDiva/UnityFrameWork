@@ -1,39 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7500131604354422419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4084c3a98e134c547a64ed4e78bec7ff, type: 3}
-  m_Name: Button
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -120, y: -1144}
-  ports:
-    keys:
-    - button
-    values:
-    - _fieldName: button
-      _node: {fileID: -7500131604354422419}
-      _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-        PublicKeyToken=null
-      connections:
-      - fieldName: buttonNode
-        node: {fileID: -5246007241752811962}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  button: {fileID: -7500131604354422419}
-  buttonName: "\u4EC0\u4E48"
-  buttonPosition: {x: 0, y: 0}
-  buttonSize: 0
 --- !u!114 &-5781777596567838650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47,7 +13,7 @@ MonoBehaviour:
   m_Name: Button
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 200, y: -664}
+  position: {x: 184, y: 1048}
   ports:
     keys:
     - button
@@ -66,7 +32,7 @@ MonoBehaviour:
       _dynamic: 0
   button: {fileID: 0}
   buttonName: "\u6309\u94AE1"
-  buttonPosition: {x: 978, y: 440}
+  buttonPosition: {x: 338, y: 66}
   buttonSize: 0
 --- !u!114 &-5246007241752811962
 MonoBehaviour:
@@ -81,7 +47,7 @@ MonoBehaviour:
   m_Name: Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -120, y: -1000}
+  position: {x: -88, y: -1736}
   ports:
     keys:
     - inputVideoNode
@@ -113,15 +79,12 @@ MonoBehaviour:
       _node: {fileID: -5246007241752811962}
       _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
-      connections:
-      - fieldName: button
-        node: {fileID: -7500131604354422419}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
       _dynamic: 0
-  buttonNode: {fileID: -7500131604354422419}
+  buttonNode: {fileID: 0}
   inputVideoNode: {fileID: 0}
   outVideoNode: {fileID: 0}
   videoClip: {fileID: 32900000, guid: 6117f9abc28f11946bb64ba36c592434, type: 3}
@@ -142,7 +105,7 @@ MonoBehaviour:
   m_Name: Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 200, y: -536}
+  position: {x: 184, y: 1176}
   ports:
     keys:
     - buttonNode
@@ -203,7 +166,7 @@ MonoBehaviour:
   m_Name: Start Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -632, y: -536}
+  position: {x: -696, y: -568}
   ports:
     keys:
     - chapterOutput
@@ -254,7 +217,7 @@ MonoBehaviour:
   m_Name: Button
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 168, y: 168}
+  position: {x: 168, y: 1848}
   ports:
     keys:
     - button
@@ -273,7 +236,7 @@ MonoBehaviour:
       _dynamic: 0
   button: {fileID: 0}
   buttonName: "\u53BB\u4ED6\u5BB6"
-  buttonPosition: {x: 1322, y: 252}
+  buttonPosition: {x: -398, y: 50}
   buttonSize: 0
 --- !u!114 &-1300949088123158782
 MonoBehaviour:
@@ -288,7 +251,7 @@ MonoBehaviour:
   m_Name: Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 184, y: -120}
+  position: {x: 168, y: 1592}
   ports:
     keys:
     - buttonNode
@@ -349,7 +312,7 @@ MonoBehaviour:
   m_Name: Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -200, y: -72}
+  position: {x: -216, y: 1640}
   ports:
     keys:
     - inputVideoNode
@@ -390,10 +353,7 @@ MonoBehaviour:
       _node: {fileID: -227796914007463331}
       _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
-      connections:
-      - fieldName: button
-        node: {fileID: 3956648152691879854}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
@@ -401,9 +361,9 @@ MonoBehaviour:
   buttonNode: {fileID: 0}
   inputVideoNode: {fileID: 0}
   outVideoNode: {fileID: 0}
-  videoClip: {fileID: 32900000, guid: 91da7386e5487ae48bdd265ee46d3981, type: 3}
+  videoClip: {fileID: 32900000, guid: a2e980e0ace338b468a2c7a16dc68b06, type: 3}
   videoPath: \Nor\RenderHeads-1080p30-H264
-  videoLoopTime: 3
+  videoLoopTime: 5
   isEndDie: 0
   is360Video: 0
 --- !u!114 &11400000
@@ -420,10 +380,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodes:
   - {fileID: -5246007241752811962}
-  - {fileID: -7500131604354422419}
   - {fileID: -227796914007463331}
   - {fileID: -4026029742998480590}
-  - {fileID: 3956648152691879854}
   - {fileID: 6722709931751689965}
   - {fileID: -2364752416971844520}
   - {fileID: 4769620164065927533}
@@ -445,7 +403,7 @@ MonoBehaviour:
   m_Name: Chapter
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -1032, y: -424}
+  position: {x: -1000, y: -456}
   ports:
     keys:
     - chapterNode
@@ -464,40 +422,6 @@ MonoBehaviour:
       _dynamic: 0
   chapterName: "\u59B9\u59B9"
   chapterNode: {fileID: 0}
---- !u!114 &3956648152691879854
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4084c3a98e134c547a64ed4e78bec7ff, type: 3}
-  m_Name: Button
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -200, y: -232}
-  ports:
-    keys:
-    - button
-    values:
-    - _fieldName: button
-      _node: {fileID: 3956648152691879854}
-      _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-        PublicKeyToken=null
-      connections:
-      - fieldName: buttonNode
-        node: {fileID: -227796914007463331}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  button: {fileID: 3956648152691879854}
-  buttonName: "\u554A\u963F\u74E6\u8FBE\u5434\u5927\u7EF4"
-  buttonPosition: {x: 232.32, y: 129.08}
-  buttonSize: 10
 --- !u!114 &4769620164065927533
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -511,7 +435,7 @@ MonoBehaviour:
   m_Name: Chapter
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -1032, y: -584}
+  position: {x: -1000, y: -696}
   ports:
     keys:
     - chapterNode
@@ -543,7 +467,7 @@ MonoBehaviour:
   m_Name: Video
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 168, y: 296}
+  position: {x: 168, y: 1976}
   ports:
     keys:
     - buttonNode
@@ -604,7 +528,7 @@ MonoBehaviour:
   m_Name: Button
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 184, y: -248}
+  position: {x: 168, y: 1464}
   ports:
     keys:
     - button
@@ -623,5 +547,5 @@ MonoBehaviour:
       _dynamic: 0
   button: {fileID: 0}
   buttonName: "\u53BB\u4ED6\u5BB6\u91CC\u73A9"
-  buttonPosition: {x: 1444, y: 636}
+  buttonPosition: {x: -400, y: -124}
   buttonSize: 0
