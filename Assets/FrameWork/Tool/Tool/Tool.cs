@@ -180,9 +180,9 @@ namespace FrameWork
                 path += "Video/High/"+videoName+".mp4";
 #else
             if (isNor)
-                path += "StreamingAssets/Video/Nor/"+Encrypt(videoName)+".Png";
+                path += "StreamingAssets/{Tool.Encrypt("Video")}/Nor/"+Encrypt(videoName)+".Png";
             else
-                path += "StreamingAssets/Video/High/"+Encrypt(videoName)+".Png";
+                path += "StreamingAssets/{Tool.Encrypt("Video")}/High/"+Encrypt(videoName)+".Png";
 #endif
             return path;
         }

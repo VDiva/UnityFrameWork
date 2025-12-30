@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace FrameWork
@@ -69,6 +70,11 @@ namespace FrameWork
         public static void Destroy(this GameObject tran)
         {
             GameObject.Destroy(tran);
+        }
+
+        public static List<XNode.Node> GetOutNode(this XNode.NodePort node)
+        {
+            return node.GetConnections().Select((port => port.node)).ToList();
         }
     }
 }
