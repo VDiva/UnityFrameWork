@@ -11,7 +11,7 @@ namespace FrameWork
 
         public virtual void Open(object[] objects)
         {
-            Time.timeScale = 0;
+            //Time.timeScale = 0;
         }
         
         public override void Start()

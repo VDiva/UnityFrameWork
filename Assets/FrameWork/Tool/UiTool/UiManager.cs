@@ -223,5 +223,21 @@ namespace FrameWork
             return tran;
         }
         
+        
+        public static bool IsCanPlay()
+        {
+            var nor=GetTransform(new UiModeAttribute(Mode.Normal));
+            var count = 0;
+            for (int i = 0; i < nor.childCount; i++)
+            {
+                if (nor.GetChild(i).gameObject.activeSelf)
+                {
+                    count += 1;
+                }
+            }
+            
+            return count<=1;
+        }
+        
     }
 }
