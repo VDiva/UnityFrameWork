@@ -9,11 +9,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-firstpass",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeugelJame.BuildUploader", "VeugelJame.BuildUploader.csproj", "{920dc456-6512-5852-9c6e-a2990262eaf1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.rlabrecque.steamworks.net", "com.rlabrecque.steamworks.net.csproj", "{d18371ea-7376-b8cf-a38a-e6e55a8056cd}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XNodeEditor", "XNodeEditor.csproj", "{a9f6bf4e-2841-a635-bf69-90a862a96251}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{c638b5c7-b3b2-db0c-00eb-5326d05ba8b7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeugelJame.BuildUploader.Editor", "VeugelJame.BuildUploader.Editor.csproj", "{6883726b-e113-3775-aa88-8242356d9428}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.rlabrecque.steamworks.net.editor", "com.rlabrecque.steamworks.net.editor.csproj", "{70a31652-9dea-1f9c-4425-28412fdaf235}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor-firstpass", "Assembly-CSharp-Editor-firstpass.csproj", "{ac01aac1-3177-fc6e-b6ce-7142354ff885}"
 EndProject
@@ -30,12 +34,16 @@ Global
 		{bf8d41d9-40e8-96e3-8a74-449dca18f884}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{920dc456-6512-5852-9c6e-a2990262eaf1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{920dc456-6512-5852-9c6e-a2990262eaf1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{d18371ea-7376-b8cf-a38a-e6e55a8056cd}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{d18371ea-7376-b8cf-a38a-e6e55a8056cd}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{a9f6bf4e-2841-a635-bf69-90a862a96251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{a9f6bf4e-2841-a635-bf69-90a862a96251}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{c638b5c7-b3b2-db0c-00eb-5326d05ba8b7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{c638b5c7-b3b2-db0c-00eb-5326d05ba8b7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6883726b-e113-3775-aa88-8242356d9428}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6883726b-e113-3775-aa88-8242356d9428}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70a31652-9dea-1f9c-4425-28412fdaf235}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70a31652-9dea-1f9c-4425-28412fdaf235}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ac01aac1-3177-fc6e-b6ce-7142354ff885}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ac01aac1-3177-fc6e-b6ce-7142354ff885}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection

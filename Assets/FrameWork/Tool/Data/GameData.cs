@@ -5,29 +5,46 @@ namespace FrameWork.Data
 {
     public static class GameData
     {
-        private static Dictionary<object, object> _dataDic = new Dictionary<object, object>();
+        private static Dictionary<string, string> _dataDic = new Dictionary<string, string>();
 
-        public static void SetString(object key, object value)
+        public static void SetString(string key, string value)
         {
             _dataDic[key] = value;
-            PlayerPrefs.SetString(key.ToString(),value.ToString());
+            PlayerPrefs.SetString(key,value);
         }
         
-        public static void AddValue(object key, object value)
+        public static void AddValue(string key, string value)
         {
             _dataDic[key] = value;
-            PlayerPrefs.SetString(key.ToString(),value.ToString());
+            PlayerPrefs.SetString(key,value);
         }
         
-        public static T GetValue<T>(object key, object defaultValue) where T : Object
+        public static string GetValue(string key, string defaultValue)
         {
-            if (!_dataDic.ContainsKey(key.ToString()))
-                _dataDic.Add(key.ToString(),PlayerPrefs.GetString(key.ToString(),defaultValue.ToString()));
-            return (T)_dataDic[key.ToString()];
+            if (!_dataDic.ContainsKey(key))
+                _dataDic.Add(key,PlayerPrefs.GetString(key,defaultValue));
+            return _dataDic[key];
         }
 
+
+        public static int GetProperty(string propertyName,string type="Nor",int defaultValue=0)
+        {
+            var v = GetValue($"property_{type}_" + propertyName, defaultValue + "");
+            return v.ToInt();
+        }
         
+        public static void AddProperty(string propertyName,int count,string type="Nor")
+        {
+            var key = $"property_{type}_" + propertyName;
+            var v = (GetProperty(propertyName, type) + count);
+            v = Mathf.Max(0, v);
+            SetString(key,v+"");
+        }
         
-        
+        public static void SetProperty(string propertyName,int count,string type="Nor")
+        {
+            var key = $"property_{type}_" + propertyName;
+            SetString(key,count+"");
+        }
     }
 }
