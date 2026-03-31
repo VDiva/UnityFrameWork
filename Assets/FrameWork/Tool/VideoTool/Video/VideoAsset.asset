@@ -375,12 +375,166 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c53c34d657717a4e90c9299575c9627, type: 3}
+  m_Script: {fileID: 11500000, guid: 5dd0e859992358443ab79d0db5806685, type: 3}
   m_Name: VideoAsset
   m_EditorClassIdentifier: 
-  nodes: []
+  nodes:
+  - {fileID: 1315867942661176507}
   eventName: 
   xlsxEventKey: 
+--- !u!114 &1315867942661176507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95462dd01bfc2664fa755b3927434496, type: 3}
+  m_Name: Video
+  m_EditorClassIdentifier: Assembly-CSharp::VideoNode
+  graph: {fileID: 11400000}
+  position: {x: -97.5, y: -194}
+  ports:
+    keys:
+    - buttonNode
+    - inputVideoNode
+    - outVideoNode
+    - playTimeToNextVideoNode
+    - nextVideoNode
+    - qteSuc
+    - qteFail
+    - enemyDieVideoNode
+    values:
+    - _fieldName: buttonNode
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: ButtonNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: inputVideoNode
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: outVideoNode
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: playTimeToNextVideoNode
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: nextVideoNode
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: qteSuc
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: qteFail
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: enemyDieVideoNode
+      _node: {fileID: 1315867942661176507}
+      _typeQualifiedName: VideoNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  uniqueID: 27279ee8-bbac-4881-beb8-d6ff7f3432c5
+  tips: 
+  isShowLastImg: 1
+  buttonNode: {fileID: 0}
+  inputVideoNode: {fileID: 0}
+  outVideoNode: {fileID: 0}
+  videoClip: {fileID: 0}
+  subtitleChinese: []
+  subtitleEnglish: []
+  videoPath: 
+  videName: 
+  audioClip: {fileID: 0}
+  videoStartTime: 0
+  isPlayTimeToNext: 0
+  toNextTime: 0
+  playTimeToNextVideoNode: {fileID: 0}
+  isNowToNext: 0
+  isToNextVideoToLoopStart: 0
+  isLoopVideo: 0
+  isHasBtn: 0
+  videoBtnShowTime: 0
+  videoBtnHideTime: 0
+  isToNextGroup: 0
+  videoGraph: {fileID: 0}
+  is360Video: 0
+  rotationAngle: 0
+  imgIsNor: 0
+  img360: {fileID: 0}
+  isPlayerEndOver: 0
+  isPlayerEndPlayerNext: 0
+  isPlayerEndPlayerNextRandom: 0
+  isPlayerEndPlayerNextSequence: 0
+  sequenceIndex: 0
+  nextVideoNode: {fileID: 0}
+  PropertyData: []
+  isClickBtnPlayAudio: 0
+  isClickBtnPlayVideo: 0
+  clickAudio: {fileID: 0}
+  isSucVideo: 0
+  isToMap: 0
+  isToGame: 0
+  EventValue: []
+  VideoEndEventValue: []
+  VideoEndPropertyData: []
+  isHasWineList: 0
+  isInitJiuLian: 0
+  targetJiuLian: 0
+  isHasQte: 0
+  isInitHp: 0
+  enemyHp: 0
+  qteDatas: []
+  qteSuc: {fileID: 0}
+  qteFail: {fileID: 0}
+  enemyDieVideoNode: {fileID: 0}
+  taskData: []
+  chatData: []
 --- !u!114 &2724844462706863014
 MonoBehaviour:
   m_ObjectHideFlags: 0
