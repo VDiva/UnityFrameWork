@@ -2,6 +2,8 @@
 安装完成后 点击windows->
 
 项目功能
+
+
 1.资源自动打包
   FrameWork->Asset下发以文件夹为单位会单独构建aa包 如有新放入文件夹的文件点击FrameWork->更新资源会自动创建aa包把文件归属到各自的包里
   之后可以调用api AbMrg->Load<T> 和AbMrg.LoadAsync<T> 同步和异步加载
