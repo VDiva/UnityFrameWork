@@ -1,0 +1,5 @@
+key|基础血量|基础攻击|基础移速|攻击距离|技能|预制体|检测玩家范围
+string|float|float|float|float|string[]|string|float
+Key|Hp|Atk|Speed|AtkDis|Skill|Prefab|CheckRange
+HaoZhu|10|1|1|2|HaoZhuAtk|HaoZhu|10
+GeBuLinQiuZhang|100|5|2|2|GeBuLinQiuZhangAtk|GeBuLinQiuZhang|100

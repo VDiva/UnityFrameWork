@@ -1,0 +1,11 @@
+key|品质随机数值加成|属性词条数|品质名字|描述
+string|float[]|int|string|string
+Key|AddPzValue|PropertyCount|PzName|Desc
+A1|0.1,0.3|1|A17|白
+A2|0.2,0.6|2|A18|蓝
+A3|0.4,0.8|3|A19|紫
+A4|0.6,1|4|A20|橙
+A5|0.8,1.2|5|A21|银
+A6|1,1.4|5|A22|绿
+A7|1.2,1.6|5|A23|粉
+A8|1.4,1.8|5|A24|金

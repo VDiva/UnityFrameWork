@@ -1,0 +1,5 @@
+key|初始移动速度|初始攻击|攻击距离|预制体|基础生命|基础法力值|职业名字|骨骼文件
+string|float|float|float|string|float|float|string|string
+Key|Speed|Atk|AtkRange|Prefab|Hp|Mp|OccName|Skeleton
+FaShi|2|10|5|PlayerFaShi|20|100|A4|LanFaShi
+ZhangShi||||||||

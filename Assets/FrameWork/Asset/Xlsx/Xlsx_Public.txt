@@ -1,0 +1,8 @@
+Key|内容|内容
+string|string|int
+Key|Content|ContentInt
+A1||
+HeXing||5
+FanYu||11
+FuZhu||20
+AoYi||26

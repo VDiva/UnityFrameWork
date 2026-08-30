@@ -1,0 +1,5 @@
+key|道具名字|道具描述|道具获取途径|图片名字|品质
+string|string|string|string|string|int
+Key|Name|Info|GetInfo|Icon|Pz
+coin|A67|||Coin|1
+ZuanShi|A68|||ZuanShi|1

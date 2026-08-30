@@ -11,7 +11,7 @@ if errorlevel 1 (
 )
 
 set "OUTPUT_DIR=%~dp0script"
-set "UNITY_MSGDATA_DIR=%~dp0..\..\..\..\Assets\Script\MsgData"
+set "UNITY_MSGDATA_DIR=%~dp0..\..\..\..\Assets\FrameWork\Scripts\MsgData"
 
 echo ===================================================
 echo    Protocol Buffer 批量转换工具

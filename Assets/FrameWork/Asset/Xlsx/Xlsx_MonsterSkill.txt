@@ -1,0 +1,5 @@
+技能key|技能状态(创建一个状态类)|技能伤害(基于怪的百分比)|技能释放距离|技能范围|技能初始CD|技能CD|是否是被动技能|描述
+string|string|float|float|float|float|float|int|string
+Key|SkillState|Atk|ExRange|Range|StartCD|CD|IsPassiveSkill|Desc
+HaoZhuAtk|FrameWork.Script.State.BaseMonster.HaoZhu.HaoZhuAtk|1|1||1|1||
+GeBuLinQiuZhangAtk|FrameWork.Script.State.BaseMonster.GeBuLinQiuZhang.GeBuLinQiuZhangAtk|1|2||1|1||哥布林酋长普通攻击

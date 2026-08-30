@@ -1,0 +1,4 @@
+key|购买类型|道具key(道具表key)|获得道具的数量|道具的价格|最大购买次数|道具随机权重|描述
+string|int|string|int|int|int|int|string
+Key|type|ItemKey|Count|Price|MaxGetCount|Range|Desc
+A1||coin|10000|10|10|100|

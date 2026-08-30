@@ -1,0 +1,21 @@
+key|属性名字|加成类型(不填数值 1百分比)|每级加成|加成数值随机区间|战力换算比例|战力换算值|权重|部位可随机(WEAPONHAND武器 WEAPONOFFHAND副手 HEAD头盔 BODY衣服 FOOT鞋子 HAND手套 NECK项链 YS药水 RING戒指)|描述
+string|string|int|float|float[]|float|float|float|string[]|string
+Key|Name|AddType|LvAdd|AddRange|ZlRota|ZlValue|Range|Part|desc
+GongJi|A25||10|0.5,2|1|100|100|WEAPONHAND,WEAPONOFFHAND,RING|攻击值加成
+GongJiAdd|A25|1|0.02|0.5,2|0.1|10|100|WEAPONHAND,WEAPONOFFHAND,RING|攻击百分比加成
+ShengMingAdd|A26|1|0.05|0.5,2|0.1|10|100|HEAD,BODY,NECK|生命百分比加成
+ShengMing|A26||100|0.5,2|1|10|100|HEAD,BODY,NECK|生命加成
+HuJia|A27||10|0.5,2|1|100|100|FOOT,HAND|护甲加成
+HuJiaAdd|A27|1|0.02|0.5,2|0.1|100|100|FOOT,HAND|护甲百分比加成
+Speed|A114||0.05|0.5,2|1|100|0||移速加成
+SpeedAdd|A114|1|0.05|0.5,2|1|100|0||移速百分比加成
+Mp|A115||0.5|0.5,2|1|100|100||法力加成
+MpAdd|A115|1|0.01|0.5,2|0.1|100|100||法力百分比加成
+ZuiZhonAtkAdd|A181|1|0.01|0.5,2|0.1|500|0||最终伤害加成
+SpeedCut|A182|1|0.01|0.5,2|0.1|0|0||减速
+ZhenSan|A183||1|0.5,2|1|0|||受到伤害增加
+ZhenSanAdd|A183|1|0.01|0.5,2|0.1|0|||受到伤害增加百分比
+JianShang|A184||1|0.5,2|1|100|100||减少伤害
+JianShangAdd|A184|1|0.01|0.5,2|0.1|500|100||减少伤害百分比
+ShangBi|A185|1|0.01|0.5,2|0.1|500|100||闪避
+LenQue|A221|1|0.01|0.5,2|0.1|500|0||冷却

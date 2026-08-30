@@ -1,0 +1,4 @@
+key|道具类型|道具key|道具数量|道具价格|道具最大数量|描述
+string|int|string|int|int|int|string
+Key|Type|ItemKey|Count|Price|MaxGetCount|Desc
+A1||coin|10000|10|10|

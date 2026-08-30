@@ -1,0 +1,12 @@
+Key|可随机的黑市道具
+string|string[]
+Key|Items
+A1|A1
+A2|A1
+A3|A1
+A4|A1
+A5|A1
+A6|A1
+A7|A1
+A8|A1
+A9|A1
