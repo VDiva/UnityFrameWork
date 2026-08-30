@@ -1,0 +1,14 @@
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\bin\Debug\net8.0\SendQueueChecks.exe
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\bin\Debug\net8.0\SendQueueChecks.deps.json
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\bin\Debug\net8.0\SendQueueChecks.runtimeconfig.json
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\bin\Debug\net8.0\SendQueueChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\bin\Debug\net8.0\SendQueueChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.AssemblyInfoInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.AssemblyInfo.cs
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.csproj.CoreCompileInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\refint\SendQueueChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\SendQueueChecks.genruntimeconfig.cache
+C:\Svn\Game\Net\GameServer\Tests\SendQueueChecks\obj\Debug\net8.0\ref\SendQueueChecks.dll

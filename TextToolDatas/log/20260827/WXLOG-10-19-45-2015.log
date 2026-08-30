@@ -1,0 +1,111 @@
+﻿<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:4342</timestamp>
+  <msgtype>MsgWXLogLaunch</msgtype>
+  <content>[The WXLogger is launched!]</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.Options.OptionsConfig..ctor; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App..ctor; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:4439</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|String[]
+OptionsConfig,-option=fb
+-dataDir=C:/Svn/Game/TextToolDatas
+-classDataPath=C:/Svn/Game/Assets\WX-WASM-SDK-V2\Editor/TextureEditor/classdata.tpk
+-sourcePath=C:/Svn/Game/WXOUT\webgl\Build\webgl.data
+-do=slim
+-outDir=C:/Svn/Game/TextToolDatas\fbslimtTemp
+-slimConfPath=C:/Svn/Game/Assets\WX-WASM-SDK-V2\Editor/TextureEditor/slim.conf
+</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.App..ctor; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:4460</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+UnityBridgeHandler - SetDataDir,C:/Svn/Game/TextToolDatas\temp</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:4807</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+FirstBundleDel,C:/Svn/Game/TextToolDatas\fbslimConfig.txt</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.AppCmdExec.WXSlimFirstBundleExec.todo; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App.process; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Application.App..ctor; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:5000</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+WXException,FirstBundleText file [C:/Svn/Game/TextToolDatas\unpackTemp\temp\unity_default_resources] is not Exists.</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.FirstBundle.FirstBundleHandler.slimText; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.FirstBundle.FirstBundleHandler.slim; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Application.AppCmdExec.WXSlimFirstBundleExec.todo; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:5113</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|Exception
+FirstBundleHandler.slim.Exception,
+未能找到文件“C:\Svn\Game\TextToolDatas\unpackTemp\temp\unity_default_resources”。
+   在 System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   在 System.IO.FileStream.Init(String path, FileMode mode, FileAccess access, Int32 rights, Boolean useRights, FileShare share, Int32 bufferSize, FileOptions options, SECURITY_ATTRIBUTES secAttrs, String msgPath, Boolean bFromProxy, Boolean useLongPath, Boolean checkHost)
+   在 System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+   在 AssetsTools.NET.Extra.AssetsManager.LoadAssetsFile(String path, Boolean loadDeps)
+   在 WXTextureTools.Application.Texture.FirstBundleText.slim(JSON_SlimConf conf, FirstBundleDel fbDel, String dstPath)
+   在 WXTextureTools.Application.FirstBundle.FirstBundleHandler.slimText()
+   在 WXTextureTools.Application.FirstBundle.FirstBundleHandler.slim(String confPath, String dataDir)
+</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.AppCmdExec.WXSlimFirstBundleExec.todo; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App.process; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Application.App..ctor; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:5128</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+WXException,fbSlim failed.</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.AppCmdExec.WXSlimFirstBundleExec.todo; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App.process; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Application.App..ctor; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:19:45:5128</timestamp>
+  <msgtype>MsgException</msgtype>
+  <content>
+fbSlim failed.
+   在 WXTextureTools.Application.FirstBundle.FirstBundleHandler.slim(String confPath, String dataDir)
+   在 WXTextureTools.Application.AppCmdExec.WXSlimFirstBundleExec.todo()
+   在 WXTextureTools.Application.App.process()
+   在 WXTextureTools.Application.App..ctor(String[] args)
+</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>

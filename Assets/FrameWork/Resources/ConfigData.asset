@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 151f797fc950670499cbee488331baf4, type: 3}
+  m_Name: ConfigData
+  m_EditorClassIdentifier: 
+  versions: 1005
+  isAb: 1
+  abClassPath: Assets/FrameWork/Scripts/AssetAb
+  abEndName: info
+  abAssetPath: Assets/FrameWork/Asset
+  configName: ABConfig.txt
+  key: kljsdkkdlo4454GG00155sajuklmbkdl
+  dlls:
+  - HotUpdate.dll
+  downLoadUrl: http://127.0.0.1:3000
+  spawnScriptUse:
+  - System.Collections.Generic
+  - UnityEngine
+  - UnityEngine.UI
+  spawnScriptPath: Assets/FrameWork/Scripts/PrefabScript
+  resourcesPath: Assets/Resources/Asset
+  serverIp: wss://ws.anyuanhuixiang.online
+  debugServerIp: ws://127.0.0.1:5100
+  cdnUrl: https://cdn.anyuanhuixiang.online/

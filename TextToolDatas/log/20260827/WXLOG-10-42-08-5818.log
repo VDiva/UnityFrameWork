@@ -1,0 +1,92 @@
+﻿<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0192</timestamp>
+  <msgtype>MsgWXLogLaunch</msgtype>
+  <content>[The WXLogger is launched!]</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.Options.OptionsConfig..ctor; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App..ctor; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0297</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|String[]
+OptionsConfig,-option=fbDecompress
+-classDataPath=C:/Svn/Game/Assets\WX-WASM-SDK-V2\Editor/TextureEditor/classdata.tpk
+-dataDir=C:/Svn/Game/TextToolDatas
+-sourcePath=C:/Svn/Game/TextToolDatas\slim\backup.txt
+</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.App..ctor; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0307</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+UnityBridgeHandler - SetDataDir,C:/Svn/Game/TextToolDatas\temp</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0387</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+BundlePicRecord initFile,C:/Svn/Game/TextToolDatas\FIRSTBUNDLETEXTURES.json</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.AppCmdExec.WXFirstBundleDecompressExec.todo; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App.process; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Application.App..ctor; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0398</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+BundlePicRecord readAllRecord,</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.App.process; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.App..ctor; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0750</timestamp>
+  <msgtype>MsgMixture</msgtype>
+  <content>string|string
+WXException,FirstBundleText file [C:/Svn/Game/TextToolDatas\unpackTemp\temp\unity_default_resources] is not Exists.</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Application.FirstBundle.FirstBundleHandler.splitText; File:.0
+[CALL STACK][1]: Method:WXTextureTools.Application.AppCmdExec.WXFirstBundleDecompressExec.todo; File:.0
+[CALL STACK][2]: Method:WXTextureTools.Application.App.process; File:.0
+</stackFrames>
+</wxlog>
+<wxlog>
+  <threadId>#main</threadId>
+  <timestamp>10:42:08:0861</timestamp>
+  <msgtype>MsgException</msgtype>
+  <content>
+未能找到文件“C:\Svn\Game\TextToolDatas\unpackTemp\temp\unity_default_resources”。
+   在 System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
+   在 System.IO.FileStream.Init(String path, FileMode mode, FileAccess access, Int32 rights, Boolean useRights, FileShare share, Int32 bufferSize, FileOptions options, SECURITY_ATTRIBUTES secAttrs, String msgPath, Boolean bFromProxy, Boolean useLongPath, Boolean checkHost)
+   在 System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+   在 AssetsTools.NET.Extra.AssetsManager.LoadAssetsFile(String path, Boolean loadDeps)
+   在 WXTextureTools.Application.Texture.FirstBundleText.export(String outDir, String dstPath, String colorSpace, IgnoreHandler ignore, Boolean all)
+   在 WXTextureTools.Application.FirstBundle.FirstBundleHandler.splitText(String assetsOutDir, String colorSpace, IgnoreHandler ignore, Boolean all)
+   在 WXTextureTools.Application.AppCmdExec.WXFirstBundleDecompressExec.todo()
+   在 WXTextureTools.Application.App.process()
+   在 WXTextureTools.Application.App..ctor(String[] args)
+</content>
+  <stackFrames>
+[CALL STACK][0]: Method:WXTextureTools.Program.Main; File:.0
+</stackFrames>
+</wxlog>

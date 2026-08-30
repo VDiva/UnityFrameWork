@@ -1,0 +1,19 @@
+# Replace game.example.com with your real domain.
+# Caddy will automatically apply for and renew HTTPS certificates.
+#
+# Client websocket URL:
+#   wss://game.example.com
+#
+# GameServer listens locally on:
+#   ws://127.0.0.1:5100
+
+game.example.com {
+    encode gzip
+
+    reverse_proxy 127.0.0.1:5100 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

@@ -1,0 +1,2 @@
+Package version: spine-unity-4.3-2026-08-04.unitypackage
+This Spine-Unity runtime works with data exported from Spine Editor version 4.3.74-beta or 4.3.00 (release) and newer.

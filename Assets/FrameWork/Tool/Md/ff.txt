@@ -1,0 +1,28 @@
+检查ab包md5
+VersionDetection.Detection(((list, bytes) =>
+            {
+                if (list.Count>0)
+                {
+                    DownLoadAbPack.AddPackDownTack(list,((f, f1, arg3, arg4) =>
+                    {
+                        Debug.Log("下载进度:"+f+"/"+f1+"-"+arg3+"/"+arg4);
+                    } ),(dates =>
+                    {
+                        Debug.Log("下载完成");
+                        foreach (var item in dates)
+                        {
+                            File.WriteAllBytes(Application.persistentDataPath+"/"+item.Name,item.PackData);
+                            Debug.Log(item.Name);
+                        }
+            
+                        SceneManager.LoadScene("Scenes/SampleScene");
+                    } ));
+                    
+                    File.WriteAllBytes(Application.persistentDataPath+"/"+GlobalVariables.Configure.ConfigName,bytes);
+                }
+                else
+                {
+                    Debug.Log("版本一致无需更新");
+                    SceneManager.LoadScene("Scenes/SampleScene");
+                }
+            } ));

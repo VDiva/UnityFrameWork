@@ -1,0 +1,376 @@
+syntax = "proto3";  // 指定使用 proto3 语法
+
+package GameData;   // 包名，用于避免命名冲突
+
+// 导入其他 proto 文件
+//import "google/protobuf/timestamp.proto";
+
+
+message Msg{
+    ProtobufMsgType msgType=1;
+    GameMsgType gameMsgType=2;
+    ServerMsgType serverMsgType=3;
+    UserData UserData=99; //用户数据
+    repeated EmailData emailList=100; //邮件信息
+    repeated RankData rankData=101; //排行榜信息
+    string id=102;//玩家id
+    string tipsSrt=103;
+    NetworkObjectData networkObject=104;
+    NetworkTransformData networkTransform=105;
+    NetworkAnimationData networkAnimation=106;
+    uint32 networkObjectId=107;
+    NetworkRoomRequest networkRoomRequest=108;
+    NetworkRoomData networkRoom=109;
+    NetworkRoomInviteData networkRoomInvite=110;
+    NetworkSyncVarData networkSyncVar=111;
+    string serverId=112;
+    ServerDataList serverData=113;
+    int32 roleType=114;
+    GongGaoData gongGaoData=115;//公告数据
+    
+    repeated EquipData rewardEquip=116;//装备数据 显示使用
+    map<string,int64> rewardItem=117;//道具数据 显示使用
+    
+    repeated string emailIds=118;//获取邮件奖励的邮件id
+    NetworkRpcData networkRpc=119;//网络方法调用
+    map<string,string> dataDic=120;//修改的用户数据值
+    map<string,int64> addItemData=121;//添加道具数据
+    FriendListData friendList=122;//好友列表
+    FriendMessageData friendMessage=123;//好友私聊消息
+    RoomSharedValueData roomSharedValue=124;//房间共享数值
+    ChannelChatMessageData channelChatMessage=125;//区服或房间聊天消息
+    string rankName=126;//排行榜名字
+    RankData updateRankData=127;//排行榜数据
+ }
+
+
+enum ProtobufMsgType{
+    None=0;
+    GAME = 10000; // 默认值，必须为0 客户端发的消息
+    SERVER=10001; //服务端发给客户端的消息
+}
+
+enum GameMsgType{
+    Login=0; //登入
+    GetEmail=1;//获取邮件
+    AddItem=2;//添加道具
+    GetRank=3;//获取排行榜
+    AddEquip=4;//添加道具
+    DelEquip=5;//删除道具
+    UploadNetworkTransform=6;
+    UploadNetworkAnimation=7;
+    CreateNetworkRoom=8;
+    MatchNetworkRoom=9;
+    NetworkRoomSceneReady=10;
+    LeaveNetworkRoom=11;
+    SetNetworkRoomReady=12;
+    StartNetworkRoomGame=13;
+    KickNetworkRoomPlayer=14;
+    InviteNetworkRoomPlayer=15;
+    AcceptNetworkRoomInvite=16;
+    SpawnNetworkRoomObject=17;
+    DestroyNetworkRoomObject=18;
+    UploadNetworkSyncVar=19;
+    SpawnNetworkRoomAI=20;
+    Logout=21;//退出当前角色登录，但保持 WebSocket 连接
+    GetServerList=22;
+    SetRoleType=23;//设置职业
+    SpawnNetworkRoomAIFromTrigger=24;//任意房间成员触发，服务端按 triggerId 去重生成 AI
+    GetGongGao=25;//获取公告
+    GetAllEmailReward=26;//获取所有可以领取的邮件奖励
+    DeleteAllGetRewardEmail=27;//删除所有已经领取的邮件
+    GetEmailReward=28;//获取邮件奖励
+    ChangeNetworkRoomMap=29;//房主主动切换当前房间地图
+    UploadNetworkRpc=30;//调用网络对象上的客户端 RPC
+    JoinNetworkRoom=31;//按房间 ID 主动加入房间
+    GetNetworkRoomList=32;//获取当前区服可加入的房间列表
+    UploadNetworkVoice=33;//上传当前房间内的语音帧
+    SetNetworkVoiceOptions=34;//设置房间语音的 AOI 和队伍过滤
+    SetNetworkVoiceTeam=35;//房主设置玩家的语音队伍
+    AddUserDataDic=36;//添加一个用户字典值
+    SetAvatar=37;//设置玩家头像链接
+    AddFriend=38;//添加好友
+    DeleteFriend=39;//删除好友
+    GetFriendList=40;//获取好友列表
+    SendFriendMessage=41;//发送好友私聊消息
+    AddRoomSharedValue=42;//请求增加房间共享数值
+    ResetRoomSharedValues=43;//房主请求重置当前房间全部共享数值
+    SetRoomSharedValue=44;//请求直接设置房间共享数值
+    ClaimNetworkRoomObject=45;//请求抢占一个可拾取的房间网络对象
+    SendChannelChatMessage=46;//发送区服或房间聊天消息
+    UpdateRank=47;//更新自己排行榜数据
+    UpdateNetworkRoom=48;//房主在等待阶段修改房间信息
+}
+
+enum ServerMsgType{
+    LoginSuc=0;
+    UpdateEmail=1;
+    UpdateUserData=2;
+    TIPS=3;
+    AddItemSuc=4;
+    GetRankSuc=5;
+    NetworkObjectSpawn=6;
+    NetworkObjectDespawn=7;
+    NetworkTransformUpdate=8;
+    NetworkAnimationUpdate=9;
+    NetworkRoomLoad=10;
+    NetworkRoomEntered=11;
+    NetworkRoomLeft=12;
+    NetworkRoomError=13;
+    NetworkRoomState=14;
+    NetworkRoomGameStarted=15;
+    NetworkRoomKicked=16;
+    NetworkRoomInviteReceived=17;
+    NetworkSyncVarUpdate=18;
+    NetworkObjectAuthorityChanged=19;
+    LogoutSuc=20;//退出登录成功
+    GetServerListSuc=21;
+    GetGongGaoSuc=22;
+    ShowRewardPanel=23;//显示奖励界面
+    NetworkRoomAllPlayersEntered=24;//切图后房间内全部玩家均已进入目标地图
+    NetworkRpcInvoke=25;//在目标客户端的对应网络对象上执行 RPC
+    NetworkRoomListItem=26;//房间列表中的一项
+    NetworkRoomListCompleted=27;//房间列表发送完成
+    NetworkVoiceFrame=28;//房间范围语音帧
+    UpdateFriendList=29;//更新好友列表
+    FriendMessageReceived=30;//收到好友私聊消息
+    FriendMessageSent=31;//好友私聊消息发送成功
+    RoomSharedValueUpdate=32;//房间共享数值变动或进房快照
+    RoomSharedValuesReset=33;//当前房间全部共享数值重置完成
+    NetworkRoomObjectClaimResult=34;//房间网络对象抢占结果
+    ChannelChatMessageReceived=35;//收到频道聊天消息
+    ChannelChatMessageSent=36;//频道聊天发送成功
+}
+
+enum ChatChannelType {
+    Server=0;
+    Room=1;
+}
+
+message ChannelChatMessageData {
+    string messageId=1;
+    ChatChannelType channel=2;
+    string senderUserId=3;
+    string senderName=4;
+    string content=5;
+    int64 sentAt=6;
+    string serverId=7;
+    uint32 roomId=8;
+    UserData senderUserData=9;
+}
+
+message FriendData {
+    string userId=1;
+    string name=2;
+    string avatar=3;
+    int32 roleType=4;
+    bool online=5;
+}
+
+message FriendListData {
+    repeated FriendData friends=1;
+}
+
+message FriendMessageData {
+    string messageId=1;
+    string senderUserId=2;
+    string receiverUserId=3;
+    string content=4;
+    int64 sentAt=5;
+    UserData friendUserData=6;
+}
+
+// 类似 Mirror netId：由服务器分配，客户端只用于索引大厅对象。
+message NetworkObjectData {
+    uint32 objectId=1;
+    string playerId=2;
+    string prefabId=3;
+    string ownerPlayerId=4;
+    uint32 roomId=5;
+    bool playerObject=6;
+    bool aiObject=7;
+    int32 roleType=8;//生成物体的类型
+    string triggerId=9;//关卡内唯一触发器 id，仅用于触发生成 AI 请求
+    
+    
+    string monsterBoxKey=10;//如果是触发盒子生成怪物一些怪物数据
+    int32 boxIndex=11;//盒子的索引
+    string spawnRequestId=12;//客户端生成请求的唯一标识，用于将回包匹配到具体实例
+}
+
+message NetworkTransformData {
+    uint32 objectId=1;
+    float positionX=2;
+    float positionY=3;
+    float positionZ=4;
+    float rotationX=5;
+    float rotationY=6;
+    float rotationZ=7;
+    float rotationW=8;
+    uint64 sequence=9;
+    float scaleX=10;
+    float scaleY=11;
+    float scaleZ=12;
+    // 兼容旧消息：只有 true 时客户端才应用根节点缩放。
+    bool hasScale=13;
+    repeated NetworkChildTransformData children=14;
+}
+
+// 指定子节点使用本地坐标同步；syncIndex 对应客户端 Inspector 配置顺序。
+message NetworkChildTransformData {
+    int32 syncIndex=1;
+    float positionX=2;
+    float positionY=3;
+    float positionZ=4;
+    float rotationX=5;
+    float rotationY=6;
+    float rotationZ=7;
+    float rotationW=8;
+    float scaleX=9;
+    float scaleY=10;
+    float scaleZ=11;
+}
+
+message NetworkAnimationData {
+    uint32 objectId=1;
+    int32 stateHash=2;
+    float normalizedTime=3;
+    uint64 sequence=4;
+    // Spine 动画使用名称而不是 Animator StateHash。
+    string animationName=5;
+    bool loop=6;
+    int32 trackIndex=7;
+}
+
+message NetworkRoomRequest {
+    uint32 roomId=1;
+    string roomName=2;
+    string mapName=3;
+    uint32 maxPlayers=4;
+    string targetPlayerId=5;
+    bool ready=6;
+    string levelKey=7;
+}
+
+message NetworkRoomData {
+    uint32 roomId=1;
+    string roomName=2;
+    string mapName=3;
+    uint32 maxPlayers=4;
+    uint32 playerCount=5;
+    string hostPlayerId=6;
+    bool started=7;
+    repeated NetworkRoomMemberData members=8;
+    string levelKey=9;
+}
+
+message NetworkRoomMemberData {
+    string playerId=1;
+    uint32 objectId=2;
+    bool ready=3;
+    bool host=4;
+    UserData userData=5;
+}
+
+message NetworkRoomInviteData {
+    uint32 roomId=1;
+    string inviterPlayerId=2;
+    string roomName=3;
+    string mapName=4;
+}
+
+// 服务端不解析 value，只验证物体所有权并保存、转发快照。
+message NetworkSyncVarData {
+    uint32 objectId=1;
+    uint32 behaviourId=2;
+    uint32 fieldId=3;
+    uint32 valueType=4;
+    bytes value=5;
+    uint64 sequence=6;
+}
+
+message RoomSharedValueData {
+    string key=1;
+    int64 value=2;
+    int64 delta=3;
+    uint64 version=4;
+}
+
+// 服务端不解析 arguments，只校验网络对象所有权并转发。
+message NetworkRpcData {
+    uint32 objectId=1;
+    uint32 behaviourId=2;
+    uint32 methodId=3;
+    bytes arguments=4;
+    bool includeSender=5;
+}
+
+message RankData{
+    string id=1;
+    UserData userData=2;
+    int32 roleType=3;//职业
+    int32 FightingCapacityLength=4;
+    string FightingCapacity=5;
+    string RankName=6;
+    string ServerId=7;
+    string UserId=8;
+    int64 UpdatedAt=9;
+    int64 level=10;
+    float levelTime=11;
+}
+
+//公告
+message GongGaoData{
+    string id=1;
+    string info=2;
+    int64 createTime=3;
+}
+
+// 定义消息
+message UserData {
+    // 字段定义
+    string name = 1;//玩家名字
+    string userId = 2; //玩家id
+    string  server=3; //服务器
+    int64 loginTime=4; //登入时间
+    string fightingCapacity=5;//战力
+    repeated EquipData equipData=101;//装备信息
+    string OtherData=102;//其他数据
+    string serverId=103;
+    int32 roleType=104;//角色职业
+    int64 CreatedAt=105;
+    string userAndServerId=106;
+    map<string,int64> item=107;
+    map<string,string> dataDic=108;
+    string avatar=109;//玩家头像
+}
+
+message EquipData{
+    string id=1;
+    bytes data=2;
+}
+
+
+message EmailData{
+    string id=1;
+    string itemId=2;
+    int64 itemCount=3;
+    int32 state=4;// 0未领取 1领取 2过期
+    string userId=5;
+    string emailTitle=6;
+    string emailInfo=7;
+    string serverId=8;//邮件所属逻辑服务器
+    int64 createTime=9;
+    map<string,int64> itemDic=10;//道具字典
+    repeated EquipData equips=11;//装备列表
+}
+
+message ServerDataList{
+    repeated ServerData list=1;
+}
+
+message ServerData{
+    string id=1;
+    string serverName=2;
+    string serverId=3;
+}

@@ -1,0 +1,82 @@
+/******************************************************************************
+ * Spine Runtimes License Agreement
+ * Last updated April 5, 2025. Replaces all prior versions.
+ *
+ * Copyright (c) 2013-2026, Esoteric Software LLC
+ *
+ * Integration of the Spine Runtimes into software or otherwise creating
+ * derivative works of the Spine Runtimes is permitted under the terms and
+ * conditions of Section 2 of the Spine Editor License Agreement:
+ * http://esotericsoftware.com/spine-editor-license
+ *
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
+ * "Products"), provided that each user of the Products must obtain their own
+ * Spine Editor license and redistribution of the Products in any form must
+ * include this license and copyright notice.
+ *
+ * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
+ * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+#if UNITY_2021_1_OR_NEWER
+#define HAS_LIST_POOL
+#endif
+
+using System.Collections.Generic;
+using UnityEngine;
+#if HAS_LIST_POOL
+using UnityEngine.Pool;
+#endif
+using UnityEngine.UI;
+
+namespace Spine.Unity {
+
+	/// <summary>
+	/// A minimal MaskableGraphic subclass for rendering multiple submeshes
+	/// at a <see cref="SkeletonGraphic"/>.
+	/// </summary>
+	[RequireComponent(typeof(CanvasRenderer))]
+	public class SkeletonSubmeshGraphic : MaskableGraphic {
+		public override void SetMaterialDirty () { }
+		public override void SetVerticesDirty () { }
+		protected override void OnPopulateMesh (VertexHelper vh) {
+			vh.Clear();
+		}
+
+		protected override void OnDisable () {
+			base.OnDisable();
+			this.canvasRenderer.cull = true;
+		}
+
+		protected override void OnEnable () {
+			base.OnEnable();
+			this.canvasRenderer.cull = false;
+		}
+
+#if HAS_LIST_POOL
+		public Material UpdateModifiedMaterial (Material baseMaterial) {
+			List<IMaterialModifier> modifierComponents = ListPool<IMaterialModifier>.Get();
+			GetComponents<IMaterialModifier>(modifierComponents);
+
+			Material currentMaterial = baseMaterial;
+			for (int i = 0; i < modifierComponents.Count; i++)
+				currentMaterial = modifierComponents[i].GetModifiedMaterial(currentMaterial);
+			ListPool<IMaterialModifier>.Release(modifierComponents);
+			return currentMaterial;
+		}
+#else
+		public Material UpdateModifiedMaterial (Material baseMaterial) {
+			return GetModifiedMaterial(baseMaterial);
+		}
+#endif
+	}
+}

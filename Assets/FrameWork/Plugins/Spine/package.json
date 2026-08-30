@@ -1,0 +1,44 @@
+{
+	"name": "com.esotericsoftware.spine.spine-unity",
+	"displayName": "spine-unity Runtime",
+	"description": "This plugin provides the spine-unity runtime core and examples. Spine Examples can be installed via the Samples tab.",
+	"version": "4.3.102",
+	"unity": "2018.3",
+	"author": {
+		"name": "Esoteric Software",
+		"email": "contact@esotericsoftware.com",
+		"url": "http://esotericsoftware.com/"
+	},
+	"dependencies": {
+		"com.unity.ugui" : "1.0.0",
+		"com.unity.modules.animation" : "1.0.0",
+		"com.unity.modules.physics" : "1.0.0",
+		"com.unity.modules.physics2d" : "1.0.0",
+		"com.esotericsoftware.spine.spine-csharp" : "4.3.36",
+		"com.unity.2d.sprite": "1.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git@github.com:EsotericSoftware/spine-runtimes.git"
+	},
+	"keywords": [
+		"spine",
+		"spine-unity",
+		"runtimes",
+		"2d",
+		"skeletal",
+		"animation"
+	],
+	"license": "SEE LICENSE IN LICENSE",
+	"samples": [
+		{
+			"displayName": "Spine Examples",
+			"description": "Contains examples for the spine-unity runtime",
+			"path": "Samples~/Spine Examples"
+		}
+	],
+	"bugs": {
+		"url": "https://github.com/EsotericSoftware/spine-runtimes/issues"
+	},
+	"homepage": "https://github.com/EsotericSoftware/spine-runtimes#readme"
+}

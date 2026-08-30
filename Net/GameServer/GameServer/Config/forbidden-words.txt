@@ -1,0 +1,7 @@
+# One forbidden word or phrase per line. Lines beginning with # are comments.
+赌博
+代充
+外挂
+私服
+加群
+刷钻

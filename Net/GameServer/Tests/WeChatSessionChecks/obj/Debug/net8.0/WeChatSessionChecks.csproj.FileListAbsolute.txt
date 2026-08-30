@@ -1,0 +1,14 @@
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\bin\Debug\net8.0\WeChatSessionChecks.exe
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\bin\Debug\net8.0\WeChatSessionChecks.deps.json
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\bin\Debug\net8.0\WeChatSessionChecks.runtimeconfig.json
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\bin\Debug\net8.0\WeChatSessionChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\bin\Debug\net8.0\WeChatSessionChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.AssemblyInfoInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.AssemblyInfo.cs
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.csproj.CoreCompileInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\refint\WeChatSessionChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\WeChatSessionChecks.genruntimeconfig.cache
+C:\Svn\Game\Net\GameServer\Tests\WeChatSessionChecks\obj\Debug\net8.0\ref\WeChatSessionChecks.dll
