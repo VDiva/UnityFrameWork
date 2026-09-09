@@ -36,6 +36,7 @@ namespace FrameWork
             {"com.unity.addressables", "ADDRESSABLESCN_INSTALLED"},
             {"com.code-philosophy.hybridclr", "HYBRIDCLR_INSTALLED"},
             {"com.unity.mathematics", "MATHEMATICS"},
+            {"com.unity.nuget.mono-cecil","CECIL_INSTALLED"},
         };
         
         

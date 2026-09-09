@@ -691,13 +691,21 @@ namespace FrameWork
         static Dictionary<string,string> _xlsxDic=new Dictionary<string, string>();
         public static async UniTask LoadAllXlsx()
         {
-            var allXlsx = await ABMrg.LoadAsync<TextAsset>("AllXlsx");
-            var list = JsonMapper.ToObject<List<string>>(allXlsx.text);
-            for (int i = 0; i < list.Count; i++)
+            try
             {
-                var text=await ABMrg.LoadAsync<TextAsset>(list[i]);
-                _xlsxDic.TryAdd(list[i],text.text);
+                var allXlsx = await ABMrg.LoadAsync<TextAsset>("AllXlsx");
+                var list = JsonMapper.ToObject<List<string>>(allXlsx.text);
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var text=await ABMrg.LoadAsync<TextAsset>(list[i]);
+                    _xlsxDic.TryAdd(list[i],text.text);
+                }
             }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+            
         }
         
         public static string LoadXlsx(string key)

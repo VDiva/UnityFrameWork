@@ -18,9 +18,10 @@ namespace FrameWork
         private static Dictionary<int, Type> _typesDic;
         private static List<int> _uiList;
         private static Actor _uiRoot;
-        public static void Init()
+        public static async UniTask Init()
         {
             _index = 0;
+            await UniTask.WaitUntil(() => _uiRoot!=null&&_uiRoot.GetGameObject()!=null);
         }
 
         static UiManager()

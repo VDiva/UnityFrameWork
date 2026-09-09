@@ -1,3 +1,4 @@
+#if CECIL_INSTALLED
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -434,3 +435,5 @@ namespace FrameWork.Script.WebNet.CodeGen
         }
     }
 }
+
+#endif

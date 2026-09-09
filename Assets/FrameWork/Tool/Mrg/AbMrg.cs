@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.ResourceManagement.ResourceProviders;
+
 using Object = UnityEngine.Object;
 
 #if ADDRESSABLESCN_INSTALLED
+using UnityEngine.ResourceManagement.ResourceProviders;
 using System.Collections;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -163,16 +164,17 @@ namespace FrameWork
 #endif
         }
         
+#if ADDRESSABLESCN_INSTALLED
         /// <summary>释放指定Handle。</summary>
         public static void Release(AsyncOperationHandle handle)
         {
-#if ADDRESSABLESCN_INSTALLED
+
             Addressables.Release(handle);
+
+        }
 #else
             
 #endif
-        }
-
         public static async UniTask Init()
         {
 #if ADDRESSABLESCN_INSTALLED
