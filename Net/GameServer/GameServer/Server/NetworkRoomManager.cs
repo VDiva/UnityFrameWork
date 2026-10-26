@@ -7,6 +7,7 @@ public sealed class NetworkRoomManager
 {
     public const uint LobbyRoomId = 1;
     public const string LobbyMapName = "LobbyScene";
+    public const string ReadyMapName = "ReadyScene";
     private const uint DefaultMaxPlayers = 8;
     private const uint MaxPlayersLimit = 100;
     private readonly object _gate = new();
@@ -38,6 +39,8 @@ public sealed class NetworkRoomManager
         public uint MaxPlayers;
         public string HostSessionId = string.Empty;
         public bool Started;
+        public bool HighQualityEquipmentRoll;
+        public int EquipmentRollMinQuality = 3;
         public bool IsLobby;
         public readonly HashSet<string> Members = new();
         public readonly HashSet<string> Reservations = new();
@@ -51,6 +54,7 @@ public sealed class NetworkRoomManager
         /// <summary>本次主动切图中尚未报告场景加载完成的房间成员。</summary>
         public readonly HashSet<string> MapTransitionPendingMembers = new();
         public bool MapTransitionActive;
+        public uint SceneEpoch = 1;
     }
 
     public NetworkRoomData JoinLobbyNow(PlayerSession session)
@@ -91,7 +95,10 @@ public sealed class NetworkRoomManager
                 Id = id,
                 Name = string.IsNullOrWhiteSpace(roomData!.RoomName) ? $"Room_{id}" : roomData.RoomName.Trim(),
                 MapName = roomData.MapName.Trim(),
+                Started = roomData.MapName.Trim() != ReadyMapName,
                 LevelKey = roomData.LevelKey.Trim(),
+                HighQualityEquipmentRoll = roomData.HighQualityEquipmentRoll,
+                EquipmentRollMinQuality = NormalizeEquipmentRollQuality(roomData.EquipmentRollMinQuality),
                 MaxPlayers = ClampMaxPlayers(roomData.MaxPlayers),
                 HostSessionId = session.PlayerId,
                 ServerId = session.ServerId ?? ServerScope.DefaultServerId
@@ -117,11 +124,11 @@ public sealed class NetworkRoomManager
             string map = roomData!.MapName.Trim();
             string levelKey = roomData.LevelKey.Trim();
             Room? room = _rooms.Values
-                .Where(r => !r.IsLobby && !r.Started && !r.MapTransitionActive &&
-                            string.Equals(r.MapName, map, StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(r.LevelKey, levelKey, StringComparison.Ordinal) &&
-                            r.ServerId == (session.ServerId ?? ServerScope.DefaultServerId) &&
-                            r.Members.Count + r.Reservations.Count < r.MaxPlayers)
+                .Where(r => CanJoinRoom(r) &&
+                            r.HighQualityEquipmentRoll == roomData.HighQualityEquipmentRoll &&
+                            (!r.HighQualityEquipmentRoll || r.EquipmentRollMinQuality ==
+                                NormalizeEquipmentRollQuality(roomData.EquipmentRollMinQuality)) &&
+                            r.ServerId == (session.ServerId ?? ServerScope.DefaultServerId))
                 .OrderByDescending(r => r.Members.Count)
                 .FirstOrDefault();
             if (room == null)
@@ -130,6 +137,9 @@ public sealed class NetworkRoomManager
                 room = new Room { Id = id,
                     Name = string.IsNullOrWhiteSpace(roomData.RoomName) ? $"Match_{id}" : roomData.RoomName.Trim(),
                     MapName = map, LevelKey = levelKey,
+                    HighQualityEquipmentRoll = roomData.HighQualityEquipmentRoll,
+                    EquipmentRollMinQuality = NormalizeEquipmentRollQuality(roomData.EquipmentRollMinQuality),
+                    Started = map != ReadyMapName,
                     MaxPlayers = ClampMaxPlayers(roomData.MaxPlayers), HostSessionId = session.PlayerId,
                     ServerId = session.ServerId ?? ServerScope.DefaultServerId };
                 _rooms.Add(id, room);
@@ -149,8 +159,7 @@ public sealed class NetworkRoomManager
         {
             if (session.NetworkRoomId != 0 || session.PendingNetworkRoomId != 0)
             { error = "玩家仍在其他房间中。"; return false; }
-            if (!_rooms.TryGetValue(roomId, out Room? room) || room.IsLobby || room.Started ||
-                room.MapTransitionActive ||
+            if (!_rooms.TryGetValue(roomId, out Room? room) || !CanJoinRoom(room) ||
                 room.ServerId != (session.ServerId ?? ServerScope.DefaultServerId))
             { error = "邀请的房间不存在或游戏已经开始。"; return false; }
             if (room.Members.Count + room.Reservations.Count >= room.MaxPlayers)
@@ -174,7 +183,7 @@ public sealed class NetworkRoomManager
                 return false;
             }
             if (roomId == LobbyRoomId || !_rooms.TryGetValue(roomId, out Room? room) ||
-                room.IsLobby || room.Started || room.MapTransitionActive ||
+                !CanJoinRoom(room) ||
                 room.ServerId != (session.ServerId ?? ServerScope.DefaultServerId))
             {
                 error = "房间不存在或当前不可加入。";
@@ -271,6 +280,11 @@ public sealed class NetworkRoomManager
                 error = "房间正在切换地图。";
                 return false;
             }
+            if (room.Reservations.Count > 0)
+            {
+                error = "还有玩家正在进入房间，请稍后切换地图。";
+                return false;
+            }
 
             PlayerSession[] connectedMembers = room.Members
                 .Select(PlayerSessionManager.Instance.GetSession)
@@ -284,7 +298,10 @@ public sealed class NetworkRoomManager
             }
 
             room.MapName = mapName.Trim();
-            room.Started = false;
+            room.SceneEpoch++;
+            if (room.SceneEpoch == 0) room.SceneEpoch = 1;
+            // 切入战斗立即关闭加入；返回准备地图后仍需等待全员加载完成。
+            room.Started = room.MapName != ReadyMapName;
             room.ReadyMembers.Clear();
             room.MapTransitionPendingMembers.Clear();
             foreach (PlayerSession member in connectedMembers)
@@ -345,6 +362,8 @@ public sealed class NetworkRoomManager
             room.Name = roomName;
             room.LevelKey = roomData.LevelKey.Trim();
             room.MaxPlayers = maxPlayers;
+            room.HighQualityEquipmentRoll = roomData.HighQualityEquipmentRoll;
+            room.EquipmentRollMinQuality = NormalizeEquipmentRollQuality(roomData.EquipmentRollMinQuality);
             data = ToData(room);
             error = string.Empty;
             return true;
@@ -358,6 +377,7 @@ public sealed class NetworkRoomManager
         {
             if (!TryGetGameRoomMember(session, out Room? room, out error)) return false;
             if (room.MapTransitionActive) { error = "房间正在切换地图。"; return false; }
+            if (room.Reservations.Count > 0) { error = "还有玩家正在进入房间。"; return false; }
             if (room.HostSessionId != session.PlayerId) { error = "只有房主可以开始游戏。"; return false; }
             if (room.Members.Count == 0 || room.Members.Any(id => !room.ReadyMembers.Contains(id)))
             { error = "还有玩家没有准备。"; return false; }
@@ -531,11 +551,7 @@ public sealed class NetworkRoomManager
         lock (_gate)
         {
             return _rooms.Values
-                .Where(room => !room.IsLobby &&
-                               !room.Started &&
-                               !room.MapTransitionActive &&
-                               room.ServerId == normalizedServerId &&
-                               room.Members.Count + room.Reservations.Count < room.MaxPlayers)
+                .Where(room => CanJoinRoom(room) && room.ServerId == normalizedServerId)
                 .OrderBy(room => room.Id)
                 .Select(room => ToData(room))
                 .ToArray();
@@ -603,9 +619,27 @@ public sealed class NetworkRoomManager
     {
         if (!room.IsLobby && room.Members.Count == 0 && room.Reservations.Count == 0 && _rooms.Remove(room.Id))
         {
+            PlayerSessionManager.Instance.ForgetRoom(room.Id);
             RoomSharedValueManager.Instance.RemoveRoom(room.ServerId, room.Id);
             _ = NetworkRoomObjectManager.Instance.DestroyRoomObjectsAsync(room.Id);
         }
+    }
+
+    private static bool CanJoinRoom(Room room)
+    {
+        return !room.IsLobby && !room.Started && !room.MapTransitionActive &&
+               room.Members.Count + room.Reservations.Count < room.MaxPlayers;
+    }
+
+    public uint GetSceneEpoch(uint roomId)
+    {
+        lock (_gate)
+            return _rooms.TryGetValue(roomId, out Room? room) ? room.SceneEpoch : 0;
+    }
+
+    private static int NormalizeEquipmentRollQuality(int quality)
+    {
+        return quality == 0 ? 3 : Math.Clamp(quality, 1, 8);
     }
 
     private static NetworkRoomData ToData(Room room, string? serverId = null)
@@ -616,7 +650,9 @@ public sealed class NetworkRoomManager
             .ToArray();
         var data = new NetworkRoomData { RoomId = room.Id, RoomName = room.Name, MapName = room.MapName,
             MaxPlayers = room.MaxPlayers, PlayerCount = (uint)visibleMembers.Length, Started = room.Started,
-            LevelKey = room.LevelKey };
+            LevelKey = room.LevelKey, CanJoin = CanJoinRoom(room), SceneEpoch = room.SceneEpoch,
+            HighQualityEquipmentRoll = room.HighQualityEquipmentRoll,
+            EquipmentRollMinQuality = room.EquipmentRollMinQuality };
         PlayerSession? host = PlayerSessionManager.Instance.GetSession(room.HostSessionId);
         data.HostPlayerId = host?.UserId ?? string.Empty;
         foreach (string sessionId in visibleMembers)

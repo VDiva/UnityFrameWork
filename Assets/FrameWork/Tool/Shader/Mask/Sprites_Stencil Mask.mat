@@ -32,11 +32,11 @@ Material:
     - PixelSnap: 0
     - ShowTexture: 0
     - _ColorMask: 15
-    - _Stencil: 0
+    - _Stencil: 1
     - _StencilComp: 8
     - _StencilOp: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
+    - _StencilReadMask: 1
+    - _StencilWriteMask: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

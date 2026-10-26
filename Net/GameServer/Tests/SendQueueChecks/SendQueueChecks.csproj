@@ -3,5 +3,8 @@
     <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
   </PropertyGroup>
-  <ItemGroup><Compile Include="../../GameServer/Server/SessionSendQueue.cs" Link="SessionSendQueue.cs" /></ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../GameServer/Server/SessionSendQueue.cs" Link="SessionSendQueue.cs" />
+    <Compile Include="../../GameServer/Server/SessionCommandQueue.cs" Link="SessionCommandQueue.cs" />
+  </ItemGroup>
 </Project>

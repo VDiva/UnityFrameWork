@@ -37,6 +37,9 @@ namespace UnityWebSocket
         [DllImport("__Internal")]
         public static extern int WebSocketGetState(int instanceId);
 
+        [DllImport("__Internal")]
+        public static extern int WebSocketGetBufferedAmount(int instanceId);
+
         /* WebSocket JSLIB callback setters and other functions */
         [DllImport("__Internal")]
         public static extern int WebSocketAllocate(string url);

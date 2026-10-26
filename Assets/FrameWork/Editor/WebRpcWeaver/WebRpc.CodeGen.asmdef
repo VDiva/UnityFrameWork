@@ -14,6 +14,6 @@
   ],
   "autoReferenced": false,
   "defineConstraints": [],
-  "versionDefines": [],
+  "versionDefines": [{"name":"com.unity.nuget.mono-cecil","expression":"","define":"CECIL_INSTALLED"}],
   "noEngineReferences": true
 }

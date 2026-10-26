@@ -23,6 +23,8 @@ public static class GameDataMrg
     private const int SaveAllConcurrency = 16;
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim>
         UserSaveLocks = new();
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim>
+        RankSaveLocks = new();
     private const int WeeklyRankRewardLimit = 100;
     private const string WeeklyRankRewardItemId = "weekly_rank_reward";
 
@@ -508,6 +510,21 @@ public static class GameDataMrg
     /// 排行榜保存完整 RankData，按 Level 降序、LevelTime 升序排序。
     /// </summary>
     public static async Task<bool> UpdateRankData(string rankName, string serverId, RankData rankData)
+    {
+        if (rankName == BattleRankPolicy.RankName)
+            BattleRankPolicy.Validate(rankData);
+        rankData.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        string rankUserId = string.IsNullOrWhiteSpace(rankData.Id) ? rankData.UserData?.UserId ?? "" : rankData.Id;
+        var saveLock = RankSaveLocks.GetOrAdd($"{ServerScope.Normalize(serverId)}:{rankName}:{rankUserId}", _ => new SemaphoreSlim(1, 1));
+        await saveLock.WaitAsync();
+        try
+        {
+            return await SaveRankData(rankName, serverId, rankData);
+        }
+        finally { saveLock.Release(); }
+    }
+
+    private static async Task<bool> SaveRankData(string rankName, string serverId, RankData rankData)
     {
         var mongoSaved = false;
         if (MongoDBMrg.IsConnected)

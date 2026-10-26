@@ -6,7 +6,7 @@ using Concentus.Structs;
 using FrameWork;
 using GameData;
 using UnityEngine;
-#if WEIXINMINIGAME && !UNITY_EDITOR
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
 using WeChatWASM;
 #endif
 using LobbyWebNet = FrameWork.WebSocket.WebNet;
@@ -48,7 +48,7 @@ namespace FrameWork.Script.WebNet
         int microphoneReadPosition = -1;
         int hangoverFrames;
         bool permissionRequested;
-#if WEIXINMINIGAME&&!UNITY_EDITOR
+#if WX_MINIGAME_BUILD&&!UNITY_EDITOR
         WXRecorderManager wxRecorder;
         bool wxRecorderStarted;
         readonly List<byte> wxPcmBuffer = new List<byte>(SamplesPerFrame * 4);
@@ -105,7 +105,7 @@ namespace FrameWork.Script.WebNet
                 PacketLossPercent = 10
             };
 
-#if WEIXINMINIGAME&&!UNITY_EDITOR
+#if WX_MINIGAME_BUILD&&!UNITY_EDITOR
             wxRecorder = WX.GetRecorderManager();
             wxRecorder.OnStart(() => wxRecorderStarted = true);
             wxRecorder.OnFrameRecorded(OnWxPcmFrameRecorded);
@@ -156,7 +156,7 @@ namespace FrameWork.Script.WebNet
                 return;
             }
 
-#if WEIXINMINIGAME&&!UNITY_EDITOR
+#if WX_MINIGAME_BUILD&&!UNITY_EDITOR
             if (!wxRecorderStarted)
             {
                 if (!permissionRequested)
@@ -220,7 +220,7 @@ namespace FrameWork.Script.WebNet
         }
 #endif
 
-#if WEIXINMINIGAME&& !UNITY_EDITOR
+#if WX_MINIGAME_BUILD&& !UNITY_EDITOR
         void StartWxMicrophone()
         {
             permissionRequested = true;
@@ -394,7 +394,7 @@ namespace FrameWork.Script.WebNet
 
         void StopMicrophone()
         {
-#if WEIXINMINIGAME&&!UNITY_EDITOR
+#if WX_MINIGAME_BUILD&&!UNITY_EDITOR
             if (wxRecorderStarted || permissionRequested)
                 wxRecorder.Stop();
             wxRecorderStarted = false;

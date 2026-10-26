@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.WebSockets;
 using System.IO;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace UnityWebSocket
 {
@@ -45,6 +46,11 @@ namespace UnityWebSocket
         private ClientWebSocket socket;
         private bool isOpening => socket != null && socket.State == System.Net.WebSockets.WebSocketState.Open;
         private ConcurrentQueue<SendBuffer> sendQueue = new ConcurrentQueue<SendBuffer>();
+        private readonly object sendQueueGate = new object();
+        private readonly Dictionary<ulong, SendBuffer> pendingLatest = new Dictionary<ulong, SendBuffer>();
+        private readonly SemaphoreSlim sendSignal = new SemaphoreSlim(0, 1);
+        public int PendingSendCount => sendQueue.Count;
+        public int BufferedSendBytes => 0;
         private ConcurrentQueue<EventArgs> eventQueue = new ConcurrentQueue<EventArgs>();
         private bool closeProcessing;
         private CancellationTokenSource cts = null;
@@ -98,21 +104,57 @@ namespace UnityWebSocket
         {
             if (!isOpening) return;
             closeProcessing = true;
+            SignalSend();
         }
 
         public void SendAsync(byte[] data)
         {
             if (!isOpening) return;
             var buffer = new SendBuffer(data, WebSocketMessageType.Binary);
-            sendQueue.Enqueue(buffer);
+            lock (sendQueueGate)
+            {
+                // 可靠消息形成边界，实时状态不能跨过它覆盖更早的数据。
+                pendingLatest.Clear();
+                sendQueue.Enqueue(buffer);
+                SignalSend();
+            }
         }
+
+        public void SendLatestAsync(byte[] data, ulong key,
+            Func<byte[], byte[], byte[]> merge = null, int maxAgeMs = 0)
+        {
+            if (!isOpening) return;
+            lock (sendQueueGate)
+            {
+                if (pendingLatest.TryGetValue(key, out var pending))
+                {
+                    pending.data = merge == null ? data : merge(pending.data, data);
+                    pending.queuedAt = Environment.TickCount;
+                    pending.maxAgeMs = maxAgeMs;
+                }
+                else
+                {
+                    var buffer = new SendBuffer(data, WebSocketMessageType.Binary, key, maxAgeMs);
+                    sendQueue.Enqueue(buffer);
+                    pendingLatest.Add(key, buffer);
+                    SignalSend();
+                }
+            }
+        }
+
+        public void FlushLatest() { }
 
         public void SendAsync(string text)
         {
             if (!isOpening) return;
             var data = Encoding.UTF8.GetBytes(text);
             var buffer = new SendBuffer(data, WebSocketMessageType.Text);
-            sendQueue.Enqueue(buffer);
+            lock (sendQueueGate)
+            {
+                pendingLatest.Clear();
+                sendQueue.Enqueue(buffer);
+                SignalSend();
+            }
         }
         #endregion
 
@@ -120,16 +162,48 @@ namespace UnityWebSocket
         {
             public byte[] data;
             public WebSocketMessageType type;
-            public SendBuffer(byte[] data, WebSocketMessageType type)
+            public ulong? key;
+            public int queuedAt;
+            public int maxAgeMs;
+            public SendBuffer(byte[] data, WebSocketMessageType type, ulong? key = null,
+                int maxAgeMs = 0)
             {
                 this.data = data;
                 this.type = type;
+                this.key = key;
+                this.queuedAt = Environment.TickCount;
+                this.maxAgeMs = maxAgeMs;
             }
         }
 
         private void CleanSendQueue()
         {
-            while (sendQueue.TryDequeue(out var _)) ;
+            lock (sendQueueGate)
+            {
+                while (sendQueue.TryDequeue(out var _)) ;
+                pendingLatest.Clear();
+            }
+        }
+
+        private bool TryDequeueSend(out SendBuffer buffer)
+        {
+            lock (sendQueueGate)
+            {
+                if (!sendQueue.TryDequeue(out buffer)) return false;
+                if (buffer.key.HasValue && pendingLatest.TryGetValue(buffer.key.Value, out var pending) &&
+                    ReferenceEquals(pending, buffer))
+                    pendingLatest.Remove(buffer.key.Value);
+                return true;
+            }
+        }
+
+        private void SignalSend()
+        {
+            if (sendSignal.CurrentCount == 0)
+            {
+                try { sendSignal.Release(); }
+                catch (SemaphoreFullException) { }
+            }
         }
 
         private void CleanEventQueue()
@@ -169,12 +243,15 @@ namespace UnityWebSocket
             {
                 while (!closeProcessing && socket != null && cts != null && !cts.IsCancellationRequested)
                 {
-                    while (!closeProcessing && sendQueue.Count > 0 && sendQueue.TryDequeue(out var buffer))
+                    await sendSignal.WaitAsync(cts.Token);
+                    while (!closeProcessing && TryDequeueSend(out var buffer))
                     {
+                        if (buffer.maxAgeMs > 0 &&
+                            unchecked(Environment.TickCount - buffer.queuedAt) > buffer.maxAgeMs)
+                            continue;
                         Log($"Send, type: {buffer.type}, size: {buffer.data.Length}, queue left: {sendQueue.Count}");
                         await socket.SendAsync(new ArraySegment<byte>(buffer.data), buffer.type, true, cts.Token);
                     }
-                    Thread.Sleep(3);
                 }
                 if (closeProcessing && socket != null && cts != null && !cts.IsCancellationRequested)
                 {

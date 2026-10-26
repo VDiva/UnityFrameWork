@@ -1,9 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using FancyScrollView;
-using FrameWork.Script.Tool;
-using Spine.Unity;
 namespace FrameWork
 {
 	public partial class UiRoot : UiActor
@@ -11,6 +8,9 @@ namespace FrameWork
 		public override void Awake()
 		{
 			base.Awake();
+			RectTransformCamera = GetGameObject().transform.Find("Camera/").GetComponent<RectTransform>();
+			CameraCamera = GetGameObject().transform.Find("Camera/").GetComponent<Camera>();
+			AddScriptsCamera = GetGameObject().transform.Find("Camera/").GetComponent<AddScripts>();
 		}
 	}
 }

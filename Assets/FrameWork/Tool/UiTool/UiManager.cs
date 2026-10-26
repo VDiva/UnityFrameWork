@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+
+
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -17,11 +19,19 @@ namespace FrameWork
         private static Dictionary<Type, UiActor> _uiDic;
         private static Dictionary<int, Type> _typesDic;
         private static List<int> _uiList;
-        private static Actor _uiRoot;
-        public static async UniTask Init()
+        private static UiActor _uiRoot;
+        public static void Init()
         {
             _index = 0;
-            await UniTask.WaitUntil(() => _uiRoot!=null&&_uiRoot.GetGameObject()!=null);
+        }
+
+        /// <summary>热更新入口传入生成的 UI 根节点，避免 AOT 引用业务程序集。</summary>
+        public static void Init(UiActor root)
+        {
+            _uiRoot = root ?? throw new ArgumentNullException(nameof(root));
+            _layerDic.Clear();
+            Init();
+            CheckUiRoot().Forget(Debug.LogException);
         }
 
         static UiManager()
@@ -29,8 +39,7 @@ namespace FrameWork
             _uiDic = new Dictionary<Type, UiActor>();
             _typesDic = new Dictionary<int, Type>();
             _uiList = new List<int>();
-            _uiRoot = new UiRoot();
-            _=CheckUiRoot();
+
             
         }
 
@@ -41,6 +50,10 @@ namespace FrameWork
         }
 
 
+        public static Camera GetCamera()
+        {
+            return _uiRoot?.GetGameObject()?.GetComponentInChildren<Camera>(true);
+        }
         
         
         public static T GetUi<T>() where T: UiActor
@@ -73,7 +86,7 @@ namespace FrameWork
         {
 
             if (_loadingUiList.Contains(type)) return null;
-            if (_uiRoot.GetGameObject()==null)
+            if (_uiRoot == null || _uiRoot.GetGameObject()==null)
             {
                 MyLog.LogError("场景中没有Canvas组件,无法显示Ui物体");
                 return null;
@@ -136,6 +149,16 @@ namespace FrameWork
             if (_uiDic.ContainsKey(typeof(T)))
             {
                 return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsShowUi<T>()
+        {
+            if (_uiDic.ContainsKey(typeof(T)))
+            {
+                return _uiDic[typeof(T)].GetGameObject().activeSelf;
             }
 
             return false;
@@ -259,45 +282,18 @@ namespace FrameWork
         }
 
 
-        // private static ObjectPool<TipsText> _tipstPool=new ObjectPool<TipsText>();
-        // public static async UniTask ShowTips(string tips)
-        // {
-        //     var tipsText=await _tipstPool.DeQueue();
-        //     await UniTask.WaitUntil(() => tipsText.GetGameObject() != null);
-        //     tipsText.transform.localScale = Vector3.one;
-        //     tipsText.SetActive(true);
-        //     tipsText.CanvasGroupTipsText.alpha = 1;
-        //     tipsText.transform.SetParent(_uiRoot.transform.Find(nameof(Mode.Popup)));
-        //     tipsText.transform.localScale = Vector3.one;
-        //     var rect = tipsText.transform.GetComponent<RectTransform>();
-        //     rect.offsetMin=new Vector2(0,0);
-        //     rect.offsetMax=new Vector2(0,0);
-        //     Sequence queue = DOTween.Sequence();
-        //     tipsText.RectTransformBg.localScale = Vector3.zero;
-        //     tipsText.RectTransformBg.anchoredPosition=new Vector2(0, 0);
-        //     queue.Append(tipsText.RectTransformBg.DOScale(new Vector3(1, 1, 1), 0.4f));
-        //     queue.AppendInterval(0.5f);
-        //     queue.Append(tipsText.RectTransformBg.DOLocalMoveY(200, 0.5f));
-        //     queue.Play();
-        //     tipsText.CanvasGroupTipsText.DOFade(0, 0.5f).SetDelay(0.9f);
-        //     tipsText.TextMeshProUGUIText.text = tips;
-        //     queue.onComplete += (() =>
-        //     {
-        //         _tipstPool.EnQueue(tipsText);
-        //         tipsText.SetActive(false);
-        //     });
-        // }
-        //
-        // public static async UniTask ShowUiFx(string fxName, float time)
-        // {
-        //     var tran=GetTransform(new UiModeAttribute(Mode.Fx));
-        //     var fx = await GameObjectMrg.Instance.Dequeue(fxName, RoleType.Fx);
-        //     fx.transform.SetParent(tran);
-        //     fx.transform.localPosition = Vector3.zero;
-        //     fx.transform.localScale = Vector3.one;
-        //     await UniTask.Delay(TimeSpan.FromSeconds(time));
-        //     GameObjectMrg.Instance.Enqueue(fx);
-        // }
-        
+        // 提示样式和特效对象池由接入项目提供。
+        public static Func<string, UniTask> TipsHandler;
+        public static Func<string, float, UniTask> UiFxHandler;
+        public static UniTask ShowTips(string tips)
+        {
+            if (TipsHandler == null) throw new InvalidOperationException("请先设置 UiManager.TipsHandler");
+            return TipsHandler(tips);
+        }
+        public static UniTask ShowUiFx(string fxName, float time)
+        {
+            if (UiFxHandler == null) throw new InvalidOperationException("请先设置 UiManager.UiFxHandler");
+            return UiFxHandler(fxName, time);
+        }
     }
 }

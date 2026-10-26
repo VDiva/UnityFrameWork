@@ -1,10 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using FrameWork;
+
+
 using GameData;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 using LobbyWebNet = FrameWork.WebSocket.WebNet;
 
 namespace FrameWork.Script.WebNet
@@ -150,6 +154,7 @@ namespace FrameWork.Script.WebNet
 
         // 只有场景和服务端进入确认都完成后，晚订阅者才可以重放本地成员进入事件。
         bool hasCompletedCurrentRoomEntry;
+        NetworkRoomData newPlayerRoomAfterLogin;
 
         void Awake()
         {
@@ -195,7 +200,7 @@ namespace FrameWork.Script.WebNet
             });
         }
 
-        /// <summary>匹配同地图且未满的房间；没有可用房间时由服务端自动创建。</summary>
+        /// <summary>匹配当前区服中任意可加入且未满的房间，不限制地图、关卡或人数配置；没有可用房间时按传入配置自动创建。</summary>
         public void MatchRoom(NetworkRoomData roomData)
         {
             if (!LobbyWebNet.IsConnected || roomData == null ||
@@ -375,10 +380,11 @@ namespace FrameWork.Script.WebNet
         // WebNetworkManager 的统一消息入口，只处理房间相关的服务端消息。
         void OnServerMessage(Msg msg)
         {
+            if (IsReturningToLogin) return;
             switch (msg.ServerMsgType)
             {
                 case ServerMsgType.LoginSuc:
-                    HandleLoginRoom(msg.NetworkRoom);
+                    HandleLoginRoom(msg.NetworkRoom, msg.UserData);
                     break;
 
                 case ServerMsgType.NetworkRoomLoad:
@@ -392,6 +398,15 @@ namespace FrameWork.Script.WebNet
                     break;
 
                 case ServerMsgType.NetworkRoomEntered:
+                    // 等登录大厅的确认到达后再创建新手房间，不加载大厅画面。
+                    if (newPlayerRoomAfterLogin != null && msg.NetworkRoom?.RoomId == LobbyRoomId)
+                    {
+                        var newPlayerRoom = newPlayerRoomAfterLogin;
+                        newPlayerRoomAfterLogin = null;
+                        CurrentRoom = msg.NetworkRoom;
+                        CreateRoom(newPlayerRoom);
+                        break;
+                    }
                     if (IsLoadingRoom && PendingRoom != null && msg.NetworkRoom != null &&
                         PendingRoom.RoomId == msg.NetworkRoom.RoomId)
                     {
@@ -470,8 +485,9 @@ namespace FrameWork.Script.WebNet
         }
 
         // 登录成功后服务端会返回玩家所在房间，通常为长期大厅。
-        void HandleLoginRoom(NetworkRoomData room)
+        void HandleLoginRoom(NetworkRoomData room, UserData loginUserData)
         {
+            newPlayerRoomAfterLogin = null;
             if (room == null || room.RoomId == 0)
                 return;
 
@@ -481,6 +497,15 @@ namespace FrameWork.Script.WebNet
                 Debug.Log("[WebRoom] 重新登录，重建房间场景和成员");
             BeginRoomTransition(room);
 
+            if (room.RoomId == LobbyRoomId && autoLoadRoomMap)
+            {
+                newPlayerRoomAfterLogin = WebNetworkIntegration.InitialRoomFactory?.Invoke(room, loginUserData);
+                if (newPlayerRoomAfterLogin != null)
+                {
+                    hasCompletedCurrentRoomEntry = false;
+                    return;
+                }
+            }
             if (!string.IsNullOrWhiteSpace(room.MapName))
             {
                 hasCompletedCurrentRoomEntry = false;
@@ -505,10 +530,53 @@ namespace FrameWork.Script.WebNet
         private int loadGeneration;
         private Action pendingLoad;
 
+        public bool IsReturningToLogin { get; private set; }
+
+        /// <summary>作废旧地图加载，重连后等待玩家在登录页主动登录。</summary>
+        public void ReturnToStartScene()
+        {
+            if (IsReturningToLogin) return;
+            IsReturningToLogin = true;
+            newPlayerRoomAfterLogin = null;
+            ++loadGeneration;
+            CurrentRoom = null;
+            PendingRoom = null;
+            roomBeingLeft = null;
+            enteredRoomWaitingForScene = null;
+            hasCompletedCurrentRoomEntry = false;
+            memberSnapshot.Clear();
+            roomListBuffer.Clear();
+            WebRoomSharedValues.Clear();
+            WebNetworkManager.Instance?.ResetForLogin();
+            if (IsLoadingRoom)
+            {
+                // Addressables 不能取消，旧加载完成后只执行返回登录页。
+                pendingLoad = LoadStartScene;
+                return;
+            }
+            pendingLoad = null;
+            LoadStartScene();
+        }
+
+        private void LoadStartScene()
+        {
+            if (SceneManager.GetActiveScene().name == WebNetworkIntegration.LoginSceneName)
+            {
+                IsReturningToLogin = false;
+                return;
+            }
+            ABMrg.LoadSceneAsync(WebNetworkIntegration.LoginSceneName, call: () => IsReturningToLogin = false,
+                failure: error =>
+                {
+                    IsReturningToLogin = false;
+                    RoomError?.Invoke("返回登录场景失败：" + error.Message);
+                });
+        }
+
         public void LoadScene(NetworkRoomData room, bool confirmReady = true,
             Action<float> progress = null, Action end = null)
         {
-            if (room == null)
+            if (room == null || IsReturningToLogin)
                 return;
             ++loadGeneration;
             if (IsLoadingRoom)
@@ -534,6 +602,15 @@ namespace FrameWork.Script.WebNet
 
             IsLoadingRoom = true;
             int generation = loadGeneration;
+            if (WebNetworkIntegration.PrepareRoomScene != null &&
+                !WebNetworkIntegration.PrepareRoomScene(room))
+            {
+                IsLoadingRoom = false;
+                PendingRoom = null;
+                RoomError?.Invoke("业务地图准备失败：" + room.MapName);
+                yield break;
+            }
+            FrameWork.Script.Mrg.GameObjectMrg.DetachSceneCamera(Camera.main);
             WebNetworkManager.Instance?.ClearRemoteObjectsForSceneChange();
 
             bool loadCompleted = false;

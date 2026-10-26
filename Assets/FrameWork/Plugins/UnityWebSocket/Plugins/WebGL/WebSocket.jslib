@@ -385,6 +385,13 @@ var WebSocketLibrary =
         if (instance.ws === null) return 3; // socket null as closed
         
         return instance.ws.readyState;
+    },
+
+    WebSocketGetBufferedAmount: function(instanceId)
+    {
+        var instance = webSocketManager.instances[instanceId];
+        if (!instance || !instance.ws) return 0;
+        return Math.min(instance.ws.bufferedAmount || 0, 2147483647);
     }
 };
 

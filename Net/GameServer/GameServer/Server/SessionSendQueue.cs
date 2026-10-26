@@ -5,7 +5,8 @@ namespace WebSocketDemo;
 /// <summary>单连接有界发送队列。可靠包保持 FIFO，实时包仅在相邻可靠包之间合并。</summary>
 public sealed class SessionSendQueue
 {
-    private sealed record Packet(byte[] Data, WebSocketMessageType Type, ulong? Key, long QueuedAt);
+    private sealed record Packet(byte[] Data, WebSocketMessageType Type, ulong? Key,
+        long QueuedAt, int MaxAgeMs);
     private readonly object _gate = new();
     private readonly LinkedList<Packet> _packets = new();
     private readonly Dictionary<ulong, LinkedListNode<Packet>> _latest = new();
@@ -17,10 +18,18 @@ public sealed class SessionSendQueue
     private readonly int _maxBytes;
     private readonly TimeSpan _timeout;
     private int _bytes;
+    private long _lastQueueWaitMs;
+    private long _lastWriteMs;
+    private long _expiredRealtimePackets;
     private bool _closed;
     private long _lastSlowLog;
     private readonly string _label;
     public Task Completion { get; }
+    public int PendingCount { get { lock (_gate) return _packets.Count; } }
+    public int PendingBytes { get { lock (_gate) return _bytes; } }
+    public long LastQueueWaitMs => Interlocked.Read(ref _lastQueueWaitMs);
+    public long LastWriteMs => Interlocked.Read(ref _lastWriteMs);
+    public long ExpiredRealtimePackets => Interlocked.Read(ref _expiredRealtimePackets);
 
     public SessionSendQueue(Func<byte[], WebSocketMessageType, CancellationToken, Task> send,
         Action<Exception> failed, int maxPackets = 1024, int maxBytes = 4 * 1024 * 1024,
@@ -35,7 +44,8 @@ public sealed class SessionSendQueue
         Completion = Task.Run(RunAsync);
     }
 
-    public bool Enqueue(byte[] data, WebSocketMessageType type, ulong? key = null)
+    public bool Enqueue(byte[] data, WebSocketMessageType type, ulong? key = null,
+        Func<byte[], byte[], byte[]>? merge = null, int maxAgeMs = 0)
     {
         bool overflow;
         lock (_gate)
@@ -43,6 +53,9 @@ public sealed class SessionSendQueue
             if (_closed) return false;
             _latest.TryGetValue(key ?? 0, out var previous);
             if (!key.HasValue) previous = null;
+            // 同一个实时 key 的批量状态需要按对象合并；直接覆盖整包会漏掉未在新包出现的对象。
+            if (previous != null && merge != null)
+                data = merge(previous.Value.Data, data);
             int nextBytes = _bytes + data.Length - (previous?.Value.Data.Length ?? 0);
             // 弱网先牺牲可丢帧状态，不让它挤掉房间/RPC 等可靠消息。
             // 可以丢弃旧状态，但不能移动可靠包或把新状态合并到可靠包之前。
@@ -69,7 +82,7 @@ public sealed class SessionSendQueue
             if (overflow && key.HasValue) return false;
             if (!overflow)
             {
-                var packet = new Packet(data, type, key, Environment.TickCount64);
+                var packet = new Packet(data, type, key, Environment.TickCount64, maxAgeMs);
                 if (previous != null) previous.Value = packet;
                 else
                 {
@@ -110,6 +123,9 @@ public sealed class SessionSendQueue
     {
         try
         {
+            // 一个连接只允许一个发送者，超时令牌可以复用；避免每个高频位置包
+            // 都分配 linked CTS 和定时器。超时一旦触发，连接会被隔离，不再复用。
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(_stop.Token);
             while (true)
             {
                 await _signal.WaitAsync(_stop.Token);
@@ -127,13 +143,22 @@ public sealed class SessionSendQueue
                         if (packet.Key.HasValue && _latest.TryGetValue(packet.Key.Value, out var current) &&
                             ReferenceEquals(first, current)) _latest.Remove(packet.Key.Value);
                     }
-                    using var deadline = CancellationTokenSource.CreateLinkedTokenSource(_stop.Token);
+                    // Transform 是可丢帧状态；过期后发送只会挡住更新的位置。
+                    if (packet.MaxAgeMs > 0 &&
+                        Environment.TickCount64 - packet.QueuedAt > packet.MaxAgeMs)
+                    {
+                        Interlocked.Increment(ref _expiredRealtimePackets);
+                        continue;
+                    }
                     deadline.CancelAfter(_timeout);
                     long sendStarted = Environment.TickCount64;
                     // 发送必须支持取消；发生超时后直接中止连接，不再继续发后续可靠包。
                     await _send(packet.Data, packet.Type, deadline.Token);
                     deadline.Token.ThrowIfCancellationRequested();
+                    deadline.CancelAfter(Timeout.InfiniteTimeSpan);
                     long finished = Environment.TickCount64;
+                    Interlocked.Exchange(ref _lastQueueWaitMs, sendStarted - packet.QueuedAt);
+                    Interlocked.Exchange(ref _lastWriteMs, finished - sendStarted);
                     if ((sendStarted - packet.QueuedAt > 500 || finished - sendStarted > 250) &&
                         finished - _lastSlowLog > 5000)
                     {

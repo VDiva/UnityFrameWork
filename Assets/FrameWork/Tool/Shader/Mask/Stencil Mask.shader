@@ -51,9 +51,11 @@ Shader "Sprites/Stencil Mask"
         {
             Stencil
             {
-                Ref 1
+                Ref [_Stencil]
                 Comp always
                 Pass replace
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
             }
         CGPROGRAM
             #pragma vertex vert

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FrameWork.Script.Mrg;
 using GameData;
 using LobbyWebNet = FrameWork.WebSocket.WebNet;
 
@@ -22,7 +23,11 @@ namespace FrameWork.Script.WebNet
             public ulong Version;
         }
 
-        
+        public static bool Add(RoomDataType key, long value)
+        {
+            return Add(key.ToString(), value);
+        }
+
         public static bool Add(string key, long delta)
         {
             key = NormalizeKey(key);
@@ -37,12 +42,23 @@ namespace FrameWork.Script.WebNet
             });
             return true;
         }
-        
+
+        public static bool Add(RoomDataType key, float value)
+        {
+            return Add(key.ToString(), value);
+        }
+
         public static bool Add(string key, float delta)
         {
             if (!TryToScaledLong(delta, out long scaledDelta) || scaledDelta == 0)
                 return false;
             return Add(key, scaledDelta);
+        }
+
+        /// <summary>请求直接设置一个房间共享值。</summary>
+        public static bool Set(RoomDataType key, long value)
+        {
+            return Set(key.ToString(), value);
         }
 
         public static bool Set(string key, long value)
@@ -58,6 +74,11 @@ namespace FrameWork.Script.WebNet
                 RoomSharedValue = new RoomSharedValueData { Key = key, Value = value }
             });
             return true;
+        }
+
+        public static bool Set(RoomDataType key, float value)
+        {
+            return Set(key.ToString(), value);
         }
 
         public static bool Set(string key, float value)
@@ -81,13 +102,22 @@ namespace FrameWork.Script.WebNet
             return true;
         }
 
-        
+        public static long Get(RoomDataType roomDataType, long defaultValue=0)
+        {
+            return Get(roomDataType.ToString(), defaultValue);
+        }
+
         public static long Get(string key, long defaultValue = 0)
         {
             key = NormalizeKey(key);
             return key != null && values.TryGetValue(key, out Entry entry) ? entry.Value : defaultValue;
         }
-        
+
+        public static bool TryGet(RoomDataType key, out long value)
+        {
+            return TryGet(key.ToString(), out value);
+        }
+
         public static bool TryGet(string key, out long value)
         {
             key = NormalizeKey(key);
@@ -99,6 +129,12 @@ namespace FrameWork.Script.WebNet
             value = default;
             return false;
         }
+
+        public static float GetFloat(RoomDataType roomDataType, float defaultValue = 0f)
+        {
+            return GetFloat(roomDataType.ToString(), defaultValue);
+        }
+
         public static float GetFloat(string key, float defaultValue = 0f)
         {
             key = NormalizeKey(key);
@@ -112,7 +148,12 @@ namespace FrameWork.Script.WebNet
         {
             return value / (float)FloatScale;
         }
-        
+
+        public static bool TryGet(RoomDataType key, out float value)
+        {
+            return TryGet(key.ToString(), out value);
+        }
+
         public static bool TryGet(string key, out float value)
         {
             key = NormalizeKey(key);

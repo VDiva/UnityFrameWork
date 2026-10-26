@@ -26,13 +26,15 @@ public sealed class RoomSharedValueManager
             request.Delta < -MaxDelta || request.Delta > MaxDelta)
             return;
 
+        if (IsBattleTimer(key) && !NetworkRoomManager.Instance.IsHost(sender)) return;
+
         string serverId = ServerScope.Normalize(sender.ServerId);
         uint roomId = sender.NetworkRoomId;
         var stateKey = new StateKey(serverId, roomId, key);
         State updated = _states.AddOrUpdate(
             stateKey,
-            _ => new State(request.Delta, 1),
-            (_, old) => new State(checked(old.Value + request.Delta), checked(old.Version + 1)));
+            _ => new State(BoundTimer(key, request.Delta), 1),
+            (_, old) => new State(BoundTimer(key, checked(old.Value + request.Delta)), checked(old.Version + 1)));
 
         await BroadcastAsync(serverId, roomId, key, updated);
     }
@@ -46,6 +48,9 @@ public sealed class RoomSharedValueManager
         if (key.Length == 0 || key.Length > MaxKeyLength ||
             request.Value < -MaxDelta || request.Value > MaxDelta)
             return;
+
+        if (IsBattleTimer(key) && (!NetworkRoomManager.Instance.IsHost(sender) ||
+            request.Value < 0)) return;
 
         string serverId = ServerScope.Normalize(sender.ServerId);
         uint roomId = sender.NetworkRoomId;
@@ -106,6 +111,10 @@ public sealed class RoomSharedValueManager
             if (key.RoomId == roomId && key.ServerId == normalizedServerId)
                 _states.TryRemove(key, out _);
     }
+
+    private static bool IsBattleTimer(string key) => key is "LevelTime" or "BattleElapsedTime";
+    private static long BoundTimer(string key, long value) => IsBattleTimer(key)
+        ? Math.Max(value, 0) : value;
 
     private static Task BroadcastAsync(string serverId, uint roomId, string key, State state)
     {

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using FrameWork;
-using FrameWork.Script.Mrg;
 using GameData;
 using Google.Protobuf;
+using FrameWork.Script.Mrg;
+using FrameWork.Script.Role;
 using UnityEngine;
 using UnityWebSocket;
 using LobbyWebNet = FrameWork.WebSocket.WebNet;
@@ -31,9 +32,12 @@ namespace FrameWork.Script.WebNet
         [SerializeField] NetworkPrefabEntry[] networkPrefabs = Array.Empty<NetworkPrefabEntry>();
 
         readonly Dictionary<uint, WebNetworkIdentity> objects = new Dictionary<uint, WebNetworkIdentity>();
+        readonly Dictionary<uint, NetworkTransformData> queuedTransforms =
+            new Dictionary<uint, NetworkTransformData>();
         readonly Dictionary<uint, SpawnRecord> spawnRecords = new Dictionary<uint, SpawnRecord>();
         readonly Dictionary<string, UniTaskCompletionSource<WebNetworkIdentity>> pendingSpawns =
             new Dictionary<string, UniTaskCompletionSource<WebNetworkIdentity>>();
+        readonly Dictionary<string, string> pendingSpawnTriggers = new Dictionary<string, string>();
         readonly Dictionary<string, NetworkTransformData> pendingSpawnInitialTransforms =
             new Dictionary<string, NetworkTransformData>();
         // 切图后玩家对象通过对象池异步创建。位置包可能先到达，暂存每个对象的最新快照，
@@ -44,6 +48,9 @@ namespace FrameWork.Script.WebNet
         // 注册完成后立即派发，避免短动画永久丢失。
         readonly Dictionary<uint, Dictionary<int, NetworkAnimationData>> pendingAnimationSnapshots =
             new Dictionary<uint, Dictionary<int, NetworkAnimationData>>();
+        // 异步加载预制体期间只保留每个字段的最新版本，防止晚加入时初始状态丢失。
+        readonly Dictionary<uint, Dictionary<ulong, NetworkSyncVarData>> pendingSyncVarSnapshots =
+            new Dictionary<uint, Dictionary<ulong, NetworkSyncVarData>>();
         // RPC 可能在 Addressables/对象池异步创建网络对象期间先到达。按 ObjectId 暂存，
         // 等身份注册及业务出生处理完成后再按原始顺序执行。
         readonly Dictionary<uint, Queue<NetworkRpcData>> pendingRpcs =
@@ -66,8 +73,80 @@ namespace FrameWork.Script.WebNet
         public static event Action<uint> ObjectDespawned;
         public static event Action<WebNetworkIdentity> AuthorityChanged;
         public static event Action<Msg> ServerMessageReceived;
+        /// <summary>自动装备分配结果：EquipmentRollScores 为每名玩家每轮的点数，Id 为获胜者 UserId。</summary>
+        public static event Action<Msg> EquipmentRollResultReceived;
         /// <summary>掉落物ObjectId、获胜玩家ObjectId、获胜玩家UserId、本次请求是否成功。</summary>
         public static event Action<uint, uint, string, bool> ObjectClaimResultReceived;
+
+        void DispatchTransform(NetworkTransformData snapshot)
+        {
+            if (snapshot == null) return;
+            if (objects.TryGetValue(snapshot.ObjectId, out WebNetworkIdentity identity) && identity != null)
+            {
+                WebNetworkTransform networkTransform = identity.GetComponent<WebNetworkTransform>();
+                if (networkTransform != null && networkTransform.isActiveAndEnabled)
+                    networkTransform.OnTransformReceived(snapshot);
+            }
+            // 监测面板等观察者仍可订阅；网络对象自身不再逐个订阅此事件。
+            TransformReceived?.Invoke(snapshot);
+        }
+
+        void HandleTransformSnapshot(NetworkTransformData snapshot)
+        {
+            if (snapshot == null) return;
+            NetworkRoomData room = WebNetworkRoomManager.Instance?.CurrentRoom;
+            if (room == null || snapshot.RoomId != room.RoomId ||
+                snapshot.SceneEpoch != room.SceneEpoch) return;
+            if (objects.ContainsKey(snapshot.ObjectId))
+                DispatchTransform(snapshot);
+            else
+                pendingTransformSnapshots[snapshot.ObjectId] = snapshot.Clone();
+        }
+
+        void DispatchAnimation(NetworkAnimationData snapshot)
+        {
+            if (snapshot == null) return;
+            if (objects.TryGetValue(snapshot.ObjectId, out WebNetworkIdentity identity) && identity != null)
+            {
+                WebNetworkAnimator animator = identity.GetComponent<WebNetworkAnimator>();
+                if (animator != null && animator.isActiveAndEnabled)
+                    animator.OnAnimationReceived(snapshot);
+                WebNetworkSpineAnimator spineAnimator = identity.GetComponent<WebNetworkSpineAnimator>();
+                if (spineAnimator != null && spineAnimator.isActiveAndEnabled)
+                    spineAnimator.OnAnimationReceived(snapshot);
+            }
+            AnimationReceived?.Invoke(snapshot);
+        }
+
+        void DispatchSyncVar(NetworkSyncVarData snapshot)
+        {
+            if (snapshot == null) return;
+            if (objects.TryGetValue(snapshot.ObjectId, out WebNetworkIdentity identity) && identity != null)
+            {
+                WebNetworkSyncVars syncVars = identity.GetComponent<WebNetworkSyncVars>();
+                if (syncVars != null && syncVars.isActiveAndEnabled)
+                    syncVars.OnSyncVarReceived(snapshot);
+            }
+            SyncVarReceived?.Invoke(snapshot);
+        }
+
+        void HandleAnimationSnapshot(NetworkAnimationData snapshot)
+        {
+            if (snapshot == null) return;
+            if (objects.ContainsKey(snapshot.ObjectId))
+                DispatchAnimation(snapshot);
+            else
+                BufferPendingAnimation(snapshot);
+        }
+
+        void HandleSyncVarSnapshot(NetworkSyncVarData snapshot)
+        {
+            if (snapshot == null) return;
+            if (objects.ContainsKey(snapshot.ObjectId))
+                DispatchSyncVar(snapshot);
+            else
+                BufferPendingSyncVar(snapshot);
+        }
 
         void Awake()
         {
@@ -80,24 +159,111 @@ namespace FrameWork.Script.WebNet
             Instance = this;
             if (persistAcrossScenes)
                 DontDestroyOnLoad(gameObject);
+            if (GetComponent<WebNetworkLatencyOverlay>() == null)
+                gameObject.AddComponent<WebNetworkLatencyOverlay>();
         }
 
         void OnEnable()
         {
-            LobbyWebNet.OnMessage += OnWebMessage;
+            LobbyWebNet.OnParsedMessage += OnWebMessage;
             LobbyWebNet.OnClose += OnConnectionClosed;
         }
 
         void OnDisable()
         {
-            LobbyWebNet.OnMessage -= OnWebMessage;
+            LobbyWebNet.OnParsedMessage -= OnWebMessage;
             LobbyWebNet.OnClose -= OnConnectionClosed;
+            queuedTransforms.Clear();
             ClearRemoteObjects();
         }
 
         void OnConnectionClosed(object sender, CloseEventArgs args)
         {
+            queuedTransforms.Clear();
             WebRoomSharedValues.Clear();
+        }
+
+        public static void SendTransform(NetworkTransformData snapshot, bool isPlayerObject = false)
+        {
+            if (snapshot == null || !LobbyWebNet.IsConnected) return;
+            WebNetworkManager manager = Instance;
+            // 玩家位置先发，AI 仍按帧打包，避免大量 AI 快照挡在玩家位置前。
+            if (!isPlayerObject && manager != null && manager.isActiveAndEnabled)
+                manager.queuedTransforms[snapshot.ObjectId] = snapshot;
+            else
+                LobbyWebNet.SendLatest(new Msg { MsgType = ProtobufMsgType.Game,
+                    GameMsgType = GameMsgType.UploadNetworkTransform, NetworkTransform = snapshot },
+                    snapshot.ObjectId, maxAgeMs: 250);
+        }
+
+        public static void SendAnimation(NetworkAnimationData snapshot)
+        {
+            if (snapshot == null || !LobbyWebNet.IsConnected) return;
+            ulong key = 0x8000000000000000UL | ((ulong)snapshot.ObjectId << 31) |
+                        ((uint)snapshot.TrackIndex & 0x7FFFFFFFUL);
+            LobbyWebNet.SendLatest(new Msg { MsgType = ProtobufMsgType.Game,
+                GameMsgType = GameMsgType.UploadNetworkAnimation, NetworkAnimation = snapshot }, key);
+        }
+
+        void LateUpdate()
+        {
+            FlushQueuedTransforms();
+            LobbyWebNet.FlushRealtime();
+        }
+
+        public static void FlushTransformsImmediately()
+        {
+            if (Instance != null) Instance.FlushQueuedTransforms();
+        }
+
+        void FlushQueuedTransforms()
+        {
+            if (queuedTransforms.Count == 0) return;
+            if (!LobbyWebNet.IsConnected)
+            {
+                queuedTransforms.Clear();
+                return;
+            }
+            // WebGL 的浏览器队列无法覆盖旧包；积压时把 AI 最新状态留到下一帧。
+            if (LobbyWebNet.BufferedSendBytes >= 16 * 1024) return;
+            // 固定对象 ID 分组，使尚未写入 socket 的批次可以按对象合并最新位置。
+            // 每组最多 128 个不同 ID，符合服务端的单包处理上限。
+            var batches = new Dictionary<uint, Msg>();
+            foreach (NetworkTransformData snapshot in queuedTransforms.Values)
+            {
+                uint groupId = snapshot.ObjectId >> 7;
+                if (!batches.TryGetValue(groupId, out Msg batch))
+                {
+                    batch = new Msg { MsgType = ProtobufMsgType.Game,
+                        GameMsgType = GameMsgType.UploadNetworkTransform };
+                    batches.Add(groupId, batch);
+                }
+                batch.NetworkTransforms.Add(snapshot);
+            }
+            foreach (KeyValuePair<uint, Msg> batch in batches)
+                LobbyWebNet.SendLatest(batch.Value, 0x4000000000000000UL | batch.Key,
+                    MergeTransformBatches, maxAgeMs: 250);
+            queuedTransforms.Clear();
+        }
+
+        static byte[] MergeTransformBatches(byte[] previousBytes, byte[] latestBytes)
+        {
+            Msg previous = Msg.Parser.ParseFrom(previousBytes);
+            Msg latest = Msg.Parser.ParseFrom(latestBytes);
+            var indexes = new Dictionary<uint, int>(previous.NetworkTransforms.Count);
+            for (int i = 0; i < previous.NetworkTransforms.Count; i++)
+                indexes[previous.NetworkTransforms[i].ObjectId] = i;
+            foreach (NetworkTransformData snapshot in latest.NetworkTransforms)
+            {
+                if (indexes.TryGetValue(snapshot.ObjectId, out int index))
+                    previous.NetworkTransforms[index] = snapshot;
+                else
+                {
+                    indexes[snapshot.ObjectId] = previous.NetworkTransforms.Count;
+                    previous.NetworkTransforms.Add(snapshot);
+                }
+            }
+            return previous.ToByteArray();
         }
 
         void OnDestroy()
@@ -185,11 +351,12 @@ namespace FrameWork.Script.WebNet
                 localPlayer = identity;
             }
 
+            FlushPendingSyncVars(member.ObjectId);
             ObjectSpawned?.Invoke(identity,null,Vector3.zero,Quaternion.identity);
             if (pendingTransformSnapshots.TryGetValue(member.ObjectId, out NetworkTransformData pendingTransform))
             {
                 pendingTransformSnapshots.Remove(member.ObjectId);
-                TransformReceived?.Invoke(pendingTransform);
+                DispatchTransform(pendingTransform);
             }
             FlushPendingAnimations(member.ObjectId);
             FlushPendingRpcs(member.ObjectId);
@@ -266,7 +433,7 @@ namespace FrameWork.Script.WebNet
         /// </summary>
         public async UniTask<WebNetworkIdentity> SpawnRoomObjectAsync(
             string prefabId, Vector3 position, Quaternion rotation,
-            RoleType roleType = RoleType.Other)
+            RoleType roleType = RoleType.Other, EquipData equipmentDrop = null)
         {
             if (!LobbyWebNet.IsConnected)
                 throw new InvalidOperationException("尚未连接到游戏服务器，无法生成网络对象。");
@@ -304,7 +471,8 @@ namespace FrameWork.Script.WebNet
                 {
                     PrefabId = prefabId.Trim(),
                     RoleType = (int)roleType,
-                    SpawnRequestId = requestId
+                    SpawnRequestId = requestId,
+                    EquipmentDrop = equipmentDrop
                 },
                 NetworkTransform = new NetworkTransformData
                 {
@@ -422,7 +590,7 @@ namespace FrameWork.Script.WebNet
 
         /// <summary>
         /// 请求从关卡唯一触发器生成 AI，并返回本客户端中的实例。
-        /// 若 triggerId 已被服务器消费，服务器不会重复生成，此任务最终会超时。
+        /// 同一触发器的并发请求共享生成结果；已有实例时直接返回该实例。
         /// </summary>
         public UniTask<WebNetworkIdentity> SpawnRoomAIFromTriggerAsync(
             string triggerId, string prefabId, Vector3 position, Quaternion rotation,
@@ -461,12 +629,28 @@ namespace FrameWork.Script.WebNet
             if (objectData == null || string.IsNullOrWhiteSpace(objectData.PrefabId))
                 throw new ArgumentException("网络预制体 ID 不能为空。", nameof(objectData));
 
+            if (!string.IsNullOrEmpty(objectData.TriggerId))
+            {
+                foreach (var pair in spawnRecords)
+                {
+                    if (pair.Value.Data.TriggerId == objectData.TriggerId &&
+                        objects.TryGetValue(pair.Key, out var existing) && existing != null)
+                    {
+                        TraceSpawn("ReturnExisting", pair.Value.Data, $"instance={existing.gameObject.GetInstanceID()}");
+                        return existing;
+                    }
+                }
+            }
+
             string requestId = Guid.NewGuid().ToString("N");
             objectData.PrefabId = objectData.PrefabId.Trim();
             objectData.SpawnRequestId = requestId;
             var completion = new UniTaskCompletionSource<WebNetworkIdentity>();
             pendingSpawns.Add(requestId, completion);
+            if (!string.IsNullOrEmpty(objectData.TriggerId))
+                pendingSpawnTriggers.Add(requestId, objectData.TriggerId);
 
+            TraceSpawn("Send", objectData, $"message={spawnMessageType}");
             LobbyWebNet.Send(new Msg
             {
                 MsgType = ProtobufMsgType.Game,
@@ -487,29 +671,26 @@ namespace FrameWork.Script.WebNet
 
             try
             {
-                return await completion.Task.Timeout(TimeSpan.FromSeconds(10));
+                var spawned = await completion.Task.Timeout(TimeSpan.FromSeconds(10));
+                TraceSpawn("AwaitReturned", objectData,
+                    $"returnedObjectId={spawned?.ObjectId} instance={spawned?.gameObject.GetInstanceID()}");
+                return spawned;
+            }
+            catch (Exception exception)
+            {
+                TraceSpawn("AwaitFailed", objectData,
+                    $"error={exception.GetType().Name}: {exception.Message} completionStatus={completion.Task.Status}");
+                throw;
             }
             finally
             {
                 pendingSpawns.Remove(requestId);
+                pendingSpawnTriggers.Remove(requestId);
             }
         }
 
-        void OnWebMessage(object sender, MessageEventArgs args)
+        void OnWebMessage(Msg msg)
         {
-            if (args?.RawData == null || args.RawData.Length == 0)
-                return;
-
-            Msg msg;
-            try
-            {
-                msg = Msg.Parser.ParseFrom(args.RawData);
-            }
-            catch (InvalidProtocolBufferException)
-            {
-                return;
-            }
-
             if (msg.MsgType != ProtobufMsgType.Server)
                 return;
 
@@ -521,44 +702,71 @@ namespace FrameWork.Script.WebNet
 
             switch (msg.ServerMsgType)
             {
+                case ServerMsgType.RoomEquipmentRollResult:
+                    EquipmentRollResultReceived?.Invoke(msg);
+                    // if (msg.ChannelChatMessage != null)
+                    // {
+                    //     string equipmentName = "高品质装备";
+                    //     if (msg.RewardEquip.Count > 0)
+                    //     {
+                    //         var equipment = LitJson.JsonMapper.ToObject<FrameWork.Script.GameData.GameEquipData>(
+                    //             msg.RewardEquip[0].Data.ToStringUtf8());
+                    //         var info = Xlsx.Xlsx_Equip_Query.XlsxDataAsOneKey.ByKeyGetValue(equipment.equipKey);
+                    //         if (info != null) equipmentName = LanguageMrg.GetText(info.EquipName);
+                    //     }
+                    //     msg.ChannelChatMessage.Content = equipmentName + "\n" + msg.TipsSrt;
+                    //     EventMrg.Trigger<ChannelChatMessageData>(ProtobufMsgType.Server,
+                    //         ServerMsgType.ChannelChatMessageReceived, msg.ChannelChatMessage);
+                    //     string[] lines = msg.TipsSrt.Split('\n');
+                    //     UiManager.ShowTips(equipmentName + "：" + lines[lines.Length - 1]).Forget();
+                    // }
+                    break;
                 case ServerMsgType.LoginSuc:
                     if (msg.NetworkObjectId != 0)
                         ConfigureLocalPlayer(msg.NetworkObjectId);
                     break;
                 case ServerMsgType.NetworkObjectSpawn:
-                    NetworkObjectData spawnData = msg.NetworkObject;
-                    SpawnRemoteObject(spawnData, msg.NetworkTransform).Forget(exception =>
-                        FailPendingSpawn(spawnData, exception));
+                    if (msg.NetworkObjects.Count > 0)
+                    {
+                        var initialTransforms = new Dictionary<uint, NetworkTransformData>(
+                            msg.NetworkTransforms.Count);
+                        foreach (NetworkTransformData transform in msg.NetworkTransforms)
+                            initialTransforms[transform.ObjectId] = transform;
+                        foreach (NetworkObjectData objectData in msg.NetworkObjects)
+                        {
+                            initialTransforms.TryGetValue(objectData.ObjectId, out NetworkTransformData initial);
+                            NetworkObjectData spawnData = objectData;
+                            SpawnRemoteObject(spawnData, initial).Forget(exception =>
+                                FailPendingSpawn(spawnData, exception));
+                        }
+                    }
+                    else if (msg.NetworkObject != null)
+                    {
+                        NetworkObjectData spawnData = msg.NetworkObject;
+                        SpawnRemoteObject(spawnData, msg.NetworkTransform).Forget(exception =>
+                            FailPendingSpawn(spawnData, exception));
+                    }
                     break;
                 case ServerMsgType.NetworkObjectDespawn:
                     DespawnObject(msg.NetworkObject?.ObjectId ?? 0);
                     break;
                 case ServerMsgType.NetworkTransformUpdate:
+                    foreach (NetworkTransformData batchSnapshot in msg.NetworkTransforms)
+                        HandleTransformSnapshot(batchSnapshot);
                     if (msg.NetworkTransform != null)
-                    {
-                        if (objects.ContainsKey(msg.NetworkTransform.ObjectId))
-                        {
-                            TransformReceived?.Invoke(msg.NetworkTransform);
-                        }
-                        else
-                        {
-                            pendingTransformSnapshots[msg.NetworkTransform.ObjectId] =
-                                msg.NetworkTransform.Clone();
-                        }
-                    }
+                        HandleTransformSnapshot(msg.NetworkTransform);
                     break;
                 case ServerMsgType.NetworkAnimationUpdate:
-                    if (msg.NetworkAnimation != null)
-                    {
-                        if (objects.ContainsKey(msg.NetworkAnimation.ObjectId))
-                            AnimationReceived?.Invoke(msg.NetworkAnimation);
-                        else
-                            BufferPendingAnimation(msg.NetworkAnimation);
-                    }
+                    HandleAnimationSnapshot(msg.NetworkAnimation);
                     break;
                 case ServerMsgType.NetworkSyncVarUpdate:
-                    if (msg.NetworkSyncVar != null)
-                        SyncVarReceived?.Invoke(msg.NetworkSyncVar);
+                    HandleSyncVarSnapshot(msg.NetworkSyncVar);
+                    break;
+                case ServerMsgType.NetworkObjectStateBatch:
+                    foreach (NetworkAnimationData animation in msg.NetworkAnimations)
+                        HandleAnimationSnapshot(animation);
+                    foreach (NetworkSyncVarData syncVar in msg.NetworkSyncVars)
+                        HandleSyncVarSnapshot(syncVar);
                     break;
                 case ServerMsgType.RoomSharedValueUpdate:
                     if (msg.RoomSharedValue != null)
@@ -615,34 +823,44 @@ namespace FrameWork.Script.WebNet
             NetworkObjectData data,
             NetworkTransformData initialTransform)
         {
+            TraceSpawn("Receive", data);
             if (data == null || data.ObjectId == 0 || data.ObjectId == pendingLocalObjectId || objects.ContainsKey(data.ObjectId))
+            {
+                TraceSpawn("SkipExistingOrInvalid", data);
                 return;
+            }
             // 玩家角色由 RoomMemberJoined 交给业务层创建，不使用服务端 PrefabId 自动生成。
             // NetworkObjectSpawn 自动生成只用于 AI、宝箱、掉落物等非玩家网络对象。
             if (data.PlayerObject)
                 return;
-            // 普通生成的旧服务端可能把初始 Transform 放在下一条消息里。
-            // 先使用发起请求时保存的坐标，保证异步返回实例前位置已经正确。
+            // 请求期间仍保留本地初始坐标，保证异步返回实例前位置已经正确。
             if (initialTransform == null && !string.IsNullOrEmpty(data.SpawnRequestId) &&
                 pendingSpawnInitialTransforms.TryGetValue(data.SpawnRequestId,
                     out NetworkTransformData requestedTransform))
                 initialTransform = requestedTransform.Clone();
             int generation = spawnGeneration;
             object ticket = new object();
-            if (spawnTickets.ContainsKey(data.ObjectId)) return;
+            if (spawnTickets.ContainsKey(data.ObjectId))
+            {
+                TraceSpawn("SkipLoading", data);
+                return;
+            }
             spawnTickets[data.ObjectId] = ticket;
             GameObject instance;
-            try { instance = await GameObjectMrg.Instance.Dequeue(data.PrefabId,(RoleType)data.RoleType); }
+            TraceSpawn("LoadBegin", data);
+            try { instance = await GameObjectMrg.Instance.Dequeue(data.PrefabId,(RoleType)data.RoleType, activate: false); }
             catch
             {
                 if (spawnTickets.TryGetValue(data.ObjectId, out var active) && ReferenceEquals(active, ticket))
                     spawnTickets.Remove(data.ObjectId);
                 throw;
             }
+            TraceSpawn("LoadReturned", data, $"instance={instance?.GetInstanceID()} generation={generation}/{spawnGeneration}");
             if (this == null || generation != spawnGeneration ||
                 !spawnTickets.TryGetValue(data.ObjectId, out var currentTicket) ||
                 !ReferenceEquals(ticket, currentTicket))
             {
+                TraceSpawn("DiscardStaleLoad", data);
                 if (instance != null) GameObjectMrg.Instance.Enqueue(instance);
                 return;
             }
@@ -678,7 +896,17 @@ namespace FrameWork.Script.WebNet
                 identity = instance.AddComponent<WebNetworkIdentity>();
             identity.Configure(data.ObjectId, data.PlayerId, false,
                 data.PrefabId, data.OwnerPlayerId, data.PlayerObject, data.AiObject);
+            WebNetworkIntegration.ConfigureSpawnedObject?.Invoke(instance, data);
             objects.Add(data.ObjectId, identity);
+            // 出生位置与网络身份准备好后才触发 OnEnable，远端不会显示对象池旧位置。
+            instance.SetActive(true);
+            // 首次实例化时 Awake 在激活后才执行，此时刚体和 AI 引用才已准备好。
+            foreach (WebNetworkTransform component in instance.GetComponents<WebNetworkTransform>())
+                component.ResetNetworkState();
+            if (initialTransform != null)
+                DispatchTransform(initialTransform);
+            TraceSpawn("Registered", data, $"instance={instance.GetInstanceID()}");
+            FlushPendingSyncVars(data.ObjectId);
             FlushPendingAnimations(data.ObjectId);
 
             Vector3 spawnPosition = instance.transform.position;
@@ -700,23 +928,61 @@ namespace FrameWork.Script.WebNet
             {
                 Data = data.Clone()
             };
+            TraceSpawn("NotifyBegin", data);
             ObjectSpawned?.Invoke(identity, data, spawnPosition, spawnRotation);
+            TraceSpawn("NotifyEnd", data);
             FlushPendingRpcs(data.ObjectId);
+            TraceSpawn("PendingRpcsFlushed", data);
 
-            if (!string.IsNullOrEmpty(data.SpawnRequestId) &&
-                pendingSpawns.TryGetValue(data.SpawnRequestId, out
-                    UniTaskCompletionSource<WebNetworkIdentity> completion))
+            CompletePendingSpawn(data, identity);
+        }
+
+        void CompletePendingSpawn(NetworkObjectData data, WebNetworkIdentity identity, Exception error = null)
+        {
+            // 服务器对触发器去重后只广播获胜请求的 ID，其他请求通过 TriggerId 关联同一对象。
+            // 完成任务会同步恢复业务调用并修改等待表，因此先收集所有匹配任务。
+            var completions = new List<UniTaskCompletionSource<WebNetworkIdentity>>();
+            foreach (var pair in pendingSpawns)
             {
-                completion.TrySetResult(identity);
+                if (pair.Key == data.SpawnRequestId ||
+                    (!string.IsNullOrEmpty(data.TriggerId) &&
+                     pendingSpawnTriggers.TryGetValue(pair.Key, out var triggerId) &&
+                     triggerId == data.TriggerId))
+                {
+                    TraceSpawn("Match", data, $"waitingRequestId={pair.Key} byRequest={pair.Key == data.SpawnRequestId}");
+                    completions.Add(pair.Value);
+                }
+            }
+            TraceSpawn("MatchSummary", data, $"matched={completions.Count} error={error?.GetType().Name ?? "none"}");
+            foreach (var completion in completions)
+            {
+                bool accepted;
+                if (error != null)
+                    accepted = completion.TrySetException(error);
+                else
+                    accepted = completion.TrySetResult(identity);
+                TraceSpawn("CompletionSignaled", data, $"accepted={accepted}");
             }
         }
 
         void FailPendingSpawn(NetworkObjectData data, Exception exception)
         {
-            if (data != null && !string.IsNullOrEmpty(data.SpawnRequestId) &&
-                pendingSpawns.TryGetValue(data.SpawnRequestId, out
-                    UniTaskCompletionSource<WebNetworkIdentity> completion))
-                completion.TrySetException(exception);
+            if (data != null && data.AiObject)
+                Debug.LogError($"[NetSpawn][Failed] client={LobbyWebNet.CurrentUserId} objectId={data.ObjectId} " +
+                               $"requestId={data.SpawnRequestId} triggerId={data.TriggerId} error={exception}");
+            if (data != null)
+                CompletePendingSpawn(data, null, exception);
+        }
+
+        // 按需启用诊断符号；怪物批量生成时逐条写 Unity Console 会阻塞主线程。
+        [System.Diagnostics.Conditional("WEB_NETWORK_SPAWN_TRACE")]
+        [System.Diagnostics.Conditional("NETWORK_SPAWN_TRACE")]
+        void TraceSpawn(string stage, NetworkObjectData data, string detail = "")
+        {
+            if (data == null || !data.AiObject) return;
+            Debug.Log($"[NetSpawn][{stage}] client={LobbyWebNet.CurrentUserId} " +
+                      $"objectId={data.ObjectId} requestId={data.SpawnRequestId} triggerId={data.TriggerId} " +
+                      $"prefab={data.PrefabId} frame={Time.frameCount} pending={pendingSpawns.Count} {detail}");
         }
 
         void BufferPendingAnimation(NetworkAnimationData data)
@@ -735,6 +1001,30 @@ namespace FrameWork.Script.WebNet
             if (!tracks.TryGetValue(track, out NetworkAnimationData current) ||
                 data.Sequence >= current.Sequence)
                 tracks[track] = data.Clone();
+        }
+
+        void BufferPendingSyncVar(NetworkSyncVarData data)
+        {
+            if (data == null || data.ObjectId == 0) return;
+            if (!pendingSyncVarSnapshots.TryGetValue(data.ObjectId,
+                    out Dictionary<ulong, NetworkSyncVarData> fields))
+            {
+                fields = new Dictionary<ulong, NetworkSyncVarData>();
+                pendingSyncVarSnapshots.Add(data.ObjectId, fields);
+            }
+            ulong key = ((ulong)data.BehaviourId << 32) | data.FieldId;
+            if (!fields.TryGetValue(key, out NetworkSyncVarData current) ||
+                data.Sequence > current.Sequence)
+                fields[key] = data.Clone();
+        }
+
+        void FlushPendingSyncVars(uint objectId)
+        {
+            if (!pendingSyncVarSnapshots.TryGetValue(objectId,
+                    out Dictionary<ulong, NetworkSyncVarData> fields)) return;
+            pendingSyncVarSnapshots.Remove(objectId);
+            foreach (NetworkSyncVarData snapshot in fields.Values)
+                DispatchSyncVar(snapshot);
         }
 
         void BufferPendingRpc(NetworkRpcData data)
@@ -776,7 +1066,7 @@ namespace FrameWork.Script.WebNet
             var snapshots = new List<NetworkAnimationData>(tracks.Values);
             snapshots.Sort((left, right) => left.Sequence.CompareTo(right.Sequence));
             foreach (NetworkAnimationData snapshot in snapshots)
-                AnimationReceived?.Invoke(snapshot);
+                DispatchAnimation(snapshot);
         }
 
         void ApplyAuthorityChange(NetworkObjectData data)
@@ -805,6 +1095,7 @@ namespace FrameWork.Script.WebNet
             spawnTickets.Remove(objectId);
 
             pendingAnimationSnapshots.Remove(objectId);
+            pendingSyncVarSnapshots.Remove(objectId);
             pendingTransformSnapshots.Remove(objectId);
             pendingRpcs.Remove(objectId);
             spawnRecords.Remove(objectId);
@@ -829,8 +1120,16 @@ namespace FrameWork.Script.WebNet
             spawnRecords.Clear();
             pendingTransformSnapshots.Clear();
             pendingAnimationSnapshots.Clear();
+            pendingSyncVarSnapshots.Clear();
             pendingRpcs.Clear();
             pendingLocalObjectId = 0;
+        }
+
+        /// <summary>切换网络房间或地图前清理上一房间的远程对象。</summary>
+        public void ResetForLogin()
+        {
+            ClearRemoteObjects();
+            localPlayer = null;
         }
 
         /// <summary>切换网络房间或地图前清理上一房间的远程对象。</summary>
@@ -845,6 +1144,7 @@ namespace FrameWork.Script.WebNet
             spawnRecords.Clear();
             pendingTransformSnapshots.Clear();
             pendingAnimationSnapshots.Clear();
+            pendingSyncVarSnapshots.Clear();
             pendingRpcs.Clear();
             if (localPlayer != null && pendingLocalObjectId != 0)
                 objects[pendingLocalObjectId] = localPlayer;
@@ -859,6 +1159,7 @@ namespace FrameWork.Script.WebNet
             spawnTickets.Clear();
             var completions = new List<UniTaskCompletionSource<WebNetworkIdentity>>(pendingSpawns.Values);
             pendingSpawns.Clear();
+            pendingSpawnTriggers.Clear();
             pendingSpawnInitialTransforms.Clear();
             foreach (var completion in completions) completion.TrySetCanceled();
         }

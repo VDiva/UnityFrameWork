@@ -49,8 +49,10 @@ namespace FrameWork.Script.WebNet
         readonly Dictionary<int, string> lastAnimationNames = new Dictionary<int, string>();
         readonly Dictionary<int, bool> lastLoops = new Dictionary<int, bool>();
         readonly Dictionary<int, float> lastTrackSendTimes = new Dictionary<int, float>();
+        readonly Dictionary<int, ulong> receiveSequences = new Dictionary<int, ulong>();
+        readonly HashSet<int> activeTracks = new HashSet<int>();
+        readonly List<int> removedTracks = new List<int>();
         ulong sendSequence;
-        ulong receiveSequence;
 
         void Reset()
         {
@@ -65,13 +67,11 @@ namespace FrameWork.Script.WebNet
 
         void OnEnable()
         {
-            WebNetworkManager.AnimationReceived += OnAnimationReceived;
             WebNetworkManager.AuthorityChanged += OnAuthorityChanged;
         }
 
         void OnDisable()
         {
-            WebNetworkManager.AnimationReceived -= OnAnimationReceived;
             WebNetworkManager.AuthorityChanged -= OnAuthorityChanged;
         }
 
@@ -86,7 +86,7 @@ namespace FrameWork.Script.WebNet
             Spine.AnimationState animationState = skeletonAnimation.AnimationState;
             if (syncAllTracks)
             {
-                var activeTracks = new HashSet<int>();
+                activeTracks.Clear();
                 for (int index = 0; index < animationState.Tracks.Count; index++)
                 {
                     if (GetCurrentTrack(animationState, index)?.Animation != null)
@@ -94,7 +94,7 @@ namespace FrameWork.Script.WebNet
                     TrySendTrack(animationState, index);
                 }
 
-                var removedTracks = new List<int>();
+                removedTracks.Clear();
                 foreach (int index in lastAnimationNames.Keys)
                     if (!activeTracks.Contains(index))
                         removedTracks.Add(index);
@@ -122,19 +122,14 @@ namespace FrameWork.Script.WebNet
             if (!changed && Time.unscaledTime - trackLastSendTime < heartbeatInterval)
                 return;
 
-            LobbyWebNet.Send(new Msg
+            WebNetworkManager.SendAnimation(new NetworkAnimationData
             {
-                MsgType = ProtobufMsgType.Game,
-                GameMsgType = GameMsgType.UploadNetworkAnimation,
-                NetworkAnimation = new NetworkAnimationData
-                {
-                    ObjectId = NetId,
-                    AnimationName = animationName,
-                    Loop = entry.Loop,
-                    TrackIndex = index,
-                    NormalizedTime = GetNormalizedTime(entry),
-                    Sequence = ++sendSequence
-                }
+                ObjectId = NetId,
+                AnimationName = animationName,
+                Loop = entry.Loop,
+                TrackIndex = index,
+                NormalizedTime = GetNormalizedTime(entry),
+                Sequence = ++sendSequence
             });
 
             lastAnimationNames[index] = animationName;
@@ -144,33 +139,33 @@ namespace FrameWork.Script.WebNet
 
         void SendClearTrack(int index)
         {
-            LobbyWebNet.Send(new Msg
+            WebNetworkManager.SendAnimation(new NetworkAnimationData
             {
-                MsgType = ProtobufMsgType.Game,
-                GameMsgType = GameMsgType.UploadNetworkAnimation,
-                NetworkAnimation = new NetworkAnimationData
-                {
-                    ObjectId = NetId,
-                    AnimationName = ClearTrackMessage,
-                    TrackIndex = index,
-                    Sequence = ++sendSequence
-                }
+                ObjectId = NetId,
+                AnimationName = ClearTrackMessage,
+                TrackIndex = index,
+                Sequence = ++sendSequence
             });
             lastAnimationNames.Remove(index);
             lastLoops.Remove(index);
             lastTrackSendTimes.Remove(index);
         }
 
-        void OnAnimationReceived(NetworkAnimationData data)
+        internal void OnAnimationReceived(NetworkAnimationData data)
         {
             // AnimationName 为空的是 WebNetworkAnimator 消息，不由 Spine 组件处理。
             if (HasAuthority || data == null || data.ObjectId != NetId ||
-                data.Sequence <= receiveSequence || string.IsNullOrWhiteSpace(data.AnimationName) ||
+                string.IsNullOrWhiteSpace(data.AnimationName) ||
                 skeletonAnimation == null || !skeletonAnimation.isActiveAndEnabled)
                 return;
 
-            receiveSequence = data.Sequence;
             int remoteTrackIndex = Mathf.Max(0, data.TrackIndex);
+            if (receiveSequences.TryGetValue(remoteTrackIndex, out ulong lastSequence) &&
+                data.Sequence <= lastSequence) return;
+            receiveSequences[remoteTrackIndex] = data.Sequence;
+            // InitBoss 已在本端开始登场，延迟到达的 idle/walk 同步不能将其覆盖。
+            if (WebNetworkIntegration.SuppressRemoteSpineAnimation?.Invoke(gameObject) == true)
+                return;
             if (data.AnimationName == ClearTrackMessage)
             {
                 skeletonAnimation.AnimationState.ClearTrack(remoteTrackIndex);
@@ -221,7 +216,7 @@ namespace FrameWork.Script.WebNet
         internal void ResetNetworkState()
         {
             sendSequence = 0;
-            receiveSequence = 0;
+            receiveSequences.Clear();
             lastAnimationNames.Clear();
             lastLoops.Clear();
             lastTrackSendTimes.Clear();

@@ -7,6 +7,8 @@ Shader "Sprites/Stencil Draw In Mask"
         [PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
         [MaterialToggle] PixelSnap("Pixel snap", Float) = 0
+        _Stencil("Stencil ID", Float) = 0
+        _StencilReadMask("Stencil Read Mask", Float) = 1
     }
  
     SubShader
@@ -29,8 +31,9 @@ Shader "Sprites/Stencil Draw In Mask"
         {
             Stencil
             {
-                Ref 0
+                Ref [_Stencil]
                 Comp Equal
+                ReadMask [_StencilReadMask]
             }
  
         CGPROGRAM

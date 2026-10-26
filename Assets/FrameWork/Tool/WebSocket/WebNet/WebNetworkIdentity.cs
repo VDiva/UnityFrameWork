@@ -1,3 +1,5 @@
+
+
 using UnityEngine;
 
 namespace FrameWork.Script.WebNet
@@ -41,11 +43,10 @@ namespace FrameWork.Script.WebNet
             OwnerPlayerId = ownerPlayerId ?? string.Empty;
         }
 
-        // [WebClientRpc(IncludeSender = true)]
-        // public void SetParent(int transformId)
-        // {
-        //     var parent = (GameMapLayout)transformId;
-        //     transform.SetParent(GameRoomMrg.Instance.GetLayoutTran(parent));
-        // }
+        [WebClientRpc(IncludeSender = true)]
+        public void SetParent(int transformId)
+        {
+            transform.SetParent(WebNetworkIntegration.ResolveParent(transformId));
+        }
     }
 }

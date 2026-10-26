@@ -1,0 +1,17 @@
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\bin\Debug\net8.0\EquipmentDeletionChecks.exe
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\bin\Debug\net8.0\EquipmentDeletionChecks.deps.json
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\bin\Debug\net8.0\EquipmentDeletionChecks.runtimeconfig.json
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\bin\Debug\net8.0\EquipmentDeletionChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\bin\Debug\net8.0\EquipmentDeletionChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\bin\Debug\net8.0\Google.Protobuf.dll
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.csproj.AssemblyReference.cache
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.AssemblyInfoInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.AssemblyInfo.cs
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.csproj.CoreCompileInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\Equipmen.A278EF8A.Up2Date
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\refint\EquipmentDeletionChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\EquipmentDeletionChecks.genruntimeconfig.cache
+C:\Svn\Game\Net\GameServer\Tests\EquipmentDeletionChecks\obj\Debug\net8.0\ref\EquipmentDeletionChecks.dll

@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using GameData;
 using Google.Protobuf;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+
+
 using LitJson;
 using UnityEngine;
 using UnityWebSocket;
@@ -16,6 +18,7 @@ namespace FrameWork.WebSocket
         public static Action<object,OpenEventArgs>  OnOpen;
         public static Action<object,CloseEventArgs>  OnClose;
         public static Action<object,MessageEventArgs>  OnMessage;
+        public static Action<Msg> OnParsedMessage;
         public static Action<object,ErrorEventArgs>  OnError;
         public static Action  OnServerClose;
         public static Action  OnClientClose;
@@ -76,11 +79,42 @@ namespace FrameWork.WebSocket
         private const string RequestIdKey = "__web_request_id";
         private const string ResponseKey = "__web_response";
         private const string ResponseErrorKey = "__web_response_error";
+        private const string ServerVersionQueryKey = "__server_version_query";
+        private const string LatencyProbeKey = "__latency_probe";
         private const string ShowRewardPanelKey = "__show_reward_panel";
         private static readonly Dictionary<string, UniTaskCompletionSource<Msg>> PendingRequests = new();
+        private static readonly Dictionary<string, UniTaskCompletionSource<Msg>> PendingLatencyRequests = new();
+        public readonly struct ServerLatencySample
+        {
+            public readonly float RttMs;
+            public readonly int ServerQueuePackets;
+            public readonly int ServerQueueBytes;
+            public readonly int ServerQueueWaitMs;
+            public readonly int ServerWriteMs;
+            public readonly long ExpiredRealtimePackets;
+
+            public ServerLatencySample(float rttMs, Msg response)
+            {
+                RttMs = rttMs;
+                ServerQueuePackets = ReadInt(response, "__server_queue_packets");
+                ServerQueueBytes = ReadInt(response, "__server_queue_bytes");
+                ServerQueueWaitMs = ReadInt(response, "__server_queue_wait_ms");
+                ServerWriteMs = ReadInt(response, "__server_write_ms");
+                ExpiredRealtimePackets = response.DataDic.TryGetValue("__server_expired_realtime", out string value) &&
+                    long.TryParse(value, out long count) ? count : 0;
+            }
+
+            static int ReadInt(Msg response, string key) =>
+                response.DataDic.TryGetValue(key, out string value) && int.TryParse(value, out int result)
+                    ? result : 0;
+        }
         private static int _requestLoadingCount;
         public static string CurrentUserId { get; private set; }
         public static bool IsConnected => _webSocket != null && _webSocket.ReadyState == WebSocketState.Open;
+        public static int PendingSendCount => _webSocket?.PendingSendCount ?? 0;
+        public static int BufferedSendBytes => _webSocket?.BufferedSendBytes ?? 0;
+        public static int ConnectionGeneration => _connectionWatchVersion;
+        public static string ServerAddress => _address;
         public static bool IsReconnecting => _reconnectScheduled;
         public static bool IsRequestLoading => _requestLoadingCount > 0;
 
@@ -205,20 +239,33 @@ namespace FrameWork.WebSocket
         private static void OnMessageCall(object sender, MessageEventArgs e)
         {
             if (!ReferenceEquals(sender, _webSocket)) return;
+            Msg msg = null;
+            if (!e.IsText)
+            {
+                try { msg = Msg.Parser.ParseFrom(e.RawData); }
+                catch (InvalidProtocolBufferException exception) { Debug.LogException(exception); return; }
+                if (msg.MsgType == ProtobufMsgType.Server && msg.DataDic.ContainsKey(ServerVersionQueryKey))
+                {
+                    // 版本响应只唤醒对应查询，不作为 Tips/登录/房间事件广播。
+                    CompleteLatencyResponse(msg);
+                    CompleteResponse(msg);
+                    return;
+                }
+            }
             if (OnMessage != null)
                 foreach (Action<object, MessageEventArgs> handler in OnMessage.GetInvocationList())
                     try { handler(sender, e); } catch (Exception exception) { Debug.LogException(exception); }
+            if (msg != null)
+                try { OnParsedMessage?.Invoke(msg); }
+                catch (Exception exception) { Debug.LogException(exception); }
             // 高频 Protobuf 二进制同步包不逐条输出，避免字符串转换和 Console 开销。
             if (e.IsText)
                 Debug.Log(e.Data);
 
             if (e.IsText) return;
-            Msg msg;
-            try { msg = Msg.Parser.ParseFrom(e.RawData); }
-            catch (InvalidProtocolBufferException exception) { Debug.LogException(exception); return; }
             try
             {
-#if WEIXINMINIGAME && !UNITY_EDITOR
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
             if (msg.MsgType == ProtobufMsgType.Server && msg.ServerMsgType == ServerMsgType.Tips &&
                 msg.DataDic.ContainsKey("__wechat_session_invalid"))
             {
@@ -246,7 +293,7 @@ namespace FrameWork.WebSocket
                         ++_loginWatchVersion;
                         _reconnectAttempt = 0;
                         Debug.Log("[WebNet] 服务器登录确认成功");
-#if WEIXINMINIGAME && !UNITY_EDITOR
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
                         msg.DataDic.TryGetValue("__wechat_session", out string sessionToken);
                         WeChatPlatformMrg.Instance.CacheSession(msg.UserData?.UserId, sessionToken);
 #endif
@@ -295,6 +342,11 @@ namespace FrameWork.WebSocket
             catch (Exception exception) { Debug.LogException(exception); }
 
             // 先分发服务器事件，再唤醒请求调用方，避免同步 continuation 抛错阻断事件回调。
+            CompleteResponse(msg);
+        }
+
+        private static void CompleteResponse(Msg msg)
+        {
             if (msg.DataDic.TryGetValue(ResponseKey, out string responseId) &&
                 !string.IsNullOrWhiteSpace(responseId) &&
                 PendingRequests.TryGetValue(responseId, out UniTaskCompletionSource<Msg> completion))
@@ -307,10 +359,21 @@ namespace FrameWork.WebSocket
             }
         }
 
+        private static void CompleteLatencyResponse(Msg msg)
+        {
+            if (msg.DataDic.TryGetValue(ResponseKey, out string responseId) &&
+                PendingLatencyRequests.TryGetValue(responseId, out var completion))
+                completion.TrySetResult(msg);
+        }
+
         private static void OnCloseCall(object sender, CloseEventArgs e)
         {
             if (!ReferenceEquals(sender, _webSocket))
                 return;
+
+            ++_connectionWatchVersion;
+            ++_loginWatchVersion;
+            _loginAwaitingConfirmation = false;
 
             // 明确的账号替换不是弱网断线，不自动抢回账号。
             if ((int)e.StatusCode == 4001) { _manualDisconnect = true; CancelReconnect(); }
@@ -411,20 +474,30 @@ namespace FrameWork.WebSocket
             try { OnOpen?.Invoke(sender, e); }
             catch (Exception exception) { Debug.LogException(exception); }
             Debug.Log("链接成功");
-            if (reconnected &&
-                !string.IsNullOrWhiteSpace(_pendingLoginUserId) &&
-                !string.IsNullOrWhiteSpace(_pendingLoginServerId))
+            if (reconnected && (!string.IsNullOrWhiteSpace(_pendingLoginUserId) ||
+                                !string.IsNullOrWhiteSpace(CurrentUserId)))
             {
-#if WEIXINMINIGAME && !UNITY_EDITOR
-                WatchLoginAsync(_webSocket, ++_loginWatchVersion).Forget();
-                WeChatPlatformMrg.Instance.RefreshLoginAfterReconnect(_pendingLoginServerId);
-#else
-                SendLogin(_pendingLoginUserId, _pendingLoginServerId);
+                // 只恢复连接，不恢复登录。旧会话和异步登录不能带入新连接。
+                ++_loginWatchVersion;
+                _loginAwaitingConfirmation = false;
+                _pendingLoginUserId = null;
+                _pendingLoginServerId = null;
+                CurrentUserId = null;
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
+                WeChatPlatformMrg.Instance.ClearLoginSession();
 #endif
+                if (FrameWork.Script.WebNet.WebNetworkRoomManager.Instance != null)
+                    FrameWork.Script.WebNet.WebNetworkRoomManager.Instance.ReturnToStartScene();
+                else if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != FrameWork.Script.WebNet.WebNetworkIntegration.LoginSceneName)
+                    ABMrg.LoadSceneAsync(FrameWork.Script.WebNet.WebNetworkIntegration.LoginSceneName);
+                OnLoginFailed?.Invoke("连接已恢复，请重新登录。");
             }
 
             if (reconnected)
+            {
+                GetServerList();
                 OnReconnected?.Invoke();
+            }
         }
 
         /// <summary>前台恢复时废弃可能已失效的连接，不改变用户主动断开的状态。</summary>
@@ -454,6 +527,15 @@ namespace FrameWork.WebSocket
             if (IsConnected && data != null)
                 _webSocket.SendAsync(data.ToByteArray());
         }
+
+        /// <summary>可丢帧的实时状态只保留同一对象尚未发出的最新一帧。</summary>
+        public static void SendLatest(IMessage data, ulong key,
+            Func<byte[], byte[], byte[]> merge = null, int maxAgeMs = 0)
+        {
+            if (IsConnected && data != null)
+                _webSocket.SendLatestAsync(data.ToByteArray(), key, merge, maxAgeMs);
+        }
+        public static void FlushRealtime() => _webSocket?.FlushLatest();
         /// <summary>
         /// 发送一次请求并等待服务端使用 ReplyAsync/ReplyErrorAsync 返回对应结果。
         /// 不适用于 Transform、动画、RPC 等持续广播消息。
@@ -496,17 +578,17 @@ namespace FrameWork.WebSocket
             }
             catch (WebRequestException exception)
             {
-                //await UiManager.ShowTips($"错误码：{exception.ErrorCode}--{exception.Message}");
+                await FrameWork.Script.WebNet.WebNetworkIntegration.ShowErrorAsync($"错误码：{exception.ErrorCode}--{exception.Message}");
                 // 完整的服务器响应
                 // Msg response = exception.Response;
             }
             catch (TimeoutException)
             {
-                //await UiManager.ShowTips($"请求超时，服务器没有及时响应");
+                await FrameWork.Script.WebNet.WebNetworkIntegration.ShowErrorAsync($"请求超时，服务器没有及时响应");
             }
             catch (InvalidOperationException exception)
             {
-                //await UiManager.ShowTips($"连接异常：{exception.Message}");
+                await FrameWork.Script.WebNet.WebNetworkIntegration.ShowErrorAsync($"连接异常：{exception.Message}");
             }
             return default;
         }
@@ -525,7 +607,7 @@ namespace FrameWork.WebSocket
                 Id = userId,
                 ServerId = serverId
             };
-#if WEIXINMINIGAME && !UNITY_EDITOR
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
             request.DataDic["__login_provider"] = "wechat";
 #endif
             Msg response = await RequestAsync(request, timeoutSeconds);
@@ -721,6 +803,63 @@ namespace FrameWork.WebSocket
             PendingRequests.Clear();
             foreach (UniTaskCompletionSource<Msg> completion in completions)
                 completion.TrySetException(exception);
+            var latencyCompletions = new List<UniTaskCompletionSource<Msg>>(PendingLatencyRequests.Values);
+            PendingLatencyRequests.Clear();
+            foreach (UniTaskCompletionSource<Msg> completion in latencyCompletions)
+                completion.TrySetException(exception);
+        }
+
+        /// <summary>通过当前游戏 WebSocket 做轻量请求往返测试，不显示请求 Loading。</summary>
+        public static async UniTask<float> MeasureServerRttAsync(float timeoutSeconds = 3f)
+        {
+            return (await MeasureServerLatencyAsync(timeoutSeconds)).RttMs;
+        }
+
+        /// <summary>往返时间与服务端最近一次发送队列状态；队列数据来自上一条已发送消息。</summary>
+        public static async UniTask<ServerLatencySample> MeasureServerLatencyAsync(float timeoutSeconds = 3f)
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("WebSocket 未连接。");
+            var socket = _webSocket;
+            int generation = ConnectionGeneration;
+            string requestId = Guid.NewGuid().ToString("N");
+            var completion = new UniTaskCompletionSource<Msg>();
+            PendingLatencyRequests.Add(requestId, completion);
+            var request = new Msg { MsgType = ProtobufMsgType.Game, GameMsgType = GameMsgType.GetServerList };
+            request.DataDic[ServerVersionQueryKey] = "1";
+            request.DataDic[LatencyProbeKey] = "1";
+            request.DataDic[RequestIdKey] = requestId;
+            double startedAt = Time.realtimeSinceStartupAsDouble;
+            try
+            {
+                Send(request);
+                Msg response = await completion.Task.Timeout(TimeSpan.FromSeconds(Mathf.Max(0.1f, timeoutSeconds)));
+                if (!IsConnected || !ReferenceEquals(socket, _webSocket) || generation != ConnectionGeneration)
+                    throw new InvalidOperationException("测量期间连接已变化。");
+                return new ServerLatencySample(
+                    (float)((Time.realtimeSinceStartupAsDouble - startedAt) * 1000.0), response);
+            }
+            finally
+            {
+                PendingLatencyRequests.Remove(requestId);
+            }
+        }
+
+        public static async UniTask<string> GetServerVersionAsync()
+        {
+            if (!IsConnected || _manualDisconnect)
+                throw new InvalidOperationException("WebSocket 未连接，无法校验服务器版本。");
+            var socket = _webSocket;
+            int generation = ConnectionGeneration;
+            var request = new Msg { GameMsgType = GameMsgType.GetServerList };
+            request.DataDic[ServerVersionQueryKey] = "1";
+            var response = await RequestAsync(request, 10f);
+            if (!IsConnected || _manualDisconnect || !ReferenceEquals(socket, _webSocket) || generation != ConnectionGeneration)
+                throw new InvalidOperationException("版本校验期间连接已变化，请重新检测。");
+            if (!response.DataDic.ContainsKey(ServerVersionQueryKey) ||
+                !response.DataDic.TryGetValue("__server_version", out string version) || string.IsNullOrWhiteSpace(version))
+                throw new InvalidOperationException("服务器未返回版本，请部署支持 WebSocket 版本校验的服务端。");
+            return version.Trim();
         }
 
         public static void Send(string data)
@@ -796,27 +935,69 @@ namespace FrameWork.WebSocket
             }
         }
 
-        // /// <summary>请求服务器把装备加入背包，装备 ID 由服务器生成。</summary>
-        // public static void AddEquip(GameEquipData equip, bool showRewardPanel = false)
-        // {
-        //     if (!IsConnected || equip == null || string.IsNullOrWhiteSpace(equip.equipKey))
-        //         return;
-        //
-        //     var msg = new Msg
-        //     {
-        //         MsgType = ProtobufMsgType.Game,
-        //         GameMsgType = GameMsgType.AddEquip
-        //     };
-        //     msg.RewardEquip.Add(new EquipData
-        //     {
-        //         Data = ByteString.CopyFromUtf8(JsonMapper.ToJson(equip)),
-        //         Id = equip.id
-        //     });
-        //     msg.DataDic[ShowRewardPanelKey] = showRewardPanel.ToString();
-        //     Send(msg);
-        // }
+        /// <summary>请求服务器把装备加入背包，装备 ID 由服务器生成。</summary>
+        public static void AddEquip(object equip, bool showRewardPanel = false)
+        {
+            if (!IsConnected || equip == null || string.IsNullOrWhiteSpace(equip.GetType().GetField("equipKey")?.GetValue(equip) as string))
+                return;
+
+            var msg = new Msg
+            {
+                MsgType = ProtobufMsgType.Game,
+                GameMsgType = GameMsgType.AddEquip
+            };
+            msg.RewardEquip.Add(new EquipData
+            {
+                Data = ByteString.CopyFromUtf8(JsonMapper.ToJson(equip)),
+                Id = equip.GetType().GetField("id")?.GetValue(equip) as string ?? string.Empty
+            });
+            msg.DataDic[ShowRewardPanelKey] = showRewardPanel.ToString();
+            Send(msg);
+        }
+
+        /// <summary>按服务端存储 ID 批量删除未穿戴装备，等待保存后的玩家数据。</summary>
+        public static async UniTask<UserData> DeleteEquipsAsync(IEnumerable<string> equipIds)
+        {
+            if (equipIds == null)
+                throw new ArgumentNullException(nameof(equipIds));
+            var request = new Msg { GameMsgType = GameMsgType.DelEquip };
+            request.EquipIds.AddRange(new HashSet<string>(equipIds, StringComparer.Ordinal));
+            Msg response = await RequestAsync(request);
+            return response.UserData;
+        }
 
         private static void SendLogin(string userId,string serverId)
+        {
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
+            SendVersionCheckedLoginAsync(userId, serverId).Forget(exception =>
+            {
+                Debug.LogException(exception);
+                OnLoginFailed?.Invoke("版本检测失败，请重试。");
+            });
+#else
+            SendLoginCore(userId, serverId);
+#endif
+        }
+
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
+        private static async UniTask SendVersionCheckedLoginAsync(string userId, string serverId)
+        {
+            var socket = _webSocket;
+            int attempt = ++_loginWatchVersion;
+            var platform = WeChatPlatformMrg.Instance;
+            bool passed = await platform.CheckClientVersionAsync();
+            if (!passed)
+            {
+                platform.ShowVersionError();
+                OnLoginFailed?.Invoke(platform.VersionError);
+                return;
+            }
+            if (attempt != _loginWatchVersion || !ReferenceEquals(socket, _webSocket) || !IsConnected || _manualDisconnect) return;
+            SendLoginCore(userId, serverId);
+        }
+#endif
+
+        private static void SendLoginCore(string userId,string serverId)
         {
             _loginAwaitingConfirmation = true;
             WatchLoginAsync(_webSocket, ++_loginWatchVersion).Forget();
@@ -825,7 +1006,7 @@ namespace FrameWork.WebSocket
             msg.GameMsgType = GameMsgType.Login;
             msg.Id=userId;
             msg.ServerId = serverId;
-#if WEIXINMINIGAME && !UNITY_EDITOR
+#if WX_MINIGAME_BUILD && !UNITY_EDITOR
             msg.DataDic["__login_provider"] = "wechat";
             if (WeChatPlatformMrg.Instance.TryGetSession(userId, out string sessionToken))
                 msg.DataDic["__wechat_session"] = sessionToken;
@@ -869,28 +1050,28 @@ namespace FrameWork.WebSocket
         }
 
 
-        // public static void GetRank(RankType rankType=RankType.Nor)
-        // {
-        //     var msg=new Msg()
-        //     {
-        //         MsgType = ProtobufMsgType.Game,
-        //         GameMsgType = GameMsgType.GetRank,
-        //         RankName = rankType.ToString()
-        //     };
-        //     Send(msg.ToByteArray());
-        // }
-        //
-        // public static void UpdateRank(RankData rankData, RankType rankType = RankType.Nor)
-        // {
-        //     var msg=new Msg()
-        //     {
-        //         MsgType = ProtobufMsgType.Game,
-        //         GameMsgType = GameMsgType.UpdateRank,
-        //         RankName = rankType.ToString(),
-        //         UpdateRankData = rankData
-        //     };
-        //     Debug.Log($"更新排行榜:{msg}");
-        //     Send(msg.ToByteArray());
-        // }
+        public static void GetRank(RankType rankType=RankType.Nor)
+        {
+            var msg=new Msg()
+            {
+                MsgType = ProtobufMsgType.Game,
+                GameMsgType = GameMsgType.GetRank,
+                RankName = rankType.ToString()
+            };
+            Send(msg.ToByteArray());
+        }
+
+        public static void UpdateRank(RankData rankData, RankType rankType = RankType.Nor)
+        {
+            var msg=new Msg()
+            {
+                MsgType = ProtobufMsgType.Game,
+                GameMsgType = GameMsgType.UpdateRank,
+                RankName = rankType.ToString(),
+                UpdateRankData = rankData
+            };
+            Debug.Log($"更新排行榜:{msg}");
+            Send(msg.ToByteArray());
+        }
     }
 }

@@ -1,42 +1,24 @@
 using UnityEngine;
-
 namespace FrameWork
 {
-    public class SingletonAsMono<T> : MonoBehaviour where T: Component
+    // 保留当前项目的获取/创建方式；登录和存档改由业务层组合实现。
+    public class SingletonAsMono<T> : MonoBehaviour where T : Component
     {
         private static T _instance;
-
         public static T Instance
         {
             get
             {
-                if (_instance==null)
+                if (_instance == null)
                 {
-
-                    if (FindObjectOfType<T>()!=null)
-                    {
-                        _instance = FindObjectOfType<T>();
-                    }
-                    else
-                    {
-                        GameObject go = new GameObject();
-                        go.name = typeof(T).Name;
-                        _instance=go.AddComponent<T>();
-                    }
-
-                    if (Application.isPlaying)
-                    {
-                        DontDestroyOnLoad(_instance);
-                    }
-                    
+                    _instance = FindObjectOfType<T>();
+                    if (_instance == null) _instance = new GameObject(typeof(T).Name).AddComponent<T>();
+                    if (Application.isPlaying) DontDestroyOnLoad(_instance);
                 }
-
                 return _instance;
             }
         }
-
-        
+        protected virtual void Awake() { }
+        protected virtual void OnDestroy() { }
     }
-        
-    
 }

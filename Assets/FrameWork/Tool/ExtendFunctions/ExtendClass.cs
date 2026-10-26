@@ -10,6 +10,7 @@ namespace FrameWork
     {
         public static void SetActive(this MonoBehaviour mono, bool active)
         {
+            if (mono==null)return;
             if (mono.gameObject.activeSelf!=active)
             {
                 mono.gameObject.SetActive(active);
@@ -18,6 +19,7 @@ namespace FrameWork
         
         public static void SetActive(this Component mono, bool active)
         {
+            if (mono==null)return;
             if (mono.gameObject.activeSelf!=active)
             {
                 mono.gameObject.SetActive(active);
@@ -26,6 +28,7 @@ namespace FrameWork
 
         public static void SetActive(this Actor mono, bool active)
         {
+            if (mono==null)return;
             if (mono.GetGameObject().activeSelf!=active)
             {
                 mono.GetGameObject().SetActive(active);
@@ -34,6 +37,7 @@ namespace FrameWork
         
         public static void SetActive(this Transform mono, bool active)
         {
+            if (mono==null)return;
             if (mono.gameObject.activeSelf!=active)
             {
                 mono.gameObject.SetActive(active);
@@ -42,6 +46,7 @@ namespace FrameWork
         
         public static void SetActiveAsCheck(this GameObject mono, bool active)
         {
+            if (mono==null)return;
             if (mono.activeSelf!=active)
             {
                 mono.SetActive(active);

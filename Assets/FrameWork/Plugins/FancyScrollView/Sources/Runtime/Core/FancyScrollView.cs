@@ -74,6 +74,10 @@ namespace FancyScrollView
         /// </summary>
         protected TContext Context { get; } = new TContext();
 
+        /// <summary>セルの基準点が表示範囲外でも描画する余白（正規化座標）。</summary>
+        protected virtual float CellVisibilityMarginStart => 0f;
+        protected virtual float CellVisibilityMarginEnd => 0f;
+
         /// <summary>
         /// 初期化を行います.
         /// </summary>
@@ -119,23 +123,24 @@ namespace FancyScrollView
             currentPosition = position;
 
             var p = position - scrollOffset / cellInterval;
-            var firstIndex = Mathf.CeilToInt(p);
-            var firstPosition = (Mathf.Ceil(p) - p) * cellInterval;
+            var firstIndex = Mathf.CeilToInt(p - Mathf.Max(0f, CellVisibilityMarginStart) / cellInterval);
+            var firstPosition = (firstIndex - p) * cellInterval;
+            var endPosition = 1f + Mathf.Max(0f, CellVisibilityMarginEnd);
 
-            if (firstPosition + pool.Count * cellInterval < 1f)
+            if (firstPosition + pool.Count * cellInterval < endPosition)
             {
-                ResizePool(firstPosition);
+                ResizePool(firstPosition, endPosition);
             }
 
-            UpdateCells(firstPosition, firstIndex, forceRefresh);
+            UpdateCells(firstPosition, firstIndex, forceRefresh, endPosition);
         }
 
-        void ResizePool(float firstPosition)
+        void ResizePool(float firstPosition, float endPosition)
         {
             Debug.Assert(CellPrefab != null);
             Debug.Assert(cellContainer != null);
 
-            var addCount = Mathf.CeilToInt((1f - firstPosition) / cellInterval) - pool.Count;
+            var addCount = Mathf.CeilToInt((endPosition - firstPosition) / cellInterval) - pool.Count;
             for (var i = 0; i < addCount; i++)
             {
                 var cell = Instantiate(CellPrefab, cellContainer).GetComponent<FancyCell<TItemData, TContext>>();
@@ -153,7 +158,7 @@ namespace FancyScrollView
             }
         }
 
-        void UpdateCells(float firstPosition, int firstIndex, bool forceRefresh)
+        void UpdateCells(float firstPosition, int firstIndex, bool forceRefresh, float endPosition)
         {
             for (var i = 0; i < pool.Count; i++)
             {
@@ -166,7 +171,7 @@ namespace FancyScrollView
                     index = CircularIndex(index, ItemsSource.Count);
                 }
 
-                if (index < 0 || index >= ItemsSource.Count || position > 1f)
+                if (index < 0 || index >= ItemsSource.Count || position > endPosition)
                 {
                     cell.SetVisible(false);
                     continue;

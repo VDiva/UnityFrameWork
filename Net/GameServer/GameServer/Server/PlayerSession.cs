@@ -18,8 +18,8 @@ namespace WebSocketDemo
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim _userDataLock = new SemaphoreSlim(1, 1);
         private readonly SessionSendQueue _sendQueue;
-        private readonly SerialQueryQueue _queries = new(exception =>
-            Console.WriteLine($"[QueryQueue] {exception.Message}"));
+        private readonly SessionCommandQueue _commands = new(exception =>
+            Console.WriteLine($"[CommandQueue] {exception.Message}"));
         private readonly Task _receiveTask;
         private readonly TaskCompletionSource<bool> _closeTcs = new TaskCompletionSource<bool>(
             TaskCreationOptions.RunContinuationsAsynchronously);
@@ -46,11 +46,26 @@ namespace WebSocketDemo
         public uint NetworkObjectId { get; internal set; }
         public NetworkTransformData? LastNetworkTransform { get; internal set; }
         public NetworkAnimationData? LastNetworkAnimation { get; internal set; }
-        public uint NetworkRoomId { get; internal set; }
+        private uint _networkRoomId;
+        public uint NetworkRoomId
+        {
+            get => _networkRoomId;
+            internal set
+            {
+                uint oldRoomId = _networkRoomId;
+                if (oldRoomId == value) return;
+                _networkRoomId = value;
+                PlayerSessionManager.Instance.OnSessionRoomChanged(this, oldRoomId, value);
+            }
+        }
         public uint PendingNetworkRoomId { get; internal set; }
         public ConcurrentDictionary<uint, byte> VisibleNetworkObjects { get; } = new();
         public ConcurrentDictionary<uint, byte> NetworkRoomInvites { get; } = new();
         public bool IsConnected => _webSocket.State == WebSocketState.Open;
+        public (int Packets, int Bytes, long WaitMs, long WriteMs, long Expired)
+            SendQueueStats => (_sendQueue.PendingCount, _sendQueue.PendingBytes,
+                _sendQueue.LastQueueWaitMs, _sendQueue.LastWriteMs,
+                _sendQueue.ExpiredRealtimePackets);
         public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
         public DateTimeOffset LastActiveAt { get; private set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset LastChannelChatAt { get; internal set; } = DateTimeOffset.MinValue;
@@ -144,13 +159,15 @@ namespace WebSocketDemo
         private async Task StartReceivingAsync()
         {
             var buffer = new byte[ReceiveBufferSize];
+            using var messageBuffer = new MemoryStream(ReceiveBufferSize);
 
             try
             {
                 while (_webSocket.State == WebSocketState.Open && !_cts.Token.IsCancellationRequested)
                 {
                     WebSocketReceiveResult result;
-                    using var messageBuffer = new MemoryStream();
+                    messageBuffer.SetLength(0);
+                    bool singleFrame = false;
                     do
                     {
                         try
@@ -179,24 +196,36 @@ namespace WebSocketDemo
                             return;
                         }
 
-                        messageBuffer.Write(buffer, 0, result.Count);
+                        // 大多数位置包一次 Receive 就完整到达，直接从接收缓冲解析，
+                        // 避免每包再复制到 MemoryStream。分片消息仍按原顺序拼接。
+                        if (result.EndOfMessage && messageBuffer.Length == 0)
+                            singleFrame = true;
+                        else
+                            messageBuffer.Write(buffer, 0, result.Count);
                     } while (!result.EndOfMessage);
 
-                    if (messageBuffer.Length == 0)
+                    int messageLength = singleFrame ? result.Count : checked((int)messageBuffer.Length);
+                    if (messageLength == 0)
                     {
                         continue;
                     }
 
-                    var fullData = messageBuffer.ToArray();
+                    byte[] fullData = singleFrame ? buffer : messageBuffer.GetBuffer();
 
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
-                        var fullMessage = Encoding.UTF8.GetString(fullData);
+                        var fullMessage = Encoding.UTF8.GetString(fullData, 0, messageLength);
                         await OnMessageReceived(fullMessage);
                     }
                     else if (result.MessageType == WebSocketMessageType.Binary)
                     {
-                        await DispatchBinaryMessageAsync(fullData);
+                        await DispatchBinaryMessageAsync(fullData, messageLength);
+                    }
+                    // 大包只在本次处理期间保留容量，不让每个长连接长期占用 1MB 缓冲区。
+                    if (messageBuffer.Capacity > 64 * 1024)
+                    {
+                        messageBuffer.SetLength(0);
+                        messageBuffer.Capacity = ReceiveBufferSize;
                     }
                 }
             }
@@ -214,9 +243,12 @@ namespace WebSocketDemo
             finally
             {
                 _closeTcs.TrySetResult(true);
-                QueueOfflineSave();
                 _ = SafeCloseAsync();
                 _cts.Cancel();
+                // 已接收的业务写入先结束，再保存离线数据。
+                _commands.Complete();
+                await _commands.Completion;
+                QueueOfflineSave();
             }
         }
 
@@ -256,30 +288,62 @@ namespace WebSocketDemo
             }
         }
 
-        private async Task DispatchBinaryMessageAsync(byte[] data)
+        private async Task DispatchBinaryMessageAsync(byte[] data, int length)
         {
             Msg msg;
-            try { msg = Msg.Parser.ParseFrom(data); }
+            try { msg = Msg.Parser.ParseFrom(data, 0, length); }
             catch (InvalidProtocolBufferException) { return; }
             if (msg.MsgType != ProtobufMsgType.Game) return;
-            bool readOnly = msg.GameMsgType is GameMsgType.GetRank or GameMsgType.GetFriendList
-                or GameMsgType.GetServerList or GameMsgType.GetGongGao;
-            if (readOnly)
+            // 版本/延迟探测不访问数据库，直接回复，不排在业务指令之后。
+            if (ServerVersionProtocol.IsQuery(msg))
             {
-                string? user = UserId, server = ServerId;
-                if (!_queries.TryEnqueue(data.Length, async () =>
-                {
-                    if (!IsConnected || IsSuperseded || UserId != user || ServerId != server) return;
-                    await OnBinaryMessageReceived(msg);
-                }))
-                    await this.ReplyErrorAsync(msg, "QUERY_QUEUE_FULL", "查询过于频繁，请稍后重试。");
+                await OnBinaryMessageReceived(msg);
                 return;
             }
-            // 切换身份前必须结束旧身份查询，避免响应进入新账号或新区服。
-            if (msg.GameMsgType is GameMsgType.Login or GameMsgType.Logout)
-                await _queries.DrainAsync();
-            await OnBinaryMessageReceived(msg);
+            bool realtime = IsRealtimeMessage(msg.GameMsgType);
+            if (realtime && !_commands.HasPendingWorldMutation)
+            {
+                await OnBinaryMessageReceived(msg);
+                return;
+            }
+            // 房间/对象生命周期指令未完成时旧位置已无意义，直接丢弃；
+            // 其他实时事件仍按接收顺序排在屏障后面。
+            if (msg.GameMsgType == GameMsgType.UploadNetworkTransform) return;
+            bool worldMutation = IsWorldMutation(msg.GameMsgType);
+            Func<Task> action = async () =>
+            {
+                if (!IsConnected || IsSuperseded) return;
+                await OnBinaryMessageReceived(msg);
+            };
+            if (worldMutation)
+            {
+                // 生成/切图不能因短时积压而静默丢失；达到硬上限时对发送者施加背压。
+                while (!_commands.TryEnqueue(length, true, action))
+                {
+                    if (!IsConnected || IsSuperseded) return;
+                    try { await Task.Delay(5, _cts.Token); }
+                    catch (OperationCanceledException) { return; }
+                }
+                return;
+            }
+            if (!_commands.TryEnqueue(length, false, action))
+                await this.ReplyErrorAsync(msg, "COMMAND_QUEUE_FULL", "指令队列已满，请稍后重试。");
         }
+
+        private static bool IsRealtimeMessage(GameMsgType type) => type is
+            GameMsgType.UploadNetworkTransform or GameMsgType.UploadNetworkAnimation or
+            GameMsgType.UploadNetworkSyncVar or GameMsgType.UploadNetworkRpc or
+            GameMsgType.UploadNetworkVoice;
+
+        private static bool IsWorldMutation(GameMsgType type) => type is
+            GameMsgType.Login or GameMsgType.Logout or GameMsgType.CreateNetworkRoom or
+            GameMsgType.MatchNetworkRoom or GameMsgType.NetworkRoomSceneReady or
+            GameMsgType.ChangeNetworkRoomMap or GameMsgType.LeaveNetworkRoom or
+            GameMsgType.StartNetworkRoomGame or GameMsgType.KickNetworkRoomPlayer or
+            GameMsgType.AcceptNetworkRoomInvite or GameMsgType.JoinNetworkRoom or
+            GameMsgType.SpawnNetworkRoomObject or GameMsgType.DestroyNetworkRoomObject or
+            GameMsgType.SpawnNetworkRoomAi or GameMsgType.SpawnNetworkRoomAifromTrigger or
+            GameMsgType.ClaimNetworkRoomObject or GameMsgType.RollRoomEquipment;
 
         /// <summary>完成表示已入队，不表示对端已收到。单连接队列保证可靠消息顺序。</summary>
         public Task SendMessageAsync(string message)
@@ -295,9 +359,47 @@ namespace WebSocketDemo
             return Task.CompletedTask;
         }
 
-        public void QueueLatestBinary(ulong key, byte[] data)
+        public void QueueLatestBinary(ulong key, byte[] data, int maxAgeMs = 0)
         {
-            if (IsConnected) _sendQueue.Enqueue(data, WebSocketMessageType.Binary, key);
+            if (IsConnected) _sendQueue.Enqueue(data, WebSocketMessageType.Binary, key,
+                maxAgeMs: maxAgeMs);
+        }
+
+        public void QueueLatestTransformBatch(ulong key, byte[] data)
+        {
+            if (IsConnected)
+                _sendQueue.Enqueue(data, WebSocketMessageType.Binary, key,
+                    MergeTransformBatches, maxAgeMs: 250);
+        }
+
+        private static byte[] MergeTransformBatches(byte[] previousBytes, byte[] latestBytes)
+        {
+            Msg previous = Msg.Parser.ParseFrom(previousBytes);
+            Msg latest = Msg.Parser.ParseFrom(latestBytes);
+            var indexes = new Dictionary<uint, int>(previous.NetworkTransforms.Count);
+            for (int i = 0; i < previous.NetworkTransforms.Count; i++)
+                indexes[previous.NetworkTransforms[i].ObjectId] = i;
+            foreach (NetworkTransformData snapshot in latest.NetworkTransforms)
+            {
+                if (indexes.TryGetValue(snapshot.ObjectId, out int index))
+                    previous.NetworkTransforms[index] = snapshot;
+                else
+                {
+                    indexes[snapshot.ObjectId] = previous.NetworkTransforms.Count;
+                    previous.NetworkTransforms.Add(snapshot);
+                }
+            }
+            return previous.ToByteArray();
+        }
+
+        public async Task WaitForSnapshotSendCapacityAsync()
+        {
+            try
+            {
+                while (IsConnected && _sendQueue.PendingCount >= 128)
+                    await Task.Delay(10, _cts.Token);
+            }
+            catch (OperationCanceledException) { }
         }
 
         // 房间状态不能跨越 Entered/Load 等消息覆盖，以可靠 FIFO 单路发送。
@@ -412,7 +514,7 @@ namespace WebSocketDemo
 
         private async Task DisposeResourcesAsync()
         {
-            try { await Task.WhenAll(_sendQueue.Completion, _receiveTask, _queries.DrainAsync()); }
+            try { await Task.WhenAll(_sendQueue.Completion, _receiveTask, _commands.Completion); }
             catch (Exception) { }
             // 接收结束不代表 CloseAsync 已完成，不能提前销毁它仍在使用的发送锁。
             Task closing;

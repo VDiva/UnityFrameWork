@@ -1,0 +1,17 @@
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\bin\Debug\net8.0\RoomJoinabilityChecks.exe
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\bin\Debug\net8.0\RoomJoinabilityChecks.deps.json
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\bin\Debug\net8.0\RoomJoinabilityChecks.runtimeconfig.json
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\bin\Debug\net8.0\RoomJoinabilityChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\bin\Debug\net8.0\RoomJoinabilityChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\bin\Debug\net8.0\Google.Protobuf.dll
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.csproj.AssemblyReference.cache
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.AssemblyInfoInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.AssemblyInfo.cs
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.csproj.CoreCompileInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoin.2FCFB824.Up2Date
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\refint\RoomJoinabilityChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\RoomJoinabilityChecks.genruntimeconfig.cache
+C:\Svn\Game\Net\GameServer\Tests\RoomJoinabilityChecks\obj\Debug\net8.0\ref\RoomJoinabilityChecks.dll

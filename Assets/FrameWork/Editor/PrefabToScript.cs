@@ -17,10 +17,12 @@ namespace FrameWork.Editor
             "System.Collections.Generic",
             "UnityEngine",
             "UnityEngine.UI",
+            "FrameWork.Script.UiItem",
             "FancyScrollView",
             "FrameWork.Script.Tool",
             "TMPro",
-            "Spine.Unity"
+            "Spine.Unity",
+            "FrameWork.Script.Tool.Skin"
         };
         
         /// <summary>

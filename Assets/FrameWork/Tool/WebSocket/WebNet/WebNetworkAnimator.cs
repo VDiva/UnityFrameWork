@@ -32,13 +32,11 @@ namespace FrameWork.Script.WebNet
 
         void OnEnable()
         {
-            WebNetworkManager.AnimationReceived += OnAnimationReceived;
             WebNetworkManager.AuthorityChanged += OnAuthorityChanged;
         }
 
         void OnDisable()
         {
-            WebNetworkManager.AnimationReceived -= OnAnimationReceived;
             WebNetworkManager.AuthorityChanged -= OnAuthorityChanged;
         }
 
@@ -54,24 +52,19 @@ namespace FrameWork.Script.WebNet
             if (!changed && Time.unscaledTime - lastSendTime < heartbeatInterval)
                 return;
 
-            LobbyWebNet.Send(new Msg
+            WebNetworkManager.SendAnimation(new NetworkAnimationData
             {
-                MsgType = ProtobufMsgType.Game,
-                GameMsgType = GameMsgType.UploadNetworkAnimation,
-                NetworkAnimation = new NetworkAnimationData
-                {
-                    ObjectId = NetId,
-                    StateHash = state.fullPathHash,
-                    NormalizedTime = state.normalizedTime - Mathf.Floor(state.normalizedTime),
-                    Sequence = ++sendSequence
-                }
+                ObjectId = NetId,
+                StateHash = state.fullPathHash,
+                NormalizedTime = state.normalizedTime - Mathf.Floor(state.normalizedTime),
+                Sequence = ++sendSequence
             });
 
             lastStateHash = state.fullPathHash;
             lastSendTime = Time.unscaledTime;
         }
 
-        void OnAnimationReceived(NetworkAnimationData data)
+        internal void OnAnimationReceived(NetworkAnimationData data)
         {
             if (HasAuthority || data.ObjectId != NetId || data.Sequence <= receiveSequence ||
                 data.StateHash == 0 || animator == null || !animator.isActiveAndEnabled)

@@ -252,6 +252,11 @@ namespace FrameWork
                 }
                 sw.WriteLine("\t\tstatic "+xlsxQueryName+"()");
                 sw.WriteLine("\t\t{");
+                sw.WriteLine("\t\t\tUpdate();");
+                sw.WriteLine("\t\t}");
+                
+                sw.WriteLine("\t\tpublic static void Update()");
+                sw.WriteLine("\t\t{");
                 sw.WriteLine($"\t\t\tvar xlsx=Tool.LoadXlsx(\"{fileName}\");");
                 sw.WriteLine("\t\t\tvar itemData=xlsx.Split('\\n');");
                 sw.WriteLine("\t\t\tvar fileNames = itemData[2].Split('|');");

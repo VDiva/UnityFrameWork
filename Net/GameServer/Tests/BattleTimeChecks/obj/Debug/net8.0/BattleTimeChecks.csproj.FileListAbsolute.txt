@@ -1,0 +1,17 @@
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.csproj.AssemblyReference.cache
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.AssemblyInfoInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.AssemblyInfo.cs
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.csproj.CoreCompileInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\bin\Debug\net8.0\BattleTimeChecks.exe
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\bin\Debug\net8.0\BattleTimeChecks.deps.json
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\bin\Debug\net8.0\BattleTimeChecks.runtimeconfig.json
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\bin\Debug\net8.0\BattleTimeChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\bin\Debug\net8.0\BattleTimeChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\bin\Debug\net8.0\Google.Protobuf.dll
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTi.BC8B7B79.Up2Date
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\refint\BattleTimeChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\BattleTimeChecks.genruntimeconfig.cache
+C:\Svn\Game\Net\GameServer\Tests\BattleTimeChecks\obj\Debug\net8.0\ref\BattleTimeChecks.dll

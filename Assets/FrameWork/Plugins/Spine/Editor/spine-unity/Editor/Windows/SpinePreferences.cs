@@ -82,7 +82,7 @@ namespace Spine.Unity.Editor {
 		static int wasPreferencesAssetCreated = 0;
 #endif
 
-		public const string SPINE_SETTINGS_ASSET_PATH = "Assets/Editor/SpineSettings.asset";
+		public const string SPINE_SETTINGS_ASSET_PATH = "Assets/FrameWork/Editor/SpineSettings.asset";
 
 		internal const float DEFAULT_DEFAULT_SCALE = 0.01f;
 		public float defaultScale = DEFAULT_DEFAULT_SCALE;
@@ -278,11 +278,12 @@ namespace Spine.Unity.Editor {
 			if (settings == null) {
 				settings = ScriptableObject.CreateInstance<SpinePreferences>();
 				SpineEditorUtilities.OldPreferences.CopyOldToNewPreferences(ref settings);
+                settings.textureSettingsReference = settings.textureSettingsReference?.Replace("Assets/Spine/", "Assets/FrameWork/Plugins/Spine/");
 				// Multiple threads may be calling this method during import, creating the folder
 				// multiple times with ascending number suffix. Atomic wasPreferencesDirCreated int
 				// variable is used to prevent any redundant create operations.
-				if (!AssetDatabase.IsValidFolder("Assets/Editor") && Interlocked.Exchange(ref wasPreferencesDirCreated, 1) == 0)
-					AssetDatabase.CreateFolder("Assets", "Editor");
+				if (!AssetDatabase.IsValidFolder("Assets/FrameWork/Editor") && Interlocked.Exchange(ref wasPreferencesDirCreated, 1) == 0)
+					AssetDatabase.CreateFolder("Assets/FrameWork", "Editor");
 				if (Interlocked.Exchange(ref wasPreferencesAssetCreated, 1) == 0)
 					AssetDatabase.CreateAsset(settings, SPINE_SETTINGS_ASSET_PATH);
 			}

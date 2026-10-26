@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "BgRGtsJsJe8=",
+  "success": true,
+  "projectFilePath": "C:\\Svn\\Game\\Net\\GameServer\\Tests\\RoomJoinabilityChecks\\RoomJoinabilityChecks.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\smr\\.nuget\\packages\\google.protobuf\\3.35.1\\google.protobuf.3.35.1.nupkg.sha512"
+  ],
+  "logs": []
+}

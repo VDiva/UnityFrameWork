@@ -8,10 +8,10 @@ namespace WebSocketDemo;
 public sealed class NetworkSyncVarManager
 {
     private const int MaxValueBytes = 64 * 1024;
-    private readonly ConcurrentDictionary<SyncKey, SyncState> _states = new();
+    private readonly ConcurrentDictionary<uint, ConcurrentDictionary<SyncKey, SyncState>> _statesByObject = new();
     public static NetworkSyncVarManager Instance { get; } = new();
 
-    private readonly record struct SyncKey(uint ObjectId, uint BehaviourId, uint FieldId);
+    private readonly record struct SyncKey(uint BehaviourId, uint FieldId);
     private sealed record SyncState(uint RoomId, NetworkSyncVarData Data);
 
     public async Task RelayAsync(PlayerSession sender, NetworkSyncVarData? input)
@@ -22,15 +22,21 @@ public sealed class NetworkSyncVarManager
         uint roomId;
         if (input.ObjectId == sender.NetworkObjectId)
             roomId = sender.NetworkRoomId;
-        else if (!NetworkRoomObjectManager.Instance.TryGetAuthorizedRoomId(sender, input.ObjectId, out roomId))
-            return;
+        else
+        {
+            if (!NetworkRoomObjectManager.Instance.CanSync(sender, input.ObjectId)) return;
+            roomId = sender.NetworkRoomId;
+        }
 
         NetworkSyncVarData state = input.Clone();
-        var key = new SyncKey(state.ObjectId, state.BehaviourId, state.FieldId);
-        if (_states.TryGetValue(key, out SyncState? oldState) && state.Sequence <= oldState.Data.Sequence)
-            return;
-
-        _states[key] = new SyncState(roomId, state.Clone());
+        var key = new SyncKey(state.BehaviourId, state.FieldId);
+        ConcurrentDictionary<SyncKey, SyncState> objectStates = _statesByObject.GetOrAdd(
+            state.ObjectId, _ => new ConcurrentDictionary<SyncKey, SyncState>());
+        var next = new SyncState(roomId, state.Clone());
+        SyncState accepted = objectStates.AddOrUpdate(key, next,
+            (_, current) => state.Sequence > current.Data.Sequence ? next : current);
+        if (!ReferenceEquals(accepted, next)) return;
+        if (!PlayerSessionManager.Instance.HasRoomObserver(roomId, sender.PlayerId)) return;
         await PlayerSessionManager.Instance.BroadcastBinaryAsync(new Msg
         {
             MsgType = ProtobufMsgType.Server,
@@ -41,9 +47,10 @@ public sealed class NetworkSyncVarManager
 
     public async Task SendObjectStateAsync(PlayerSession receiver, uint objectId)
     {
-        foreach (SyncState state in _states.Values)
+        if (!_statesByObject.TryGetValue(objectId, out var objectStates)) return;
+        foreach (SyncState state in objectStates.Values)
         {
-            if (state.RoomId != receiver.NetworkRoomId || state.Data.ObjectId != objectId) continue;
+            if (state.RoomId != receiver.NetworkRoomId) continue;
             await receiver.SendBinaryAsync(new Msg
             {
                 MsgType = ProtobufMsgType.Server,
@@ -53,10 +60,16 @@ public sealed class NetworkSyncVarManager
         }
     }
 
+    public void AppendObjectStates(uint roomId, uint objectId, List<NetworkSyncVarData> destination)
+    {
+        if (!_statesByObject.TryGetValue(objectId, out var objectStates)) return;
+        foreach (SyncState state in objectStates.Values)
+            if (state.RoomId == roomId)
+                destination.Add(state.Data.Clone());
+    }
+
     public void RemoveObject(uint objectId)
     {
-        foreach (SyncKey key in _states.Keys)
-            if (key.ObjectId == objectId)
-                _states.TryRemove(key, out _);
+        _statesByObject.TryRemove(objectId, out _);
     }
 }

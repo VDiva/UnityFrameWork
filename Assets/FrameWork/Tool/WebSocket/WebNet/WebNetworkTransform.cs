@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using GameData;
+using Pathfinding;
 using UnityEngine;
 using LobbyWebNet = FrameWork.WebSocket.WebNet;
 
@@ -8,8 +8,9 @@ namespace FrameWork.Script.WebNet
 {
     /// <summary>
     /// 同步网络对象根节点的位置、旋转、缩放，以及指定子节点的本地变换。
-    /// 有控制权的一端上传，其他客户端平滑插值到收到的目标状态。
+    /// 有控制权的一端上传位置和速度，其他客户端短时预测并平滑校正。
     /// </summary>
+    [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(WebNetworkIdentity))]
     public sealed class WebNetworkTransform : WebNetworkBehaviour
     {
@@ -48,10 +49,15 @@ namespace FrameWork.Script.WebNet
         [SerializeField, Min(0f)] float scaleThreshold = 0.01f;
         [SerializeField, Min(0.2f)] float heartbeatInterval = 1f;
 
-        [Header("远端插值")]
-        [Tooltip("缓存少量快照吸收网络抖动；默认增加约150ms远端显示延迟。")]
-        [SerializeField, Range(0.05f, 0.3f)] float snapshotBufferTime = 0.15f;
-        [SerializeField, Range(2, 10)] int maxBufferedSnapshots = 6;
+        [Header("远端快照")]
+        [Tooltip("按发送周期保留的插值时间。增大可抵抗网络抖动，但会增加远端显示延迟。")]
+        [SerializeField, Range(1f, 3f)] float snapshotBufferMultiplier = 1.5f;
+        [Tooltip("网络抖动时平滑修正远端位置的时间，单位秒。")]
+        [SerializeField, Range(0.01f, 0.15f)] float positionCorrectionTime = 0.04f;
+        [Tooltip("短暂丢包时沿最后速度继续移动的最长时间，单位秒。")]
+        [SerializeField, Range(0.05f, 0.5f)] float maxPredictionTime = 0.2f;
+        [Tooltip("位置误差超过此距离时按传送处理，不让物体穿越整张地图。")]
+        [SerializeField, Min(0.1f)] float snapDistance = 8f;
         [SerializeField, Min(0.1f)] float interpolationSpeed = 12f;
         [SerializeField, Min(0.1f)] float rotationInterpolationSpeed = 15f;
         [Tooltip("开启时平滑同步根节点和子节点缩放；关闭时收到数据后立即设置缩放。")]
@@ -62,28 +68,49 @@ namespace FrameWork.Script.WebNet
         Quaternion targetRotation;
         Vector3 targetScale;
         Vector3 lastSentPosition;
+        Vector3 lastSentVelocity;
+        Vector3 lastVelocitySamplePosition;
+        Vector3 targetVelocity;
         Quaternion lastSentRotation;
         Vector3 lastSentScale;
         float nextSendTime;
         float lastSendTime;
+        float repeatPositionUntil;
+        float lastVelocitySampleTime;
+        double lastRemoteSampleTime;
+        double lastRemoteSentTime;
         ulong sendSequence;
         ulong receiveSequence;
         bool receivedFirstSnapshot;
         bool sentFirstSnapshot;
-
-        readonly List<RemoteSnapshot> remoteSnapshots = new List<RemoteSnapshot>(6);
+        bool wasSoloAi;
+        bool hasSenderClock;
+        double senderToLocalTimeOffset;
+        Rigidbody2D body;
+        RigidbodyType2D originalBodyType;
+        RigidbodyInterpolation2D originalBodyInterpolation;
+        AILerp aiLerp;
+        Vector3 renderVelocity;
+        readonly SnapshotTimeline<RemoteSnapshot> remoteSnapshots =
+            new SnapshotTimeline<RemoteSnapshot>(8);
 
         struct RemoteSnapshot
         {
-            public float receivedTime;
             public Vector3 position;
             public Quaternion rotation;
             public Vector3 scale;
-            public bool hasScale;
+            public Vector3 velocity;
         }
 
         void Awake()
         {
+            body = GetComponent<Rigidbody2D>();
+            if (body != null)
+            {
+                originalBodyType = body.bodyType;
+                originalBodyInterpolation = body.interpolation;
+            }
+            aiLerp = GetComponent<AILerp>();
             targetPosition = transform.position;
             targetRotation = transform.rotation;
             targetScale = transform.localScale;
@@ -92,13 +119,11 @@ namespace FrameWork.Script.WebNet
 
         void OnEnable()
         {
-            WebNetworkManager.TransformReceived += OnTransformReceived;
             WebNetworkManager.AuthorityChanged += OnAuthorityChanged;
         }
 
         void OnDisable()
         {
-            WebNetworkManager.TransformReceived -= OnTransformReceived;
             WebNetworkManager.AuthorityChanged -= OnAuthorityChanged;
         }
 
@@ -106,32 +131,61 @@ namespace FrameWork.Script.WebNet
         {
             if (HasAuthority)
                 UpdateAuthorityObject();
-            else
+        }
+
+        void LateUpdate()
+        {
+            if (!HasAuthority)
                 UpdateRemoteObject();
         }
 
         void UpdateAuthorityObject()
         {
-            if (!LobbyWebNet.IsConnected || NetId == 0 || Time.unscaledTime < nextSendTime)
+            float now = Time.unscaledTime;
+            float interval = sendInterval;
+            // 单人房间没有远端观众，AI 只需让服务端保留近期状态供后来加入的玩家使用。
+            WebNetworkRoomManager roomManager = WebNetworkRoomManager.Instance;
+            bool soloAi = Identity.IsAiObject && roomManager != null &&
+                          roomManager.CurrentRoom != null && roomManager.CurrentRoom.Members.Count <= 1;
+            if (soloAi)
+                interval = Mathf.Max(interval, 1f);
+            // 新观众进房时立即上传当前 AI 状态，避免沿用单人模式的下次发送时间。
+            if (wasSoloAi && !soloAi)
+                nextSendTime = now;
+            wasSoloAi = soloAi;
+            if (!LobbyWebNet.IsConnected || NetId == 0 || now < nextSendTime)
                 return;
 
-            nextSendTime = Time.unscaledTime + sendInterval;
+            // 保持平均发送周期稳定；直接用 now + interval 会反复累积渲染帧误差。
+            nextSendTime = nextSendTime > 0f && now - nextSendTime < interval
+                ? nextSendTime + interval : now + interval;
             Vector3 position = transform.position;
             Quaternion rotation = transform.rotation;
             Vector3 scale = transform.localScale;
+            Vector3 velocity = sentFirstSnapshot && lastVelocitySampleTime > 0f
+                ? (position - lastVelocitySamplePosition) / Mathf.Max(0.001f, now - lastVelocitySampleTime)
+                : Vector3.zero;
+            lastVelocitySamplePosition = position;
+            lastVelocitySampleTime = now;
+            bool moving = syncPosition && velocity.sqrMagnitude >= 0.0004f;
+            if (moving && !soloAi)
+                repeatPositionUntil = now + Mathf.Max(0.2f, interval * 3f);
 
             bool changed = !sentFirstSnapshot ||
                            syncPosition && PositionChanged(position, lastSentPosition) ||
+                           syncPosition && (velocity - lastSentVelocity).sqrMagnitude >= 0.01f ||
                            syncRotation && RotationChanged(rotation, lastSentRotation) ||
                            syncScale && ScaleChanged(scale, lastSentScale) ||
                            HaveChildrenChanged();
 
-            if (!changed && Time.unscaledTime - lastSendTime < heartbeatInterval)
+            if (!changed && now >= repeatPositionUntil && now - lastSendTime < heartbeatInterval)
                 return;
 
             var snapshot = new NetworkTransformData
             {
                 ObjectId = NetId,
+                RoomId = roomManager?.CurrentRoom?.RoomId ?? 0,
+                SceneEpoch = roomManager?.CurrentRoom?.SceneEpoch ?? 0,
                 PositionX = position.x,
                 PositionY = position.y,
                 PositionZ = position.z,
@@ -143,22 +197,23 @@ namespace FrameWork.Script.WebNet
                 ScaleY = scale.y,
                 ScaleZ = scale.z,
                 HasScale = syncScale,
-                Sequence = ++sendSequence
+                Sequence = ++sendSequence,
+                SentTime = Time.unscaledTimeAsDouble,
+                VelocityX = velocity.x,
+                VelocityY = velocity.y,
+                VelocityZ = velocity.z,
+                HasVelocity = syncPosition
             };
 
             AddChildSnapshots(snapshot);
-            LobbyWebNet.Send(new Msg
-            {
-                MsgType = ProtobufMsgType.Game,
-                GameMsgType = GameMsgType.UploadNetworkTransform,
-                NetworkTransform = snapshot
-            });
+            WebNetworkManager.SendTransform(snapshot, Identity.IsPlayerObject);
 
             lastSentPosition = position;
+            lastSentVelocity = velocity;
             lastSentRotation = rotation;
             lastSentScale = scale;
             SaveSentChildren();
-            lastSendTime = Time.unscaledTime;
+            lastSendTime = now;
             sentFirstSnapshot = true;
         }
 
@@ -170,19 +225,39 @@ namespace FrameWork.Script.WebNet
             float positionT = ExpLerpFactor(interpolationSpeed);
             float rotationT = ExpLerpFactor(rotationInterpolationSpeed);
             float scaleT = ExpLerpFactor(scaleInterpolationSpeed);
-
-            if (!ApplyBufferedRootSnapshot())
+            Vector3 renderPosition = targetPosition;
+            Quaternion renderRotation = targetRotation;
+            Vector3 renderScale = targetScale;
+            if (!SampleRemoteSnapshot(out renderPosition, out renderRotation, out renderScale))
             {
-                // 首帧或缓冲耗尽时，平滑收敛到最后的位置，不无限预测。
-                if (syncPosition)
-                    transform.position = Vector3.Lerp(transform.position, targetPosition, positionT);
-                if (syncRotation)
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationT);
-                if (syncScale)
-                    transform.localScale = interpolateScale
-                        ? Vector3.Lerp(transform.localScale, targetScale, scaleT)
-                        : targetScale;
+                float age = Mathf.Clamp((float)(Time.unscaledTimeAsDouble - lastRemoteSampleTime),
+                    0f, maxPredictionTime > 0f ? maxPredictionTime : 0.2f);
+                renderPosition = targetPosition + targetVelocity * age;
             }
+
+            if (syncPosition)
+            {
+                float snapSqr = Mathf.Max(snapDistance > 0f ? snapDistance : 8f,
+                    targetVelocity.magnitude * (maxPredictionTime > 0f ? maxPredictionTime : 0.2f) * 2f);
+                snapSqr *= snapSqr;
+                if ((renderPosition - transform.position).sqrMagnitude > snapSqr)
+                {
+                    transform.position = renderPosition;
+                    renderVelocity = Vector3.zero;
+                }
+                else
+                {
+                    transform.position = Vector3.SmoothDamp(transform.position, renderPosition,
+                        ref renderVelocity, positionCorrectionTime > 0f ? positionCorrectionTime : 0.04f,
+                        Mathf.Infinity, Time.unscaledDeltaTime);
+                }
+            }
+            if (syncRotation)
+                transform.rotation = Quaternion.Slerp(transform.rotation, renderRotation, rotationT);
+            if (syncScale)
+                transform.localScale = interpolateScale
+                    ? Vector3.Lerp(transform.localScale, renderScale, scaleT)
+                    : renderScale;
 
             foreach (ChildTransformSync child in childTransforms)
             {
@@ -202,48 +277,61 @@ namespace FrameWork.Script.WebNet
             }
         }
 
-        bool ApplyBufferedRootSnapshot()
+        internal void OnTransformReceived(NetworkTransformData data)
         {
-            float renderTime = Time.unscaledTime - snapshotBufferTime;
-            while (remoteSnapshots.Count >= 2 && remoteSnapshots[1].receivedTime <= renderTime)
-                remoteSnapshots.RemoveAt(0);
-            if (remoteSnapshots.Count < 2) return false;
-
-            RemoteSnapshot from = remoteSnapshots[0];
-            RemoteSnapshot to = remoteSnapshots[1];
-            float duration = Mathf.Max(0.001f, to.receivedTime - from.receivedTime);
-            float t = Mathf.Clamp01((renderTime - from.receivedTime) / duration);
-            if (syncPosition)
-                transform.position = Vector3.Lerp(from.position, to.position, t);
-            if (syncRotation)
-                transform.rotation = Quaternion.Slerp(from.rotation, to.rotation, t);
-            if (syncScale && to.hasScale)
-                transform.localScale = interpolateScale ? Vector3.Lerp(from.scale, to.scale, t) : to.scale;
-            return true;
-        }
-
-        void OnTransformReceived(NetworkTransformData data)
-        {
-            if (HasAuthority || data == null || data.ObjectId != NetId || data.Sequence <= receiveSequence)
+            if (HasAuthority || data == null || data.ObjectId != NetId)
                 return;
 
+            bool hasValidSentTime = data.SentTime > 0 &&
+                                    !double.IsNaN(data.SentTime) && !double.IsInfinity(data.SentTime);
+            // 生成消息和第一帧移动消息可能使用同一个序号；后者有更晚的发送时间。
+            if (receivedFirstSnapshot && (data.Sequence < receiveSequence ||
+                data.Sequence == receiveSequence &&
+                (!hasValidSentTime || data.SentTime <= lastRemoteSentTime)))
+                return;
+
+            Vector3 previousPosition = targetPosition;
+            double previousSampleTime = lastRemoteSampleTime;
             receiveSequence = data.Sequence;
+            lastRemoteSentTime = hasValidSentTime ? data.SentTime : 0;
             targetPosition = new Vector3(data.PositionX, data.PositionY, data.PositionZ);
             targetRotation = NormalizeRotation(new Quaternion(
                 data.RotationX, data.RotationY, data.RotationZ, data.RotationW));
             if (data.HasScale)
                 targetScale = new Vector3(data.ScaleX, data.ScaleY, data.ScaleZ);
 
-            remoteSnapshots.Add(new RemoteSnapshot
+            double now = Time.unscaledTimeAsDouble;
+            double sampleTime = now;
+            if (hasValidSentTime)
             {
-                receivedTime = Time.unscaledTime,
-                position = targetPosition,
-                rotation = targetRotation,
-                scale = targetScale,
-                hasScale = data.HasScale
-            });
-            while (remoteSnapshots.Count > Mathf.Clamp(maxBufferedSnapshots, 2, 10))
-                remoteSnapshots.RemoveAt(0);
+                if (!hasSenderClock)
+                {
+                    senderToLocalTimeOffset = now - data.SentTime;
+                    hasSenderClock = true;
+                }
+                sampleTime = data.SentTime + senderToLocalTimeOffset;
+            }
+            if (receivedFirstSnapshot)
+                sampleTime = Math.Max(sampleTime, previousSampleTime + 0.001);
+            if (data.HasVelocity &&
+                !float.IsNaN(data.VelocityX) && !float.IsInfinity(data.VelocityX) &&
+                !float.IsNaN(data.VelocityY) && !float.IsInfinity(data.VelocityY) &&
+                !float.IsNaN(data.VelocityZ) && !float.IsInfinity(data.VelocityZ))
+            {
+                targetVelocity = new Vector3(data.VelocityX, data.VelocityY, data.VelocityZ);
+            }
+            else
+            {
+                // 生成时的初始快照可能没有速度，从相邻位置估算。
+                targetVelocity = receivedFirstSnapshot
+                    ? (targetPosition - previousPosition) /
+                      Mathf.Max(0.02f, (float)(sampleTime - previousSampleTime))
+                    : Vector3.zero;
+                targetVelocity = Vector3.ClampMagnitude(targetVelocity, 50f);
+            }
+            lastRemoteSampleTime = sampleTime;
+            if (hasValidSentTime)
+                AddRemoteSnapshot(data.SentTime);
 
             ReadChildSnapshots(data);
 
@@ -251,6 +339,7 @@ namespace FrameWork.Script.WebNet
             {
                 if (syncPosition)
                     transform.position = targetPosition;
+                renderVelocity = Vector3.zero;
                 if (syncRotation)
                     transform.rotation = targetRotation;
                 if (syncScale && data.HasScale)
@@ -258,6 +347,37 @@ namespace FrameWork.Script.WebNet
                 ApplyFirstChildSnapshots();
                 receivedFirstSnapshot = true;
             }
+        }
+
+        void AddRemoteSnapshot(double sentTime)
+        {
+            float bufferTime = Mathf.Max(0.02f, sendInterval) *
+                               Mathf.Clamp(snapshotBufferMultiplier, 1f, 3f);
+            if (remoteSnapshots.TryGetLatest(out RemoteSnapshot latest) &&
+                (targetPosition - latest.position).sqrMagnitude > snapDistance * snapDistance)
+                remoteSnapshots.Clear();
+            remoteSnapshots.Add(sentTime, new RemoteSnapshot
+            {
+                position = targetPosition,
+                rotation = targetRotation,
+                scale = targetScale,
+                velocity = targetVelocity
+            }, bufferTime);
+        }
+
+        bool SampleRemoteSnapshot(out Vector3 position, out Quaternion rotation, out Vector3 scale)
+        {
+            position = targetPosition;
+            rotation = targetRotation;
+            scale = targetScale;
+            if (!remoteSnapshots.TrySample(Time.unscaledDeltaTime, maxPredictionTime,
+                    out RemoteSnapshot first, out RemoteSnapshot second,
+                    out float t, out float extrapolation)) return false;
+            position = Vector3.LerpUnclamped(first.position, second.position, t) +
+                       second.velocity * extrapolation;
+            rotation = Quaternion.Slerp(first.rotation, second.rotation, t);
+            scale = Vector3.Lerp(first.scale, second.scale, t);
+            return true;
         }
 
         void InitializeChildren()
@@ -295,26 +415,33 @@ namespace FrameWork.Script.WebNet
             for (int i = 0; i < childTransforms.Length; i++)
             {
                 ChildTransformSync child = childTransforms[i];
-                if (child?.target == null)
+                if (child?.target == null ||
+                    !child.syncPosition && !child.syncRotation && !child.syncScale)
                     continue;
-
-                Vector3 position = child.target.localPosition;
-                Quaternion rotation = child.target.localRotation;
-                Vector3 scale = child.target.localScale;
-                snapshot.Children.Add(new NetworkChildTransformData
+                var data = new NetworkChildTransformData { SyncIndex = i };
+                if (child.syncPosition)
                 {
-                    SyncIndex = i,
-                    PositionX = position.x,
-                    PositionY = position.y,
-                    PositionZ = position.z,
-                    RotationX = rotation.x,
-                    RotationY = rotation.y,
-                    RotationZ = rotation.z,
-                    RotationW = rotation.w,
-                    ScaleX = scale.x,
-                    ScaleY = scale.y,
-                    ScaleZ = scale.z
-                });
+                    Vector3 position = child.target.localPosition;
+                    data.PositionX = position.x;
+                    data.PositionY = position.y;
+                    data.PositionZ = position.z;
+                }
+                if (child.syncRotation)
+                {
+                    Quaternion rotation = child.target.localRotation;
+                    data.RotationX = rotation.x;
+                    data.RotationY = rotation.y;
+                    data.RotationZ = rotation.z;
+                    data.RotationW = rotation.w;
+                }
+                if (child.syncScale)
+                {
+                    Vector3 scale = child.target.localScale;
+                    data.ScaleX = scale.x;
+                    data.ScaleY = scale.y;
+                    data.ScaleZ = scale.z;
+                }
+                snapshot.Children.Add(data);
             }
         }
 
@@ -373,6 +500,8 @@ namespace FrameWork.Script.WebNet
                 return;
 
             ResetNetworkState();
+            if (HasAuthority && aiLerp != null)
+                aiLerp.Teleport(transform.position);
         }
 
         internal void ResetNetworkState()
@@ -381,13 +510,38 @@ namespace FrameWork.Script.WebNet
             receiveSequence = 0;
             sentFirstSnapshot = false;
             receivedFirstSnapshot = false;
+            wasSoloAi = false;
+            hasSenderClock = false;
+            senderToLocalTimeOffset = 0;
+            lastRemoteSampleTime = 0;
+            lastRemoteSentTime = 0;
+            renderVelocity = Vector3.zero;
             remoteSnapshots.Clear();
-            nextSendTime = 0f;
+            if (body != null)
+            {
+                // 远端物体只接受网络驱动，避免动态刚体在物理步进中推回显示位置。
+                body.bodyType = HasAuthority ? originalBodyType : RigidbodyType2D.Kinematic;
+                body.interpolation = HasAuthority
+                    ? (Identity.IsPlayerObject ? RigidbodyInterpolation2D.Interpolate : originalBodyInterpolation)
+                    : RigidbodyInterpolation2D.None;
+                if (!HasAuthority)
+                    body.velocity = Vector2.zero;
+            }
+            if (aiLerp != null)
+                aiLerp.canMove = HasAuthority;
+            // 同批生成的 AI 错开发送，避免每隔固定时间集中序列化大量快照。
+            nextSendTime = Identity.IsAiObject && NetId != 0
+                ? Time.unscaledTime + (NetId % 10) * 0.01f : 0f;
             lastSendTime = 0f;
+            repeatPositionUntil = 0f;
+            lastVelocitySampleTime = 0f;
             targetPosition = transform.position;
+            targetVelocity = Vector3.zero;
             targetRotation = transform.rotation;
             targetScale = transform.localScale;
             lastSentPosition = transform.position;
+            lastSentVelocity = Vector3.zero;
+            lastVelocitySamplePosition = transform.position;
             lastSentRotation = transform.rotation;
             lastSentScale = transform.localScale;
             foreach (ChildTransformSync child in childTransforms)
@@ -417,6 +571,7 @@ namespace FrameWork.Script.WebNet
             sentFirstSnapshot = false;
             nextSendTime = 0f;
             UpdateAuthorityObject();
+            WebNetworkManager.FlushTransformsImmediately();
         }
 
         bool PositionChanged(Vector3 current, Vector3 previous)

@@ -1,0 +1,18 @@
+{
+  "name": "HotUpdate",
+  "references": [
+    "FrameWork.Runtime",
+    "UniTask",
+    "YooAsset",
+    "HybridCLR.Runtime",
+    "UnityWebSocket.Runtime",
+    "FancyScrollView",
+    "spine-csharp",
+    "spine-unity",
+    "AstarPathfindingProject",
+    "Unity.TextMeshPro",
+    "UnityEngine.UI"
+  ],
+  "autoReferenced": false,
+  "allowUnsafeCode": true
+}

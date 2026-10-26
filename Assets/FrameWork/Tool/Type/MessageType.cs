@@ -31,6 +31,12 @@ namespace FrameWork
         BeAttackInterval,//持续伤害
         BeDonJie,//冻结
         MonsterDie,//怪物死亡
+        AddMonster,//添加怪物死亡数量
+        Guid,//引导
+        UpdatePlayerEx,//更新玩家经验
+        UpPlayerLv,//更新玩家等级
+        UpdateLevelItem,//选中了一个关卡
+        GameTips,//关卡内提示
     }
     
     

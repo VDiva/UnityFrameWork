@@ -35,7 +35,8 @@ namespace FrameWork.Script.WebNet.CodeGen
             }
 
             // Web 网络运行时代码目前位于 Assembly-CSharp；避免扫描 Unity 和第三方程序集。
-            return string.Equals(compiledAssembly.Name, "Assembly-CSharp", StringComparison.Ordinal);
+            return compiledAssembly.Name == "FrameWork.Runtime" || compiledAssembly.Name == "HotUpdate" ||
+                   compiledAssembly.Name.StartsWith("HotUpdate.", StringComparison.Ordinal);
         }
 
         public override ILPostProcessResult Process(ICompiledAssembly compiledAssembly)
@@ -74,6 +75,15 @@ namespace FrameWork.Script.WebNet.CodeGen
                 ModuleDefinition module = assembly.MainModule;
 
                 TypeDefinition dispatcher = FindType(module, DispatcherFullName);
+                if (dispatcher == null)
+                {
+                    var runtimeReference = module.AssemblyReferences.FirstOrDefault(r => r.Name == "FrameWork.Runtime");
+                    if (runtimeReference != null)
+                        dispatcher = FindType(assemblyResolver.Resolve(runtimeReference).MainModule, DispatcherFullName);
+                }
+
+
+
                 MethodDefinition tryRelay = dispatcher?.Methods.FirstOrDefault(method =>
                     method.Name == "TryRelay" &&
                     method.IsStatic &&
@@ -435,5 +445,4 @@ namespace FrameWork.Script.WebNet.CodeGen
         }
     }
 }
-
 #endif

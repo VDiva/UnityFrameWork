@@ -1,5 +1,6 @@
 ﻿#if !UNITY_EDITOR && UNITY_WEBGL
 using System;
+using System.Collections.Generic;
 
 namespace UnityWebSocket
 {
@@ -8,6 +9,21 @@ namespace UnityWebSocket
         public string Address { get; private set; }
         public string[] SubProtocols { get; private set; }
         public WebSocketState ReadyState { get { return (WebSocketState)WebSocketManager.WebSocketGetState(instanceId); } }
+        public int PendingSendCount => pendingRealtime.Count;
+        public int BufferedSendBytes => WebSocketManager.WebSocketGetBufferedAmount(instanceId);
+        const int RealtimeBytesPerFrame = 16 * 1024;
+        const int RealtimePacketsPerFrame = 8;
+        readonly LinkedList<PendingPacket> pendingRealtime = new LinkedList<PendingPacket>();
+        readonly Dictionary<ulong, LinkedListNode<PendingPacket>> pendingByKey =
+            new Dictionary<ulong, LinkedListNode<PendingPacket>>();
+
+        sealed class PendingPacket
+        {
+            public ulong key;
+            public byte[] data;
+            public int queuedAt;
+            public int maxAgeMs;
+        }
 
         public event EventHandler<OpenEventArgs> OnOpen;
         public event EventHandler<CloseEventArgs> OnClose;
@@ -70,6 +86,7 @@ namespace UnityWebSocket
 
         public void CloseAsync()
         {
+            ClearRealtime();
             Log($"Close with instanceId: {instanceId}");
             int code = WebSocketManager.WebSocketClose(instanceId, (int)CloseStatusCode.Normal, "Normal Closure");
             if (code < 0) HandleOnError(GetErrorMessageFromCode(code));
@@ -77,6 +94,7 @@ namespace UnityWebSocket
 
         public void SendAsync(string text)
         {
+            ClearRealtime();
             Log($"Send, type: {Opcode.Text}, size: {text.Length}");
             int code = WebSocketManager.WebSocketSendStr(instanceId, text);
             if (code < 0) HandleOnError(GetErrorMessageFromCode(code));
@@ -84,9 +102,70 @@ namespace UnityWebSocket
 
         public void SendAsync(byte[] data)
         {
+            ClearRealtime();
+            SendRawBinary(data);
+        }
+
+        void SendRawBinary(byte[] data)
+        {
             Log($"Send, type: {Opcode.Binary}, size: {data.Length}");
             int code = WebSocketManager.WebSocketSend(instanceId, data, data.Length);
             if (code < 0) HandleOnError(GetErrorMessageFromCode(code));
+        }
+
+        // 微信小游戏的 WebSocket 适配层不更新 bufferedAmount，因此位置先留在可覆盖的应用队列。
+        public void SendLatestAsync(byte[] data, ulong key,
+            System.Func<byte[], byte[], byte[]> merge = null, int maxAgeMs = 0)
+        {
+            if (maxAgeMs <= 0) { SendRawBinary(data); return; }
+            if (pendingByKey.TryGetValue(key, out var node))
+            {
+                node.Value.data = merge == null ? data : merge(node.Value.data, data);
+                node.Value.queuedAt = Environment.TickCount;
+                node.Value.maxAgeMs = maxAgeMs;
+                return;
+            }
+            if (pendingRealtime.Count >= 256) RemoveFirstRealtime();
+            var packet = new PendingPacket { key = key, data = data,
+                queuedAt = Environment.TickCount, maxAgeMs = maxAgeMs };
+            pendingByKey.Add(key, pendingRealtime.AddLast(packet));
+        }
+
+        public void FlushLatest()
+        {
+            if (ReadyState != WebSocketState.Open) { ClearRealtime(); return; }
+            if (BufferedSendBytes >= RealtimeBytesPerFrame) return;
+            int sentBytes = 0, sentPackets = 0;
+            while (pendingRealtime.First != null && sentPackets < RealtimePacketsPerFrame)
+            {
+                PendingPacket packet = pendingRealtime.First.Value;
+                RemoveFirstRealtime();
+                if (unchecked(Environment.TickCount - packet.queuedAt) > packet.maxAgeMs)
+                    continue;
+                if (sentBytes > 0 && sentBytes + packet.data.Length > RealtimeBytesPerFrame)
+                {
+                    pendingByKey.Add(packet.key, pendingRealtime.AddFirst(packet));
+                    break;
+                }
+                int code = WebSocketManager.WebSocketSend(instanceId, packet.data, packet.data.Length);
+                if (code < 0) { HandleOnError(GetErrorMessageFromCode(code)); break; }
+                sentBytes += packet.data.Length;
+                sentPackets++;
+            }
+        }
+
+        void RemoveFirstRealtime()
+        {
+            LinkedListNode<PendingPacket> first = pendingRealtime.First;
+            if (first == null) return;
+            pendingByKey.Remove(first.Value.key);
+            pendingRealtime.RemoveFirst();
+        }
+
+        void ClearRealtime()
+        {
+            pendingByKey.Clear();
+            pendingRealtime.Clear();
         }
 
         internal void HandleOnOpen()
@@ -109,6 +188,7 @@ namespace UnityWebSocket
 
         internal void HandleOnClose(ushort code, string reason)
         {
+            ClearRealtime();
             Log($"OnClose, code: {code}, reason: {reason}");
             OnClose?.Invoke(this, new CloseEventArgs(code, reason));
             WebSocketManager.Remove(instanceId);

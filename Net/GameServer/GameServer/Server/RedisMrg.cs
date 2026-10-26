@@ -8,9 +8,9 @@ public static class RedisMrg
 {
     // 部署时默认连接同机 Redis；拆分部署可通过环境变量覆盖，无需重新编译。
     public static readonly string ConnectionString =
-        Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? _ip;
-    private static readonly string? Password =
-        Environment.GetEnvironmentVariable("REDIS_PASSWORD") ?? _password;
+        Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "127.0.0.1:6379";
+    private static readonly string Password =
+        Environment.GetEnvironmentVariable("REDIS_PASSWORD") ?? "zhang1320.";
     private static readonly TimeSpan DefaultCacheExpire = TimeSpan.FromMinutes(30);
     private static readonly TimeSpan OnlineExpire = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan LockExpire = TimeSpan.FromSeconds(10);
@@ -22,24 +22,6 @@ public static class RedisMrg
     private static IDatabase? _database;
 
     public static bool IsConnected => _redis?.IsConnected==true&&_database != null;
-    
-    private static string _password = "";
-    private static string _ip = "";
-    
-    public static void Configure(IConfiguration configuration)
-    {
-        _ip = ReadSetting(configuration, "Mongodb:IP", "REDIS_CONNECTION_STRING");
-        _password = ReadSetting(configuration, "Redis:Password", "REDIS_PASSWORD");
-    }
-    
-    private static string ReadSetting(IConfiguration configuration, string key, string envKey)
-    {
-        string? configured = configuration[key];
-        return !string.IsNullOrWhiteSpace(configured)
-            ? configured.Trim()
-            : Environment.GetEnvironmentVariable(envKey)?.Trim() ?? string.Empty;
-    }
-    
     
     /// <summary>
     /// 初始化 Redis 连接。连接失败不会抛到主流程，游戏服仍可继续使用 MongoDB。
@@ -504,7 +486,17 @@ public static class RedisMrg
             var database = GetDatabase();
             var scopedRankName = $"{serverId}:{rankName}";
             var oldBytes = await GetBytes(GetRankDataKey(serverId, rankName, userId));
-            if (oldBytes != null)
+            if (rankName == BattleRankPolicy.RankName)
+            {
+                RankData? oldRank = null;
+                if (oldBytes != null)
+                {
+                    try { oldRank = RankData.Parser.ParseFrom(oldBytes); }
+                    catch (InvalidProtocolBufferException) { }
+                }
+                BattleRankPolicy.MergeBest(rankData, oldRank);
+            }
+            else if (oldBytes != null)
             {
                 try
                 {
@@ -553,11 +545,21 @@ public static class RedisMrg
         {
             var safeCount = Math.Clamp(count, 1, 1000);
             var candidateCount = Math.Clamp(safeCount * 10, 100, 5000);
-            var userIds = await GetDatabase().SortedSetRangeByRankAsync(
+            var candidates = await GetDatabase().SortedSetRangeByRankWithScoresAsync(
                 GetRankKey(serverId, rankName),
                 0,
                 candidateCount - 1,
                 Order.Descending);
+            var userIds = candidates.Select(entry => entry.Element).ToList();
+            // Redis score only contains the level. Include all players tied at the
+            // cutoff so an arbitrary user-ID ordering cannot hide a faster run.
+            if (candidates.Length == candidateCount)
+            {
+                double boundaryLevel = candidates[^1].Score;
+                var tied = await GetDatabase().SortedSetRangeByScoreAsync(
+                    GetRankKey(serverId, rankName), boundaryLevel, boundaryLevel);
+                userIds = userIds.Concat(tied).Distinct().ToList();
+            }
 
             var tasks = userIds
                 .Select(x => x.ToString())
@@ -582,6 +584,7 @@ public static class RedisMrg
             return rankData
                 .Where(x => x != null)
                 .Select(x => x!)
+                .Where(x => rankName != BattleRankPolicy.RankName || BattleRankPolicy.IsValid(x))
                 .OrderByDescending(x => x.Level)
                 .ThenBy(x => x.LevelTime <= 0 ? long.MaxValue : x.LevelTime)
                 .ThenBy(x => x.UserId, StringComparer.Ordinal)
@@ -685,8 +688,8 @@ public static class RedisMrg
     private static string GetUserOnlineKey(string serverId, string userId) => $"player:online:{ServerScope.UserKey(serverId, userId)}";
     private static string GetEmailKey(string serverId, string userId) => $"email:list:{ServerScope.UserKey(serverId, userId)}";
     private static string GetLockKey(string key) => $"lock:{key}";
-    private static string GetRankKey(string serverId, string rankName) => $"rank:{ServerScope.Normalize(serverId)}:{rankName}";
-    private static string GetRankDataKey(string serverId, string rankName, string userId) => $"rank:data:{ServerScope.Normalize(serverId)}:{rankName}:{userId}";
+    private static string GetRankKey(string serverId, string rankName) => $"rank:{ServerScope.Normalize(serverId)}:{BattleRankPolicy.CacheName(rankName)}";
+    private static string GetRankDataKey(string serverId, string rankName, string userId) => $"rank:data:{ServerScope.Normalize(serverId)}:{BattleRankPolicy.CacheName(rankName)}:{userId}";
 
     private static string NormalizeNumericString(string? value)
     {

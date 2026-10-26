@@ -30,6 +30,8 @@ Material:
     m_Ints: []
     m_Floats:
     - PixelSnap: 0
+    - _Stencil: 0
+    - _StencilReadMask: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

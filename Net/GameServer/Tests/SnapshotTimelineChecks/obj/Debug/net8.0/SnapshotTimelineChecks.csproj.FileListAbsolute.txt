@@ -1,0 +1,14 @@
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\bin\Debug\net8.0\SnapshotTimelineChecks.exe
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\bin\Debug\net8.0\SnapshotTimelineChecks.deps.json
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\bin\Debug\net8.0\SnapshotTimelineChecks.runtimeconfig.json
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\bin\Debug\net8.0\SnapshotTimelineChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\bin\Debug\net8.0\SnapshotTimelineChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.AssemblyInfoInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.AssemblyInfo.cs
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.csproj.CoreCompileInputs.cache
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\refint\SnapshotTimelineChecks.dll
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.pdb
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\SnapshotTimelineChecks.genruntimeconfig.cache
+C:\Svn\Game\Net\GameServer\Tests\SnapshotTimelineChecks\obj\Debug\net8.0\ref\SnapshotTimelineChecks.dll

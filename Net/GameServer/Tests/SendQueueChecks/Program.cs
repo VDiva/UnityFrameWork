@@ -33,6 +33,52 @@ Check(values.SequenceEqual(new byte[] {0, 2, 9, 3}), "FIFO, coalescing, reliable
 Check(maxActive == 1, "single socket writer");
 queue.Stop(); await queue.Completion;
 
+var mergedStarted = Signal(); var mergedRelease = Signal(); var mergedDone = Signal();
+var mergedValues = new ConcurrentQueue<byte[]>();
+var mergeQueue = new SessionSendQueue(async (data, type, token) =>
+{
+    if (data[0] == 0) { mergedStarted.TrySetResult(true); await mergedRelease.Task.WaitAsync(token); }
+    mergedValues.Enqueue(data);
+    if (mergedValues.Count == 4) mergedDone.TrySetResult(true);
+}, error => mergedDone.TrySetException(error));
+mergeQueue.Enqueue(new byte[] {0}, WebSocketMessageType.Binary);
+await mergedStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+mergeQueue.Enqueue(new byte[] {1}, WebSocketMessageType.Binary, 42,
+    (oldData, newData) => oldData.Concat(newData).ToArray());
+mergeQueue.Enqueue(new byte[] {2}, WebSocketMessageType.Binary, 42,
+    (oldData, newData) => oldData.Concat(newData).ToArray());
+mergeQueue.Enqueue(new byte[] {9}, WebSocketMessageType.Binary);
+mergeQueue.Enqueue(new byte[] {3}, WebSocketMessageType.Binary, 42,
+    (oldData, newData) => oldData.Concat(newData).ToArray());
+mergedRelease.TrySetResult(true);
+await mergedDone.Task.WaitAsync(TimeSpan.FromSeconds(2));
+Check(mergedValues.SelectMany(value => value).SequenceEqual(new byte[] {0, 1, 2, 9, 3}),
+    "merged realtime retains distinct updates without crossing reliable barrier");
+mergeQueue.Stop(); await mergeQueue.Completion;
+
+var staleStarted = Signal(); var staleRelease = Signal(); var staleDone = Signal();
+var staleValues = new ConcurrentQueue<byte>();
+var staleQueue = new SessionSendQueue(async (data, type, token) =>
+{
+    if (data[0] == 0) { staleStarted.TrySetResult(true); await staleRelease.Task.WaitAsync(token); }
+    staleValues.Enqueue(data[0]);
+    if (data[0] == 3) staleDone.TrySetResult(true);
+}, error => staleDone.TrySetException(error));
+staleQueue.Enqueue(new byte[] { 0 }, WebSocketMessageType.Binary);
+await staleStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+staleQueue.Enqueue(new byte[] { 1 }, WebSocketMessageType.Binary, 1, maxAgeMs: 50);
+await Task.Delay(100);
+staleQueue.Enqueue(new byte[] { 9 }, WebSocketMessageType.Binary);
+staleQueue.Enqueue(new byte[] { 3 }, WebSocketMessageType.Binary, 1, maxAgeMs: 250);
+staleRelease.TrySetResult(true);
+await staleDone.Task.WaitAsync(TimeSpan.FromSeconds(2));
+Check(staleValues.SequenceEqual(new byte[] { 0, 9, 3 }),
+    "expired position drops while reliable and fresh position survive");
+Check(staleQueue.ExpiredRealtimePackets == 1 && staleQueue.PendingBytes == 0 &&
+      staleQueue.LastQueueWaitMs >= 0 && staleQueue.LastWriteMs >= 0,
+    "send queue exposes usable latency and expiry counters");
+staleQueue.Stop(); await staleQueue.Completion;
+
 foreach (bool bytesLimit in new[] {false, true})
 {
     var entered = Signal(); var failed = Signal();
@@ -75,6 +121,21 @@ stalled.Enqueue(new byte[] {0}, WebSocketMessageType.Binary);
 await timedOut.Task.WaitAsync(TimeSpan.FromSeconds(2)); await stalled.Completion;
 Check(true, "stalled send isolated on timeout");
 
+var reusedDone = Signal();
+var sendTokens = new ConcurrentQueue<CancellationToken>();
+var reused = new SessionSendQueue((data, type, token) =>
+{
+    sendTokens.Enqueue(token);
+    if (sendTokens.Count == 2) reusedDone.TrySetResult(true);
+    return Task.CompletedTask;
+}, error => reusedDone.TrySetException(error));
+reused.Enqueue(new byte[] { 1 }, WebSocketMessageType.Binary);
+reused.Enqueue(new byte[] { 2 }, WebSocketMessageType.Binary);
+await reusedDone.Task.WaitAsync(TimeSpan.FromSeconds(2));
+Check(sendTokens.Count == 2 && sendTokens.Distinct().Count() == 1,
+    "per-session send deadline token is reused");
+reused.Stop(); await reused.Completion;
+
 var queues = new List<SessionSendQueue>();
 var completions = new List<Task>();
 for (int i = 0; i < 50; i++)
@@ -93,3 +154,30 @@ await Task.WhenAll(completions).WaitAsync(TimeSpan.FromSeconds(2));
 Check(true, "50 queues: stalled client does not delay 49 healthy clients");
 foreach (var q in queues) q.Stop();
 await Task.WhenAll(queues.Select(q => q.Completion));
+
+var commandStarted = Signal(); var commandRelease = Signal();
+var commandFinished = Signal();
+var commandOrder = new ConcurrentQueue<int>();
+var commands = new SessionCommandQueue(error => commandFinished.TrySetException(error),
+    maxCount: 2, maxBytes: 16);
+Check(commands.TryEnqueue(4, true, async () =>
+{
+    commandStarted.TrySetResult(true);
+    await commandRelease.Task;
+    commandOrder.Enqueue(1);
+}), "world command admitted");
+await commandStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+Check(commands.HasPendingWorldMutation, "world mutation gates realtime state");
+Check(commands.TryEnqueue(4, false, () =>
+{
+    commandOrder.Enqueue(2);
+    commandFinished.TrySetResult(true);
+    return Task.CompletedTask;
+}), "second command admitted");
+Check(!commands.TryEnqueue(4, false, () => Task.CompletedTask),
+    "command backlog is bounded");
+commandRelease.TrySetResult(true);
+await commandFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
+commands.Complete(); await commands.Completion;
+Check(commandOrder.SequenceEqual(new[] { 1, 2 }) && !commands.HasPendingWorldMutation,
+    "business commands retain order and release world barrier");

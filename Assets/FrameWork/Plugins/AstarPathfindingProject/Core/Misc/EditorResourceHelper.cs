@@ -61,7 +61,7 @@ namespace Pathfinding {
 				projectPath = projectPath.Remove(projectPath.Length-("Assets".Length));
 			}
 
-			editorAssets = "Assets/AstarPathfindingProject/Editor/EditorAssets";
+			editorAssets = "Assets/FrameWork/Plugins/AstarPathfindingProject/Editor/EditorAssets";
 			if (!System.IO.File.Exists(projectPath + editorAssets + "/AstarEditorSkinLight.guiskin") && !System.IO.File.Exists(projectPath + editorAssets + "/AstarEditorSkin.guiskin")) {
 				//Initiate search
 

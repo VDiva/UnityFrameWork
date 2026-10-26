@@ -17,9 +17,9 @@ public static class MongoDBMrg
     }
 
     // 部署时默认连接同机 MongoDB；拆分部署可通过环境变量覆盖，无需重新编译。
-    public static readonly string? ConnectionString =
+    public static readonly string ConnectionString =
         Environment.GetEnvironmentVariable("MONGODB_URI") ??
-        _password;
+        "mongodb://GameData:zhang1320.@127.0.0.1:27017/GameData";
 
     private const string DatabaseName = "GameData";
     private const string UserCollectionName = "UserData";
@@ -39,21 +39,6 @@ public static class MongoDBMrg
 
     public static bool IsConnected => _database != null;
 
-    private static string _password = "";
-    public static void Configure(IConfiguration configuration)
-    {
-        _password = ReadSetting(configuration, "Mongodb:URL", "MONGODB_URI");
-    }
-    
-    private static string ReadSetting(IConfiguration configuration, string key, string envKey)
-    {
-        string? configured = configuration[key];
-        return !string.IsNullOrWhiteSpace(configured)
-            ? configured.Trim()
-            : Environment.GetEnvironmentVariable(envKey)?.Trim() ?? string.Empty;
-    }
-    
-    
     /// <summary>
     /// 初始化 MongoDB 客户端、测试连接，并创建常用索引。
     /// </summary>
@@ -623,12 +608,21 @@ public static class MongoDBMrg
         var collection = GetCollection<RankData>(RankCollectionName);
         var filter = Builders<RankData>.Filter.Eq(x => x.Id, data.Id);
         var existing = await collection.Find(filter).FirstOrDefaultAsync(timeoutCts.Token);
-        data.Level = existing != null
-            ? rankData.Level > existing.Level ? rankData.Level : existing.Level
-            : rankData.Level;
-        data.LevelTime = existing != null && data.Level <= existing.Level && existing.LevelTime > 0
-            ? existing.LevelTime
-            : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (rankName == BattleRankPolicy.RankName)
+        {
+            BattleRankPolicy.MergeBest(data, existing);
+            rankData.Level = data.Level;
+            rankData.LevelTime = data.LevelTime;
+        }
+        else
+        {
+            data.Level = existing != null
+                ? rankData.Level > existing.Level ? rankData.Level : existing.Level
+                : rankData.Level;
+            data.LevelTime = existing != null && data.Level <= existing.Level && existing.LevelTime > 0
+                ? existing.LevelTime
+                : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
         var result = await collection.ReplaceOneAsync(
             filter,
             data,
@@ -648,6 +642,8 @@ public static class MongoDBMrg
         var filter = Builders<RankData>.Filter.And(
             Builders<RankData>.Filter.Eq(x => x.ServerId, ServerScope.Normalize(serverId)),
             Builders<RankData>.Filter.Eq(x => x.RankName, rankName));
+        if (rankName == BattleRankPolicy.RankName)
+            filter &= ValidBattleRankFilter();
         var sort = Builders<RankData>.Sort
             .Descending(x => x.Level)
             .Ascending(x => x.LevelTime)
@@ -680,7 +676,7 @@ public static class MongoDBMrg
             .Ascending(x => x.UserId);
 
         return await collection
-            .Find(Builders<RankData>.Filter.Empty)
+            .Find(Builders<RankData>.Filter.Ne(x => x.RankName, BattleRankPolicy.RankName) | ValidBattleRankFilter())
             .Sort(sort)
             .Limit(Math.Clamp(limit, 1, 200000))
             .ToListAsync(timeoutCts.Token);
@@ -699,6 +695,11 @@ public static class MongoDBMrg
         var result = await collection.DeleteManyAsync(filter, timeoutCts.Token);
         return result.DeletedCount;
     }
+
+    private static FilterDefinition<RankData> ValidBattleRankFilter() =>
+        Builders<RankData>.Filter.Eq(x => x.BattleTimeVersion, BattleRankPolicy.Version) &
+        Builders<RankData>.Filter.Gt(x => x.LevelTime, 0f) &
+        Builders<RankData>.Filter.Lte(x => x.LevelTime, float.MaxValue);
 
     /// <summary>
     /// 清除 MongoDB 中所有排行榜持久化数据。

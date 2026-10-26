@@ -37,13 +37,11 @@ namespace FrameWork.Script.WebNet
 
         void OnEnable()
         {
-            WebNetworkManager.SyncVarReceived += OnSyncVarReceived;
             WebNetworkManager.AuthorityChanged += OnAuthorityChanged;
         }
 
         void OnDisable()
         {
-            WebNetworkManager.SyncVarReceived -= OnSyncVarReceived;
             WebNetworkManager.AuthorityChanged -= OnAuthorityChanged;
         }
 
@@ -106,7 +104,7 @@ namespace FrameWork.Script.WebNet
             }
         }
 
-        void OnSyncVarReceived(NetworkSyncVarData data)
+        internal void OnSyncVarReceived(NetworkSyncVarData data)
         {
             if (HasAuthority || data.ObjectId != NetId ||
                 !bindings.TryGetValue(MakeKey(data.BehaviourId, data.FieldId), out Binding binding) ||

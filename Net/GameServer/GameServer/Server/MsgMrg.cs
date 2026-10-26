@@ -67,6 +67,14 @@ public static class MsgMrg
 
     public static async Task Received(Msg msg, PlayerSession player)
     {
+        // 不依赖登录和数据库；普通服务器列表请求仍走原来的处理逻辑。
+        if (ServerVersionProtocol.IsQuery(msg))
+        {
+            Msg response = ServerVersionProtocol.CreateResponse();
+            ServerVersionProtocol.AddLatencyStats(msg, response, player);
+            await player.ReplyAsync(msg, response);
+            return;
+        }
         // 登录后 serverId 固定，拒绝客户端在同一连接中切换服务器。
         if (!string.IsNullOrWhiteSpace(player.ServerId) &&
             !string.IsNullOrWhiteSpace(msg.ServerId) &&
@@ -105,9 +113,40 @@ public static class MsgMrg
                         player, msg.RewardEquip, ShouldShowRewardPanel(msg));
                     break;
                 case GameMsgType.DelEquip:
+                    await DeleteRequestedEquips(player, msg);
                     break;
                 case GameMsgType.UploadNetworkTransform:
-                    await RelayNetworkTransform(msg.NetworkTransform, player);
+                    if (msg.NetworkTransforms.Count > 0)
+                    {
+                        if (player.NetworkObjectId == 0 || player.NetworkRoomId == 0 ||
+                            string.IsNullOrWhiteSpace(player.UserId)) break;
+                        // 单包限制批量数量，避免一个客户端长时间占用此连接的接收循环。
+                        int count = Math.Min(msg.NetworkTransforms.Count, 128);
+                        uint batchRoomId = player.NetworkRoomId;
+                        uint batchEpoch = NetworkRoomManager.Instance.GetSceneEpoch(batchRoomId);
+                        var batchedAi = new List<NetworkTransformData>(count);
+                        for (int i = 0; i < count; i++)
+                        {
+                            NetworkTransformData snapshot = msg.NetworkTransforms[i];
+                            if (!IsValidNetworkTransform(snapshot) || snapshot.RoomId != batchRoomId ||
+                                snapshot.SceneEpoch != batchEpoch)
+                                continue;
+                            if (snapshot.ObjectId != 0 && snapshot.ObjectId != player.NetworkObjectId)
+                            {
+                                if (NetworkRoomObjectManager.Instance.TryApplyTransform(player, snapshot))
+                                    batchedAi.Add(snapshot);
+                            }
+                            else
+                                await RelayNetworkTransform(snapshot, player);
+                            if (player.NetworkRoomId == batchRoomId) continue;
+                            batchedAi.Clear();
+                            break;
+                        }
+                        if (player.NetworkRoomId == batchRoomId)
+                            NetworkRoomObjectManager.Instance.BroadcastTransformBatch(player, batchedAi);
+                    }
+                    else
+                        await RelayNetworkTransform(msg.NetworkTransform, player);
                     break;
                 case GameMsgType.UploadNetworkAnimation:
                     await RelayNetworkAnimation(msg.NetworkAnimation, player);
@@ -168,6 +207,9 @@ public static class MsgMrg
                     break;
                 case GameMsgType.SpawnNetworkRoomObject:
                     await NetworkRoomObjectManager.Instance.SpawnAsync(player, msg.NetworkObject, msg.NetworkTransform);
+                    break;
+                case GameMsgType.RollRoomEquipment:
+                    await NetworkRoomObjectManager.Instance.RollEquipmentAsync(player, msg.NetworkObjectId);
                     break;
                 case GameMsgType.DestroyNetworkRoomObject:
                     await NetworkRoomObjectManager.Instance.DestroyAsync(player, msg.NetworkObject?.ObjectId ?? 0);
@@ -490,6 +532,22 @@ public static class MsgMrg
             data => data.EquipData.AddRange(datas));
     }
 
+    private static async Task DeleteRequestedEquips(PlayerSession player, Msg request)
+    {
+        UserData userData = await player.MutateAndSaveUserDataSnapshotAsync(
+            data => EquipmentDeletion.Apply(data, request.EquipIds));
+        var response = new Msg
+        {
+            MsgType = ProtobufMsgType.Server,
+            ServerMsgType = ServerMsgType.UpdateUserData,
+            UserData = userData
+        };
+        if (request.IsRequest())
+            await player.ReplyAsync(request, response);
+        else
+            await player.SendBinaryAsync(response.ToByteArray());
+    }
+
     private static async Task AddRequestedItems(
         PlayerSession player, MapField<string, long> requestedItems, bool showRewardPanel)
     {
@@ -620,20 +678,32 @@ public static class MsgMrg
         await player.ReplyAsync(request, msg);
     }
     
+    private static bool IsValidNetworkTransform(NetworkTransformData? position)
+    {
+        return position != null &&
+            float.IsFinite(position.PositionX) && float.IsFinite(position.PositionY) &&
+            float.IsFinite(position.PositionZ) && float.IsFinite(position.RotationX) &&
+            float.IsFinite(position.RotationY) && float.IsFinite(position.RotationZ) &&
+            float.IsFinite(position.RotationW);
+    }
+
     private static async Task RelayNetworkTransform(NetworkTransformData? position, PlayerSession player)
     {
-        if (position == null || player.NetworkObjectId == 0 || player.NetworkRoomId == 0 || string.IsNullOrWhiteSpace(player.UserId))
+        if (!IsValidNetworkTransform(position) || player.NetworkObjectId == 0 ||
+            player.NetworkRoomId == 0 || position!.RoomId != player.NetworkRoomId ||
+            position.SceneEpoch != NetworkRoomManager.Instance.GetSceneEpoch(player.NetworkRoomId) ||
+            string.IsNullOrWhiteSpace(player.UserId))
             return;
 
-        if (!float.IsFinite(position.PositionX) || !float.IsFinite(position.PositionY) ||
-            !float.IsFinite(position.PositionZ) || !float.IsFinite(position.RotationX) ||
-            !float.IsFinite(position.RotationY) || !float.IsFinite(position.RotationZ) ||
-            !float.IsFinite(position.RotationW))
-            return;
-
-        NetworkTransformData snapshot = position.Clone();
+        NetworkTransformData snapshot = position!;
         if (snapshot.ObjectId == 0 || snapshot.ObjectId == player.NetworkObjectId)
-            snapshot.ObjectId = player.NetworkObjectId;
+        {
+            if (snapshot.ObjectId == 0)
+            {
+                snapshot = snapshot.Clone();
+                snapshot.ObjectId = player.NetworkObjectId;
+            }
+        }
         else
         {
             await NetworkRoomObjectManager.Instance.RelayTransformAsync(player, snapshot);

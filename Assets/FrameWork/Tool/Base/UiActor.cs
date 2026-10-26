@@ -122,7 +122,7 @@ namespace FrameWork
         
         public void CloseUi()
         {
-            CloseAnim((() => UiManager.RemoveUi(GetIndex())));
+            CloseAnim((() => UiManager.HideUi(GetIndex())));
             
         }
 

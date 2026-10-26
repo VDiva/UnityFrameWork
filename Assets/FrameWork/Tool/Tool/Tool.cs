@@ -1,4 +1,5 @@
 using System;
+using Google.Protobuf;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,9 +9,14 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using Cysharp.Threading.Tasks;
-using Google.Protobuf;
+
+
+
+
+
 using LitJson;
 using UnityEngine;
+
 
 
 namespace FrameWork
@@ -414,9 +420,9 @@ namespace FrameWork
             return curX >= x - width / 2 && curX <= x + width / 2 && curY >= y - height / 2 && curY <= y + height / 2;
         }
 
-        public static Vector2 GetTargetLocalLoc(RectTransform target, Vector3 pos)
+        public static Vector2 GetTargetLocalLoc(RectTransform target, Vector3 pos,Camera camera=null)
         {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(target, pos, null, out var position);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(target, pos, camera, out var position);
             return position;
         }
 
@@ -605,13 +611,18 @@ namespace FrameWork
             }
         }
         
+        
+        
         public static void CheckAdd(this Dictionary<string, string> dict, string key, string value)
         {
             dict[key] = value;
         }
         
         
-        private static DateTime _startDate = new DateTime(2026, 8, 17);
+        
+        
+        public static DateTime StartDate { get; set; } = DateTime.Today;
+        private static DateTime _startDate => StartDate;
         /// <summary>
         /// 获取从起始日期到今天的累计天数和周数
         /// </summary>
@@ -687,30 +698,25 @@ namespace FrameWork
             }
             
         }
-        
-        static Dictionary<string,string> _xlsxDic=new Dictionary<string, string>();
+
+
         public static async UniTask LoadAllXlsx()
         {
-            try
+            var allXlsx =await ABMrg.LoadAsync<TextAsset>("AllXlsx");
+            var list = JsonMapper.ToObject<List<string>>(allXlsx.text);
+            for (int i = 0; i < list.Count; i++)
             {
-                var allXlsx = await ABMrg.LoadAsync<TextAsset>("AllXlsx");
-                var list = JsonMapper.ToObject<List<string>>(allXlsx.text);
-                for (int i = 0; i < list.Count; i++)
-                {
-                    var text=await ABMrg.LoadAsync<TextAsset>(list[i]);
-                    _xlsxDic.TryAdd(list[i],text.text);
-                }
+                await ABMrg.LoadAsync<TextAsset>(list[i]);
             }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-            }
-            
         }
         
         public static string LoadXlsx(string key)
         {
-            return _xlsxDic.GetValueOrDefault(key, "");
+            var asset = ABMrg.Load<TextAsset>(key);
+            if (asset == null)
+                throw new InvalidOperationException("配置表 " + key + " 不可用，请先 await Tool.PreloadAllXlsx()。");
+            return asset.text;
         }
+
     }
 }
