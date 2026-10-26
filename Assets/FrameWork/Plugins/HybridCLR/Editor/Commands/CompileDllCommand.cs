@@ -37,6 +37,8 @@ namespace HybridCLR.Commands
             scriptCompilationSettings.options = developmentBuild ? ScriptCompilationOptions.DevelopmentBuild : ScriptCompilationOptions.None;
             Directory.CreateDirectory(buildDir);
             ScriptCompilationResult scriptCompilationResult = PlayerBuildInterface.CompilePlayerScripts(scriptCompilationSettings, buildDir);
+            if (scriptCompilationResult.assemblies == null || scriptCompilationResult.assemblies.Count == 0)
+                throw new UnityEditor.Build.BuildFailedException("Player script compilation failed. Fix the first compiler error in Console before generating HybridCLR files.");
 #if UNITY_2022
             UnityEditor.EditorUtility.ClearProgressBar();
 #endif
