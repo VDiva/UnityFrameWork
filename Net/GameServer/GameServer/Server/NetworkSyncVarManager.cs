@@ -8,11 +8,20 @@ namespace WebSocketDemo;
 public sealed class NetworkSyncVarManager
 {
     private const int MaxValueBytes = 64 * 1024;
-    private readonly ConcurrentDictionary<uint, ConcurrentDictionary<SyncKey, SyncState>> _statesByObject = new();
+    public const int MaxFieldsPerObject = 256;
+    public const int MaxObjectBytes = 256 * 1024;
+    private sealed class ObjectStates
+    {
+        public readonly object Gate = new();
+        public readonly Dictionary<SyncKey, SyncState> Values = new();
+        public int Bytes;
+        public SyncState[] Snapshot() { lock (Gate) return Values.Values.ToArray(); }
+    }
+    private readonly ConcurrentDictionary<uint, ObjectStates> _statesByObject = new();
     public static NetworkSyncVarManager Instance { get; } = new();
 
     private readonly record struct SyncKey(uint BehaviourId, uint FieldId);
-    private sealed record SyncState(uint RoomId, NetworkSyncVarData Data);
+    private sealed record SyncState(uint RoomId, NetworkSyncVarData Data, int Bytes);
 
     public async Task RelayAsync(PlayerSession sender, NetworkSyncVarData? input)
     {
@@ -30,12 +39,18 @@ public sealed class NetworkSyncVarManager
 
         NetworkSyncVarData state = input.Clone();
         var key = new SyncKey(state.BehaviourId, state.FieldId);
-        ConcurrentDictionary<SyncKey, SyncState> objectStates = _statesByObject.GetOrAdd(
-            state.ObjectId, _ => new ConcurrentDictionary<SyncKey, SyncState>());
-        var next = new SyncState(roomId, state.Clone());
-        SyncState accepted = objectStates.AddOrUpdate(key, next,
-            (_, current) => state.Sequence > current.Data.Sequence ? next : current);
-        if (!ReferenceEquals(accepted, next)) return;
+        ObjectStates objectStates = _statesByObject.GetOrAdd(state.ObjectId, _ => new ObjectStates());
+        lock (objectStates.Gate)
+        {
+            bool exists = objectStates.Values.TryGetValue(key, out var current);
+            if (exists && state.Sequence <= current!.Data.Sequence) return;
+            if (!exists && objectStates.Values.Count >= MaxFieldsPerObject) return;
+            int bytes = state.CalculateSize();
+            int nextBytes = objectStates.Bytes - (current?.Bytes ?? 0) + bytes;
+            if (nextBytes > MaxObjectBytes) return;
+            objectStates.Values[key] = new SyncState(roomId, state, bytes);
+            objectStates.Bytes = nextBytes;
+        }
         if (!PlayerSessionManager.Instance.HasRoomObserver(roomId, sender.PlayerId)) return;
         await PlayerSessionManager.Instance.BroadcastBinaryAsync(new Msg
         {
@@ -48,22 +63,42 @@ public sealed class NetworkSyncVarManager
     public async Task SendObjectStateAsync(PlayerSession receiver, uint objectId)
     {
         if (!_statesByObject.TryGetValue(objectId, out var objectStates)) return;
-        foreach (SyncState state in objectStates.Values)
+        uint roomId = receiver.NetworkRoomId;
+        uint epoch = NetworkRoomManager.Instance.GetSceneEpoch(roomId);
+        var packet = NewStateBatch();
+        int estimatedBytes = 8;
+        async Task<bool> Flush()
         {
-            if (state.RoomId != receiver.NetworkRoomId) continue;
-            await receiver.SendBinaryAsync(new Msg
-            {
-                MsgType = ProtobufMsgType.Server,
-                ServerMsgType = ServerMsgType.NetworkSyncVarUpdate,
-                NetworkSyncVar = state.Data.Clone()
-            }.ToByteArray());
+            await receiver.WaitForSnapshotSendCapacityAsync();
+            if (!receiver.IsConnected || receiver.NetworkRoomId != roomId ||
+                NetworkRoomManager.Instance.GetSceneEpoch(roomId) != epoch) return false;
+            await receiver.SendBinaryAsync(packet.ToByteArray());
+            return true;
         }
+        foreach (SyncState state in objectStates.Snapshot())
+        {
+            if (state.RoomId != roomId) continue;
+            int bytes = state.Bytes + 8;
+            if (estimatedBytes + bytes > 48 * 1024 && packet.NetworkSyncVars.Count > 0)
+            {
+                if (!await Flush()) return;
+                packet = NewStateBatch();
+                estimatedBytes = 8;
+            }
+            // 缓存持有私有克隆，发送快照只读引用即可，不再复制每个字段。
+            packet.NetworkSyncVars.Add(state.Data);
+            estimatedBytes += bytes;
+        }
+        if (packet.NetworkSyncVars.Count > 0) await Flush();
     }
+
+    private static Msg NewStateBatch() => new() { MsgType = ProtobufMsgType.Server,
+        ServerMsgType = ServerMsgType.NetworkObjectStateBatch };
 
     public void AppendObjectStates(uint roomId, uint objectId, List<NetworkSyncVarData> destination)
     {
         if (!_statesByObject.TryGetValue(objectId, out var objectStates)) return;
-        foreach (SyncState state in objectStates.Values)
+        foreach (SyncState state in objectStates.Snapshot())
             if (state.RoomId == roomId)
                 destination.Add(state.Data.Clone());
     }

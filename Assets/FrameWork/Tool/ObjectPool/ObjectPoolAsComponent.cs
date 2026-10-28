@@ -1,103 +1,71 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameWork
 {
-    public class ObjectPoolAsComponent<T> where T: Component
+    public class ObjectPoolAsComponent<T> where T : Component
     {
-        private System.Type _type;
-        private int _num;
-        private int _currentNum;
-        private List<T> _objectPool;
-        private Func<T> _func;
-        private bool IsFun;
-        public ObjectPoolAsComponent(Func<T> func,int num=-1)
+        private readonly int _capacity;
+        private int _created;
+        private readonly Func<T> _factory;
+        private readonly Queue<T> _items = new Queue<T>();
+        private readonly HashSet<T> _idle = new HashSet<T>(PoolReferenceComparer<T>.Instance);
+
+        public ObjectPoolAsComponent(Func<T> func, int num = -1)
         {
-            _func = func;
-            _objectPool = new List<T>();
-            _type = typeof(T);
-            _currentNum = 0;
-            _num = num;
+            if (num < -1) throw new ArgumentOutOfRangeException(nameof(num));
+            _factory = func ?? throw new ArgumentNullException(nameof(func));
+            _capacity = num;
         }
 
-        
-        public ObjectPoolAsComponent(int num=-1)
-        {
-            IsFun = false;
-            _objectPool = new List<T>();
-            _type = typeof(T);
-            _currentNum = 0;
-            _num = num;
-        }
+        public ObjectPoolAsComponent(int num = -1) : this(() => new GameObject(typeof(T).Name).AddComponent<T>(), num) {}
 
-        public void EnQueue(T t)
+        public void EnQueue(T item)
         {
-            if (!_objectPool.Contains(t))
-            {
-                _objectPool.Add(t);
-                t.gameObject.SetActive(false);
-            }
-            else
+            if (item == null) return;
+            if (_idle.Contains(item))
             {
                 MyLog.LogError("添加重复的对象进对象池!!!!");
+                return;
             }
-            
+            if (_capacity >= 0 && _items.Count >= _capacity)
+            {
+                UnityEngine.Object.Destroy(item.gameObject);
+                return;
+            }
+            _idle.Add(item);
+            _items.Enqueue(item);
+            item.gameObject.SetActive(false);
         }
-
 
         public T DeQueue()
         {
-            
-            if (_objectPool.Count>0)
+            while (_items.Count > 0)
             {
-                var item = _objectPool[0];
-                _objectPool.RemoveAt(0);
+                var item = _items.Dequeue();
+                _idle.Remove(item);
+                if (item == null)
+                {
+                    _created = Math.Max(0, _created - 1);
+                    continue;
+                }
                 item.gameObject.SetActive(true);
                 return item;
             }
-            else
+            if (_capacity >= 0 && _created >= _capacity) return null;
+            _created++;
+            try
             {
-                if (_num==-1)
-                {
-                    
-                    if (IsFun)
-                    {
-                        return _func?.Invoke();
-                    }
-                    else
-                    {
-                       GameObject obj = new GameObject(_type.Name);
-                        obj.SetActive(true);
-                        T t2=obj.AddComponent(_type) as T;
-                        return t2;
-                    }
-                     
-                    
-                }
-                else
-                {
-                    if (_currentNum>_num)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        _currentNum += 1;
-                        if (IsFun)
-                        {
-                            return _func?.Invoke();
-                        }
-                        else
-                        {
-                            GameObject obj = new GameObject(_type.Name);
-                            obj.SetActive(true);
-                            T t2=obj.AddComponent(_type) as T;
-                            return t2;
-                        }
-                    }
-                }
+                var item = _factory();
+                if (item == null) _created--;
+                else item.gameObject.SetActive(true);
+                return item;
+            }
+            catch
+            {
+                _created--;
+                throw;
             }
         }
     }

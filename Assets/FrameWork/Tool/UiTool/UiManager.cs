@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
 
 
 using UnityEngine;
@@ -22,16 +20,32 @@ namespace FrameWork
         private static UiActor _uiRoot;
         public static void Init()
         {
-            _index = 0;
+            if (_uiDic.Count == 0) _index = 0;
         }
 
         /// <summary>热更新入口传入生成的 UI 根节点，避免 AOT 引用业务程序集。</summary>
         public static void Init(UiActor root)
         {
-            _uiRoot = root ?? throw new ArgumentNullException(nameof(root));
+            ABMrg.BeforeSceneLoading = HideAllUi;
+            if (root == null) throw new ArgumentNullException(nameof(root));
+            if (_uiRoot != null && !ReferenceEquals(_uiRoot, root))
+            {
+                foreach (var type in new List<Type>(_uiDic.Keys))
+                {
+                    try { RemoveUi(type); }
+                    catch (Exception error) { Debug.LogException(error); }
+                }
+            }
+            _uiRoot = root;
             _layerDic.Clear();
             Init();
             CheckUiRoot().Forget(Debug.LogException);
+        }
+
+        public static async UniTask InitAsync(UiActor root)
+        {
+            Init(root);
+            await root.Initialization;
         }
 
         static UiManager()
@@ -45,8 +59,9 @@ namespace FrameWork
 
         private static async UniTask CheckUiRoot()
         {
-            await UniTask.WaitUntil(() => _uiRoot.GetGameObject()!=null);
-            Object.DontDestroyOnLoad(_uiRoot.GetGameObject());
+            var root = _uiRoot;
+            await root.Initialization;
+            if (ReferenceEquals(root, _uiRoot)) Object.DontDestroyOnLoad(root.GetGameObject());
         }
 
 
@@ -56,21 +71,21 @@ namespace FrameWork
         }
         
         
-        public static T GetUi<T>() where T: UiActor
+        internal static UiActor GetUiByType(Type type) => _uiDic.TryGetValue(type, out var actor) ? actor : null;
+
+        public static T GetUi<T>() where T : UiActor
         {
-            if (_uiDic.ContainsKey(typeof(T)))
-            {
-                return (T)_uiDic[typeof(T)];
-            }
+            if (!_uiDic.TryGetValue(typeof(T), out var actor)) return null;
+            if (actor.GetGameObject() != null) return (T)actor;
+            ForgetUi(actor);
             return null;
         }
-
 
         public static async UniTask OpenUi(int index,object[] objs=null)
         {
             if (_typesDic.ContainsKey(index))
             {
-                await OpenUi(_typesDic[index]);
+                await OpenUi(_typesDic[index], objs);
             }
         }
         
@@ -81,76 +96,89 @@ namespace FrameWork
 
 
 
-        private static List<Type> _loadingUiList = new List<Type>();
-        public static async UniTask<UiActor> OpenUi(Type type,object[] objects=null)
+        private static readonly Dictionary<Type, UniTaskCompletionSource<UiActor>> _loadingUi =
+            new Dictionary<Type, UniTaskCompletionSource<UiActor>>();
+
+        public static UniTask<UiActor> OpenUi(Type type, object[] objects = null)
         {
-
-            if (_loadingUiList.Contains(type)) return null;
-            if (_uiRoot == null || _uiRoot.GetGameObject()==null)
-            {
-                MyLog.LogError("场景中没有Canvas组件,无法显示Ui物体");
-                return null;
-            }
-
-            _loadingUiList.Add(type);
-            if (_uiDic.ContainsKey(type))
-            {
-                _uiDic[type].SetActive(true);
-                _uiDic[type].Open(objects);
-                _uiDic[type].OpenAnim();
-                _uiDic[type].transform.SetAsLastSibling();
-                if (!_uiList.Contains(_uiDic[type].GetIndex()))
-                {
-                    _uiList.Add(_uiDic[type].GetIndex());
-                }
-                _loadingUiList.Remove(type);
-                return _uiDic[type];
-            }
-            
-            var uiMode=type.GetCustomAttribute<UiModeAttribute>();
-            if (uiMode==null)
-            {
-                _loadingUiList.Remove(type);
-                MyLog.LogError("类不具备UiModeAttribute");
-                return null;
-            }
-           
-            Transform tran=GetTransform(uiMode);
-            var param = new object[] { tran };
-            UiActor obj;
-            try
-            {
-                var ui = Activator.CreateInstance(type,param);
-                obj= (UiActor)ui;
-                await UniTask.WaitUntil(() => obj.isInit);
-            }
-            catch (Exception e)
-            {
-                MyLog.LogError("生成ui失败:"+e.Message);
-                _loadingUiList.Remove(type);
-                return null;
-            }
-            
-            //var obj =(T)Assembly.GetExecutingAssembly().CreateInstance(t.Namespace+"."+fullName)
-            
-            obj.Open(objects);
-            obj.SetIndex(_index);
-            _uiDic.Add(type,obj);
-            _uiList.Add(obj.GetIndex());
-            _typesDic.Add(obj.GetIndex(),type);
-            _index += 1;
-            _loadingUiList.Remove(type);
-            return obj;
+            if (type == null || !typeof(UiActor).IsAssignableFrom(type) || type.IsAbstract)
+                throw new ArgumentException("必须指定可实例化的 UiActor 类型。", nameof(type));
+            if (_loadingUi.TryGetValue(type, out var pending)) return pending.Task;
+            var completion = new UniTaskCompletionSource<UiActor>();
+            _loadingUi.Add(type, completion);
+            OpenUiCore(type, objects, completion).Forget(Debug.LogException);
+            return completion.Task;
         }
 
-        
+        private static async UniTask OpenUiCore(Type type, object[] objects,
+            UniTaskCompletionSource<UiActor> completion)
+        {
+            UiActor created = null;
+            UiActor result = null;
+            try
+            {
+                var root = _uiRoot ?? throw new InvalidOperationException("请先初始化 UI 根节点。");
+                await root.Initialization;
+                if (!ReferenceEquals(root, _uiRoot) || root.GetGameObject() == null)
+                    throw new InvalidOperationException("UI 根节点已变更或销毁。");
+                if (_uiDic.TryGetValue(type, out var existing))
+                {
+                    if (existing.GetGameObject() != null)
+                    {
+                        existing.SetActive(true);
+                        existing.Open(objects);
+                        existing.OpenAnim();
+                        existing.transform.SetAsLastSibling();
+                        _uiList.Remove(existing.GetIndex());
+                        _uiList.Add(existing.GetIndex());
+                        result = existing;
+                        return;
+                    }
+                    ForgetUi(existing);
+                }
+                var mode = type.GetCustomAttribute<UiModeAttribute>() ??
+                    throw new InvalidOperationException(type.Name + " 缺少 UiModeAttribute");
+                created = (UiActor)Activator.CreateInstance(type, new object[] { GetTransform(mode) });
+                await created.Initialization;
+                if (!ReferenceEquals(root, _uiRoot) || root.GetGameObject() == null)
+                    throw new InvalidOperationException("UI 根节点已变更或销毁。");
+                created.SetIndex(_index++);
+                created.Open(objects);
+                if (created.GetGameObject() == null) throw new InvalidOperationException("UI 在 Open 期间已销毁。");
+                _uiDic.Add(type, created);
+                _typesDic.Add(created.GetIndex(), type);
+                _uiList.Add(created.GetIndex());
+                result = created;
+            }
+            catch (Exception error)
+            {
+                if (created != null && created.GetGameObject() != null)
+                    ABMrg.ReleaseInstantiate(created.GetGameObject());
+                Debug.LogException(error);
+            }
+            finally
+            {
+                _loadingUi.Remove(type);
+                completion.TrySetResult(result); // 保留原有打开失败返回 null 的约定。
+            }
+        }
+
+        internal static void ForgetUi(UiActor actor)
+        {
+            var type = actor.GetType();
+            if (_uiDic.TryGetValue(type, out var current) && ReferenceEquals(current, actor))
+            {
+                _uiDic.Remove(type);
+                _typesDic.Remove(actor.GetIndex());
+                _uiList.Remove(actor.GetIndex());
+            }
+        }
+
         public static bool IsOpenUi<T>()
         {
-            if (_uiDic.ContainsKey(typeof(T)))
-            {
-                return true;
-            }
-
+            if (!_uiDic.TryGetValue(typeof(T), out var actor)) return false;
+            if (actor.GetGameObject() != null) return true;
+            ForgetUi(actor);
             return false;
         }
 
@@ -158,7 +186,8 @@ namespace FrameWork
         {
             if (_uiDic.ContainsKey(typeof(T)))
             {
-                return _uiDic[typeof(T)].GetGameObject().activeSelf;
+                var go = _uiDic[typeof(T)].GetGameObject();
+                return go != null && go.activeSelf;
             }
 
             return false;
@@ -175,10 +204,12 @@ namespace FrameWork
             if (_uiDic.ContainsKey(type))
             {
                 var uiActor=_uiDic[type];
-                uiActor.OnClose();
-                uiActor.SetActive(false);
-                _uiDic[type].SetActive(false);
                 _uiList.Remove(uiActor.GetIndex());
+                try { uiActor.OnClose(); }
+                finally
+                {
+                    if (uiActor.GetGameObject() != null) uiActor.SetActive(false);
+                }
                 return uiActor;
             }
 
@@ -210,11 +241,9 @@ namespace FrameWork
             if (_uiDic.ContainsKey(type))
             {
                 var uiActor=_uiDic[type];
-                uiActor.OnClose();
-                _typesDic.Remove(uiActor.GetIndex());
-                _uiList.Remove(uiActor.GetIndex());
-                _uiDic.Remove(type);
-                uiActor.GetGameObject().Destroy();
+                ForgetUi(uiActor);
+                try { uiActor.OnClose(); }
+                finally { ABMrg.ReleaseInstantiate(uiActor.GetGameObject()); }
             }
             
         }

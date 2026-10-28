@@ -63,7 +63,7 @@ namespace FrameWork
         public static void AddTimeAsReset(string key, float time, Action end)
         {
             CancelKeyTimer(key, false);
-            TimeDic[key] = DelayCall(time, end);
+            CreateKeyTimer(key, false, time, end);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace FrameWork
         public static void AddTimeAsCall(string key, float time, Action end)
         {
             CancelKeyTimer(key, true);
-            TimeDic[key] = DelayCall(time, end);
+            CreateKeyTimer(key, false, time, end);
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace FrameWork
         public static void AddTimeAsAdd(string key, float time, Action start, Action end)
         {
             CancelKeyTimer(key, true);
-            TimeDic[key] = DelayCall(time, end);
+            CreateKeyTimer(key, false, time, end);
             start?.Invoke();
         }
         
@@ -95,25 +95,27 @@ namespace FrameWork
         public static void AddTimeAsCount(string key, float time,int count,Action call)
         {
             CancelKeyTimer(key, false);
-            TimeDic[key] = IntervalCallAsCount(time, count, call);
+            CreateKeyTimer(key, true, time, call, Math.Max(0, count));
         }
 
         internal static void OnTimerFinished(TimeData timeData)
         {
             TimeDatas.Remove(timeData);
 
-            string removeKey = null;
-            foreach (KeyValuePair<string, TimeData> pair in TimeDic)
-            {
-                if (ReferenceEquals(pair.Value, timeData))
-                {
-                    removeKey = pair.Key;
-                    break;
-                }
-            }
+            var key = timeData.Key;
+            if (key != null && TimeDic.TryGetValue(key, out var current) && ReferenceEquals(current, timeData))
+                TimeDic.Remove(key);
+        }
 
-            if (removeKey != null)
-                TimeDic.Remove(removeKey);
+        private static void CreateKeyTimer(string key, bool interval, float time, Action call, int count = -1)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            // 旧回调可能重入并创建同 key 任务；本次替换也必须取消它。
+            CancelKeyTimer(key, false);
+            var data = new TimeData { Key = key };
+            TimeDic[key] = data;
+            TimeDatas.Add(data);
+            data.Init(interval, time, -1f, call, count);
         }
 
         private static TimeData CreateTimer(
@@ -131,10 +133,10 @@ namespace FrameWork
                 return;
 
             TimeDic.Remove(key);
-            if (invokeOldCallback && oldTimer.IsRunning)
-                oldTimer.Call();
-
+            var callback = invokeOldCallback && oldTimer.IsRunning ? oldTimer.Callback : null;
             DestroyTimer(oldTimer);
+            try { callback?.Invoke(); }
+            catch (Exception error) { UnityEngine.Debug.LogException(error); }
         }
     }
 }

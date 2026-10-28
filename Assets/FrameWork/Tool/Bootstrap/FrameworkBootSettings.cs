@@ -3,6 +3,7 @@ using UnityEngine;
 namespace FrameWork
 {
     [CreateAssetMenu(fileName = "FrameworkBootSettings", menuName = "FrameWork/启动配置")]
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, null, "FrameWork.Runtime", null)]
     public sealed class FrameworkBootSettings : ScriptableObject
     {
         public bool downloadBeforeStart = true;

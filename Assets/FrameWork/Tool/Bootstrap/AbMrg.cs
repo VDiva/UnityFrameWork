@@ -11,6 +11,7 @@ namespace FrameWork
     public static class ABMrg
     {
         public static Func<string, UniTask> SceneLoading;
+        public static Action BeforeSceneLoading;
         public static Action<string> SceneLoaded;
         public static Action<string> SceneLoadingFinished;
         /// <summary>可接入微信等定制文件系统；必须在 Init 前设置。</summary>
@@ -34,6 +35,7 @@ namespace FrameWork
             IsInitialized = false;
             InitializeOptionsFactory = null;
             SceneLoading = null;
+            BeforeSceneLoading = null;
             SceneLoaded = null;
             SceneLoadingFinished = null;
         }
@@ -116,12 +118,6 @@ namespace FrameWork
 #else
             if (host)
                 return new HostPlayModeOptions {
-                    BuiltinFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters(
-#if UNITY_EDITOR
-                        System.IO.Path.GetFullPath(System.IO.Path.Combine("Library/FrameWork/YooAssetBuiltin",
-                            UnityEditor.EditorUserBuildSettings.activeBuildTarget.ToString(), "yoo", settings.packageName))
-#endif
-                    ),
                     CacheFileSystemParameters = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(CreateRemote(settings))
                 };
             return new OfflinePlayModeOptions {
@@ -335,6 +331,7 @@ namespace FrameWork
             try
             {
                 await Init();
+                BeforeSceneLoading?.Invoke();
                 if (SceneLoading != null) await SceneLoading(name);
                 loading = Package.LoadSceneAsync(name);
                 while (!loading.IsDone)

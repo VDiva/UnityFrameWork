@@ -35,7 +35,7 @@ namespace FrameWork.Script.WebNet.CodeGen
             }
 
             // Web 网络运行时代码目前位于 Assembly-CSharp；避免扫描 Unity 和第三方程序集。
-            return compiledAssembly.Name == "FrameWork.Runtime" || compiledAssembly.Name == "HotUpdate" ||
+            return compiledAssembly.Name == "HotUpdate" ||
                    compiledAssembly.Name.StartsWith("HotUpdate.", StringComparison.Ordinal);
         }
 
@@ -77,7 +77,7 @@ namespace FrameWork.Script.WebNet.CodeGen
                 TypeDefinition dispatcher = FindType(module, DispatcherFullName);
                 if (dispatcher == null)
                 {
-                    var runtimeReference = module.AssemblyReferences.FirstOrDefault(r => r.Name == "FrameWork.Runtime");
+                    var runtimeReference = module.AssemblyReferences.FirstOrDefault(r => r.Name == "HotUpdate");
                     if (runtimeReference != null)
                         dispatcher = FindType(assemblyResolver.Resolve(runtimeReference).MainModule, DispatcherFullName);
                 }

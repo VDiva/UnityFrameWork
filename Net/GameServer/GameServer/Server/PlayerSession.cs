@@ -45,7 +45,13 @@ namespace WebSocketDemo
         public UserData? UserDataSnapshot { get; private set; }
         public uint NetworkObjectId { get; internal set; }
         public NetworkTransformData? LastNetworkTransform { get; internal set; }
-        public NetworkAnimationData? LastNetworkAnimation { get; internal set; }
+        private NetworkAnimationData? _lastNetworkAnimation;
+        internal System.Collections.Concurrent.ConcurrentDictionary<int, NetworkAnimationData> NetworkAnimations { get; } = new();
+        public NetworkAnimationData? LastNetworkAnimation
+        {
+            get => _lastNetworkAnimation;
+            internal set { _lastNetworkAnimation = value; if (value == null) NetworkAnimations.Clear(); }
+        }
         private uint _networkRoomId;
         public uint NetworkRoomId
         {
@@ -76,7 +82,8 @@ namespace WebSocketDemo
             _webSocket = webSocket;
             _cts = new CancellationTokenSource();
             _requestAbortedRegistration = requestAborted.Register(() => _cts.Cancel());
-            _sendQueue = new SessionSendQueue(SendQueuedAsync, OnSendQueueFailed, label: playerId);
+            _sendQueue = new SessionSendQueue(SendQueuedAsync, OnSendQueueFailed, label: playerId,
+                realtimeInterval: ReplicationSettings.RealtimeInterval);
             _receiveTask = StartReceivingAsync();
         }
 
@@ -365,11 +372,21 @@ namespace WebSocketDemo
                 maxAgeMs: maxAgeMs);
         }
 
+        public void QueueLatestPayload(ulong key, ISessionPacketPayload payload, int maxAgeMs = 0)
+        {
+            if (IsConnected) _sendQueue.Enqueue(payload, WebSocketMessageType.Binary, key, maxAgeMs);
+        }
+
         public void QueueLatestTransformBatch(ulong key, byte[] data)
         {
             if (IsConnected)
                 _sendQueue.Enqueue(data, WebSocketMessageType.Binary, key,
                     MergeTransformBatches, maxAgeMs: 250);
+        }
+
+        public void QueueLatestTransformBatch(ulong key, TransformBatchPacket packet)
+        {
+            if (IsConnected) _sendQueue.Enqueue(packet, WebSocketMessageType.Binary, key, maxAgeMs: 250);
         }
 
         private static byte[] MergeTransformBatches(byte[] previousBytes, byte[] latestBytes)

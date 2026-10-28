@@ -13,7 +13,9 @@ public readonly record struct OfflineUser(string UserId, string ServerId);
 public static class OfflineSaveQueue
 {
     private static readonly ConcurrentDictionary<OfflineUser, byte> Pending = new();
-    private static readonly Channel<OfflineUser> Channel = System.Threading.Channels.Channel.CreateUnbounded<OfflineUser>(
+    public static int PendingCount => Pending.Count;
+    private static readonly TimeSpan ReconnectGraceTime = TimeSpan.FromSeconds(2);
+    private static readonly Channel<(OfflineUser User, long Enqueued)> Channel = System.Threading.Channels.Channel.CreateUnbounded<(OfflineUser User, long Enqueued)>(
         new UnboundedChannelOptions
         {
             SingleReader = true,
@@ -29,15 +31,18 @@ public static class OfflineSaveQueue
 
         var user = new OfflineUser(userId, ServerScope.Normalize(serverId));
         if (!Pending.TryAdd(user, 0)) return true;
-        if (Channel.Writer.TryWrite(user)) return true;
+        if (Channel.Writer.TryWrite((user, System.Diagnostics.Stopwatch.GetTimestamp()))) return true;
         Pending.TryRemove(user, out _);
         return false;
     }
 
     public static async IAsyncEnumerable<OfflineUser> ReadAllAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var user in Channel.Reader.ReadAllAsync(cancellationToken))
+        await foreach (var entry in Channel.Reader.ReadAllAsync(cancellationToken))
         {
+            var remaining = ReconnectGraceTime - System.Diagnostics.Stopwatch.GetElapsedTime(entry.Enqueued);
+            if (remaining > TimeSpan.Zero) await Task.Delay(remaining, cancellationToken);
+            var user = entry.User;
             // 已排队的重复离线合并；开始处理后再次离线仍可排队，不丢后续保存。
             Pending.TryRemove(user, out _);
             yield return user;

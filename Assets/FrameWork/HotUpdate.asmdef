@@ -1,7 +1,7 @@
 {
   "name": "HotUpdate",
   "references": [
-    "FrameWork.Runtime",
+    "FrameWork.Bootstrap",
     "UniTask",
     "YooAsset",
     "HybridCLR.Runtime",

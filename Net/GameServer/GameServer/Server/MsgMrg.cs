@@ -678,14 +678,8 @@ public static class MsgMrg
         await player.ReplyAsync(request, msg);
     }
     
-    private static bool IsValidNetworkTransform(NetworkTransformData? position)
-    {
-        return position != null &&
-            float.IsFinite(position.PositionX) && float.IsFinite(position.PositionY) &&
-            float.IsFinite(position.PositionZ) && float.IsFinite(position.RotationX) &&
-            float.IsFinite(position.RotationY) && float.IsFinite(position.RotationZ) &&
-            float.IsFinite(position.RotationW);
-    }
+    private static bool IsValidNetworkTransform(NetworkTransformData? position) =>
+        NetworkStateValidation.IsValid(position);
 
     private static async Task RelayNetworkTransform(NetworkTransformData? position, PlayerSession player)
     {

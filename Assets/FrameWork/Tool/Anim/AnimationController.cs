@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -7,142 +6,94 @@ using UnityEngine.Playables;
 
 namespace FrameWork
 {
-    
     [RequireComponent(typeof(Animator))]
     public class AnimationController : MonoBehaviour
     {
-        
         public AnimLayerData[] animLayer;
-
         public string _abAnimName;
         public bool isRoot;
         protected LayerAnim[] _layerAnimArr;
         protected AnimationLayerMixerPlayable _layerMixerPlayable;
-        
         protected AnimationPlayableOutput _output;
-
         protected PlayableGraph _playableGraph;
-
         protected bool _isInit;
-        
-        private ConcurrentDictionary<string, LayerAnim> _layerAnimDic;
+        private readonly Dictionary<string, LayerAnim> _layerAnimDic = new Dictionary<string, LayerAnim>();
 
-        
-        
-        protected virtual void Awake()
+        protected virtual void Awake() { GetComponent<Animator>().applyRootMotion = isRoot; }
+        protected virtual void Start() { Init(); }
+
+        protected void ResetGraph()
         {
-            GetComponent<Animator>().applyRootMotion = isRoot;
-            _layerAnimDic = new ConcurrentDictionary<string, LayerAnim>();
             _isInit = false;
+            _layerAnimDic.Clear();
+            _layerAnimArr = null;
+            if (_playableGraph.IsValid()) _playableGraph.Destroy();
+            _layerMixerPlayable = default;
         }
-
-        protected virtual void Start()
-        {
-            Init();
-        }
-
-        
-        
 
         public virtual void Init()
         {
-            if (_isInit)
+            ResetGraph();
+            try
             {
-                _playableGraph.Destroy();
-            }
-            _layerAnimArr = new LayerAnim[animLayer.Length];
-            _playableGraph=PlayableGraph.Create(transform.root.name);
-            _isInit = true;
-            //GraphVisualizerClient.Show(_playableGraph);
-            _layerMixerPlayable=AnimationLayerMixerPlayable.Create(_playableGraph,animLayer.Length);
-            _output=AnimationPlayableOutput.Create(_playableGraph,"AnimationControllerOut",GetComponent<Animator>());
-            
-            for (int i = 0; i < animLayer.Length; i++)
-            {
-                var item = animLayer[i];
-                LayerAnim conItem=new LayerAnim();
-                conItem.Init(item,_playableGraph,((clipName, port) =>
+                int count = animLayer?.Length ?? 0;
+                _layerAnimArr = new LayerAnim[count];
+                _playableGraph = PlayableGraph.Create(transform.root.name);
+                _layerMixerPlayable = AnimationLayerMixerPlayable.Create(_playableGraph, count);
+                _output = AnimationPlayableOutput.Create(_playableGraph, "AnimationControllerOut", GetComponent<Animator>());
+                for (int i = 0; i < count; i++)
                 {
-                    _layerAnimDic.TryAdd(clipName,conItem);
-                }),(playable =>
-                {
-                    _playableGraph.Connect(playable, 0, _layerMixerPlayable, i);
-                } ));
-
-                _layerAnimArr[i] = conItem;
-                if (item.AvatarMask!=null)
-                {
-                    _layerMixerPlayable.SetLayerMaskFromAvatarMask((uint)i,item.AvatarMask);
+                    int layer = i;
+                    var item = animLayer[i];
+                    var controller = new LayerAnim();
+                    controller.Init(item, _playableGraph,
+                        (name, port) => { if (!_layerAnimDic.ContainsKey(name)) _layerAnimDic.Add(name, controller); },
+                        playable => _playableGraph.Connect(playable, 0, _layerMixerPlayable, layer));
+                    _layerAnimArr[i] = controller;
+                    if (item.AvatarMask != null) _layerMixerPlayable.SetLayerMaskFromAvatarMask((uint)i, item.AvatarMask);
+                    _layerMixerPlayable.SetInputWeight(i, 1);
                 }
-                _layerMixerPlayable.SetInputWeight(i,1);
+                _output.SetSourcePlayable(_layerMixerPlayable);
+                _playableGraph.Play();
+                _isInit = true;
             }
-            
-            _output.SetSourcePlayable(_layerMixerPlayable);
-            
-            _playableGraph.Play();
-        }
-        
-        
-        private LayerAnim anim;
-        public void SetAnim(string animName,float lerpSpeed=1)
-        {
-            if (_layerAnimDic.TryGetValue(animName,out anim))
-            {
-                anim.SetAnim(animName,lerpSpeed);
-            }
+            catch { ResetGraph(); throw; }
         }
 
-        public void SetSpeed(int layer,float speed)
+        public void SetAnim(string animName, float lerpSpeed = 1)
         {
-            if (_layerAnimArr!=null)
-            {
-                _layerAnimArr[layer].SetSpeed(speed);
-            }
+            if (animName != null && _layerAnimDic.TryGetValue(animName, out var layer)) layer.SetAnim(animName, lerpSpeed);
         }
 
-        public void SetAnim(int layer,AnimationClip animationClip,float lerpSpeed=1,bool isSetTime=false)
+        protected LayerAnim GetLayer(int layer)
         {
-            _layerAnimDic.TryAdd(animationClip.name, anim);
-            _layerAnimArr[layer].SetAnim(animationClip,lerpSpeed,isSetTime);
+            if (!_isInit || _layerAnimArr == null) throw new InvalidOperationException("请先初始化动画控制器。");
+            if (layer < 0 || layer >= _layerAnimArr.Length) throw new ArgumentOutOfRangeException(nameof(layer));
+            return _layerAnimArr[layer];
         }
-        
-        public void SetLayerWeight(int port,float weight)
+
+        public void SetSpeed(int layer, float speed) { GetLayer(layer).SetSpeed(speed); }
+        public void SetAnim(int layer, AnimationClip animationClip, float lerpSpeed = 1, bool isSetTime = false)
         {
-            _layerMixerPlayable.SetInputWeight(port,weight);
+            if (animationClip == null) throw new ArgumentNullException(nameof(animationClip));
+            var target = GetLayer(layer);
+            target.SetAnim(animationClip, lerpSpeed, isSetTime);
+            _layerAnimDic[animationClip.name] = target;
         }
-        
+        public void SetLayerWeight(int port, float weight)
+        {
+            GetLayer(port);
+            if (!_layerMixerPlayable.IsValid()) throw new InvalidOperationException("当前控制器没有分层混合器。");
+            _layerMixerPlayable.SetInputWeight(port, weight);
+        }
         protected virtual void Update()
         {
-            if (_layerAnimArr!=null)
-            {
-                for (int i = 0; i < _layerAnimArr.Length; i++)
-                {
-                    _layerAnimArr[i]?.Update();
-                }
-                GetCurAnimPlayLenght(0);
-            }
-
-            
+            if (!_isInit || _layerAnimArr == null) return;
+            foreach (var layer in _layerAnimArr) layer?.Update();
         }
-
-        public float GetCurAnimPlayLenght(int layer)
-        {
-            return _layerAnimArr[layer].GetCurAnimPlayLenght();
-        }
-        
-        public bool IsGreater(int layer,float value)
-        {
-            return _layerAnimArr[layer].IsGreater(value);
-        }
-        
-        public float GetCurAnimLerp(int layer)
-        {
-            return _layerAnimArr[layer].GetLerp();
-        }
-       
-        private void OnDestroy()
-        {
-            _playableGraph.Destroy();
-        }
+        public float GetCurAnimPlayLenght(int layer) => GetLayer(layer).GetCurAnimPlayLenght();
+        public bool IsGreater(int layer, float value) => GetLayer(layer).IsGreater(value);
+        public float GetCurAnimLerp(int layer) => GetLayer(layer).GetLerp();
+        protected virtual void OnDestroy() { ResetGraph(); }
     }
 }

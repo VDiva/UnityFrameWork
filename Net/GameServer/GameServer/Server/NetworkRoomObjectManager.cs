@@ -15,6 +15,37 @@ public sealed class NetworkRoomObjectManager
     private const int InitialObjectsPerPacket = 32;
     private const int InitialStatePacketBytes = 48 * 1024;
     private readonly ConcurrentDictionary<uint, RoomObject> _objects = new();
+    private readonly object _objectIndexGate = new();
+    private readonly Dictionary<uint, Dictionary<uint, RoomObject>> _objectsByRoom = new();
+    private bool AddObject(uint id, RoomObject obj)
+    {
+        lock (_objectIndexGate)
+        {
+            if (!_objects.TryAdd(id, obj)) return false;
+            if (!_objectsByRoom.TryGetValue(obj.RoomId, out var room))
+                _objectsByRoom[obj.RoomId] = room = new();
+            room[id] = obj;
+            return true;
+        }
+    }
+    private bool RemoveObject(uint id, out RoomObject? obj)
+    {
+        lock (_objectIndexGate)
+        {
+            if (!_objects.TryRemove(id, out obj)) return false;
+            if (_objectsByRoom.TryGetValue(obj.RoomId, out var room))
+            {
+                room.Remove(id);
+                if (room.Count == 0) _objectsByRoom.Remove(obj.RoomId);
+            }
+            return true;
+        }
+    }
+    private RoomObject[] RoomObjects(uint roomId)
+    {
+        lock (_objectIndexGate)
+            return _objectsByRoom.TryGetValue(roomId, out var room) ? room.Values.ToArray() : Array.Empty<RoomObject>();
+    }
     private readonly ConcurrentDictionary<uint, AiOwnerLoad> _aiOwnerLoads = new();
     private readonly ConcurrentDictionary<uint, ObjectClaim> _claims = new();
     private readonly ConcurrentDictionary<uint, ConcurrentDictionary<string, byte>> _triggeredAiSpawns = new();
@@ -57,6 +88,7 @@ public sealed class NetworkRoomObjectManager
             request == null || string.IsNullOrWhiteSpace(request.PrefabId) || request.PrefabId.Length > MaxPrefabIdLength)
             return;
 
+        if (transform != null && !NetworkStateValidation.IsValid(transform)) return;
         uint objectId = PlayerSessionManager.Instance.AllocateNetworkObjectId();
         var roomObject = new RoomObject { ObjectId = objectId, RoomId = owner.NetworkRoomId,
             PrefabId = request.PrefabId.Trim(), OwnerSessionId = owner.PlayerId,
@@ -72,7 +104,7 @@ public sealed class NetworkRoomObjectManager
                 room.HighQualityEquipmentRoll &&
                 quality >= (room.EquipmentRollMinQuality == 0 ? 3 : room.EquipmentRollMinQuality);
         }
-        if (!_objects.TryAdd(objectId, roomObject)) return;
+        if (!AddObject(objectId, roomObject)) return;
 
         var objectData = new NetworkObjectData { ObjectId = objectId, RoomId = roomObject.RoomId,
             PrefabId = roomObject.PrefabId, OwnerPlayerId = owner.UserId ?? string.Empty,
@@ -137,6 +169,7 @@ public sealed class NetworkRoomObjectManager
         uint roomId, NetworkObjectData request, NetworkTransformData? transform)
     {
 
+        if (transform != null && !NetworkStateValidation.IsValid(transform)) return false;
         PlayerSession[] roomSessions = PlayerSessionManager.Instance.GetRoomSessions(roomId);
         if (roomSessions.Length == 0) return false;
         AiOwnerLoad load = GetAiOwnerLoad(roomId);
@@ -151,7 +184,7 @@ public sealed class NetworkRoomObjectManager
                 MonsterBoxKey = request.MonsterBoxKey, BoxIndex = request.BoxIndex,
                 TriggerId = request.TriggerId,
                 RoleType = request.RoleType, IsAi = true };
-            if (!_objects.TryAdd(objectId, obj)) return false;
+            if (!AddObject(objectId, obj)) return false;
             AdjustAiOwnerCount(load.Counts, owner.PlayerId, 1);
         }
 
@@ -181,7 +214,7 @@ public sealed class NetworkRoomObjectManager
         if (obj.OwnerSessionId != requester.PlayerId && !isClaimWinner &&
             !NetworkRoomManager.Instance.IsHost(requester))
             return;
-        if (_objects.TryRemove(objectId, out _))
+        if (RemoveObject(objectId, out _))
         {
             RemoveAiOwnerLoad(obj);
             _claims.TryRemove(objectId, out _);
@@ -320,7 +353,7 @@ public sealed class NetworkRoomObjectManager
             };
             result.RewardEquip.Add(equipment);
             await PlayerSessionManager.Instance.BroadcastBinaryAsync(result.ToByteArray(), null, obj.RoomId);
-            if (_objects.TryRemove(objectId, out _))
+            if (RemoveObject(objectId, out _))
             {
                 NetworkSyncVarManager.Instance.RemoveObject(objectId);
                 await BroadcastDestroy(obj);
@@ -380,14 +413,15 @@ public sealed class NetworkRoomObjectManager
             return Task.FromResult(true);
         PlayerSessionManager.Instance.BroadcastLatestBinary(
             PlayerSessionManager.CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate, state.ObjectId),
-            new Msg { MsgType = ProtobufMsgType.Server,
-            ServerMsgType = ServerMsgType.NetworkTransformUpdate, NetworkTransform = state }.ToByteArray(),
+            new DeferredMessagePacket(new Msg { MsgType = ProtobufMsgType.Server,
+            ServerMsgType = ServerMsgType.NetworkTransformUpdate, NetworkTransform = state }),
             sender.PlayerId, sender.NetworkRoomId, maxAgeMs: 250);
         return Task.FromResult(true);
     }
 
     public bool TryApplyTransform(PlayerSession sender, NetworkTransformData state)
     {
+        if (!NetworkStateValidation.IsValid(state)) return false;
         if (!_objects.TryGetValue(state.ObjectId, out RoomObject? obj) || obj.RoomId != sender.NetworkRoomId ||
             obj.OwnerSessionId != sender.PlayerId) return false;
         if (obj.Transform != null && obj.TransformOwnerSessionId == sender.PlayerId &&
@@ -417,14 +451,14 @@ public sealed class NetworkRoomObjectManager
             group.NetworkTransforms.Add(snapshot);
         }
         var packets = groups.Select(pair => (Key: ((ulong)pair.Key << 32) | 0x40000000UL,
-            Bytes: pair.Value.ToByteArray())).ToArray();
+            Payload: new TransformBatchPacket(pair.Value.NetworkTransforms))).ToArray();
         foreach (PlayerSession receiver in PlayerSessionManager.Instance.SessionsForRoom(roomId))
         {
             if (!receiver.IsConnected || receiver.NetworkRoomId != roomId ||
                 receiver.PlayerId == sender.PlayerId || string.IsNullOrWhiteSpace(receiver.UserId) ||
                 receiver.ServerId != sender.ServerId) continue;
             foreach (var packet in packets)
-                receiver.QueueLatestTransformBatch(packet.Key, packet.Bytes);
+                receiver.QueueLatestTransformBatch(packet.Key, packet.Payload);
         }
     }
 
@@ -432,13 +466,17 @@ public sealed class NetworkRoomObjectManager
     {
         if (!_objects.TryGetValue(state.ObjectId, out RoomObject? obj) || obj.RoomId != sender.NetworkRoomId ||
             obj.OwnerSessionId != sender.PlayerId) return Task.FromResult(false);
-        obj.Animations[state.TrackIndex] = state.Clone();
+        if (!NetworkStateValidation.IsValid(state)) return Task.FromResult(false);
+        var cached = state.Clone();
+        var accepted = obj.Animations.AddOrUpdate(state.TrackIndex, cached,
+            (_, old) => cached.Sequence > old.Sequence ? cached : old);
+        if (!ReferenceEquals(accepted, cached)) return Task.FromResult(false);
         if (!PlayerSessionManager.Instance.HasRoomObserver(obj.RoomId, sender.PlayerId))
             return Task.FromResult(true);
         PlayerSessionManager.Instance.BroadcastLatestBinary(
             PlayerSessionManager.CreateRealtimeKey(ServerMsgType.NetworkAnimationUpdate, state.ObjectId, state.TrackIndex),
-            new Msg { MsgType = ProtobufMsgType.Server,
-            ServerMsgType = ServerMsgType.NetworkAnimationUpdate, NetworkAnimation = state }.ToByteArray(),
+            DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
+            ServerMsgType = ServerMsgType.NetworkAnimationUpdate, NetworkAnimation = cached }),
             sender.PlayerId, obj.RoomId);
         return Task.FromResult(true);
     }
@@ -450,7 +488,7 @@ public sealed class NetworkRoomObjectManager
         uint sceneEpoch = NetworkRoomManager.Instance.GetSceneEpoch(roomId);
         var batch = new List<RoomObject>(InitialObjectsPerPacket);
         var sent = new List<RoomObject>();
-        foreach (RoomObject obj in _objects.Values)
+        foreach (RoomObject obj in RoomObjects(roomId))
         {
             if (obj.RoomId != roomId) continue;
             batch.Add(obj);
@@ -564,12 +602,12 @@ public sealed class NetworkRoomObjectManager
         PlayerSession[] candidates = PlayerSessionManager.Instance.GetRoomSessions(roomId)
             .Where(session => session != owner).ToArray();
         AiOwnerLoad load = GetAiOwnerLoad(roomId);
-        foreach (RoomObject obj in _objects.Values)
+        foreach (RoomObject obj in RoomObjects(roomId))
         {
             if (obj.RoomId != roomId || obj.OwnerSessionId != owner.PlayerId) continue;
             if (!obj.IsAi)
             {
-                if (_objects.TryRemove(obj.ObjectId, out _))
+                if (RemoveObject(obj.ObjectId, out _))
                 {
                     _claims.TryRemove(obj.ObjectId, out _);
                     NetworkSyncVarManager.Instance.RemoveObject(obj.ObjectId);
@@ -590,11 +628,12 @@ public sealed class NetworkRoomObjectManager
                     AdjustAiOwnerCount(load.Counts, obj.OwnerSessionId, -1);
                     AdjustAiOwnerCount(load.Counts, newOwner.PlayerId, 1);
                     obj.OwnerSessionId = newOwner.PlayerId;
+                    obj.Animations.Clear();
                 }
             }
             if (newOwner == null)
             {
-                if (_objects.TryRemove(obj.ObjectId, out _))
+                if (RemoveObject(obj.ObjectId, out _))
                 {
                     RemoveAiOwnerLoad(obj);
                     _claims.TryRemove(obj.ObjectId, out _);
@@ -614,7 +653,7 @@ public sealed class NetworkRoomObjectManager
     private Dictionary<string, int> CountOwnedAiInRoom(uint roomId)
     {
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (RoomObject obj in _objects.Values)
+        foreach (RoomObject obj in RoomObjects(roomId))
             if (obj.IsAi && obj.RoomId == roomId)
                 counts[obj.OwnerSessionId] = counts.GetValueOrDefault(obj.OwnerSessionId) + 1;
         return counts;
@@ -669,8 +708,8 @@ public sealed class NetworkRoomObjectManager
 
     public async Task DestroyRoomObjectsAsync(uint roomId, bool notifyClients = true)
     {
-        foreach (RoomObject obj in _objects.Values)
-            if (obj.RoomId == roomId && _objects.TryRemove(obj.ObjectId, out _))
+        foreach (RoomObject obj in RoomObjects(roomId))
+            if (obj.RoomId == roomId && RemoveObject(obj.ObjectId, out _))
             {
                 RemoveAiOwnerLoad(obj);
                 _claims.TryRemove(obj.ObjectId, out _);

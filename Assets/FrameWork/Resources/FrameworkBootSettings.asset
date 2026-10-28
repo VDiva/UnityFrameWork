@@ -23,7 +23,6 @@ MonoBehaviour:
   - mscorlib.dll
   - System.dll
   - System.Core.dll
-  - FrameWork.Runtime.dll
   entryAssembly: HotUpdate
   entryType: HotUpdate.GameEntry
   entryMethod: Start

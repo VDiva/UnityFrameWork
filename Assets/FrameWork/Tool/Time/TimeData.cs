@@ -16,6 +16,9 @@ namespace FrameWork
         private Action _action;
         private CancellationTokenSource _cancellation;
 
+        internal string Key { get; set; }
+        internal Action Callback => _action;
+
         public bool IsRunning { get; private set; }
 
         /// <summary>
@@ -97,6 +100,7 @@ namespace FrameWork
                 Timer.OnTimerFinished(this);
                 _cancellation?.Dispose();
                 _cancellation = null;
+                _action = null;
             }
         }
 

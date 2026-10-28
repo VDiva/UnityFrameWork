@@ -5,7 +5,7 @@ namespace FrameWork
     [CreateAssetMenu(fileName = "ConfigData", menuName = "FrameWork/CreateConfigData")]
     public class ConfigData : ScriptableObject
     {
-        [Tooltip("随客户端发布的版本；资源版本由 YooAsset 独立管理。")]
+        [Tooltip("业务版本，可随热更新配置发布；安装包兼容性由客户端基线独立管理。")]
         public string versions = "1.0.0";
         [Tooltip("非负整数服务器兼容版本，低于服务端要求时提示更新客户端。")]
         public string serverVersion = "1008";

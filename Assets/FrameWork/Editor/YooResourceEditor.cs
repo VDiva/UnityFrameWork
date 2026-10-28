@@ -34,13 +34,59 @@ namespace FrameWork.Editor
             package.EnableAddressable = true;
             var group = package.Groups.FirstOrDefault(x => x.GroupName == "FrameWork")
                 ?? BundleCollectorSettingData.CreateGroup(package, "FrameWork");
-            // 将旧的整目录收集器拆为一级目录，保持 PackDirectory 分包方式。
-            foreach (var collector in group.Collectors.Where(x => x.CollectPath == ABEditor.abAssetPath).ToArray())
-                BundleCollectorSettingData.RemoveCollector(group, collector);
+            SynchronizeCollectors(group);
+            BundleCollectorSettingData.ModifyPackage(package);
+            BundleCollectorSettingData.SaveFile();
+        }
+
+        // 自动同步只处理已有配置，不在资源导入期间创建配置或调用 Refresh。
+        internal static void SynchronizeAssetFolders()
+        {
+            if (!AssetDatabase.IsValidFolder(ABEditor.abAssetPath)) return;
+            var runtime = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(SettingsPath);
+            if (runtime == null) return;
+            var package = BundleCollectorSettingData.Setting.Packages
+                .FirstOrDefault(x => x.PackageName == runtime.packageName);
+            var group = package?.Groups.FirstOrDefault(x => x.GroupName == "FrameWork");
+            if (group == null) return;
+            if (!SynchronizeCollectors(group)) return;
+            BundleCollectorSettingData.ModifyPackage(package);
+            BundleCollectorSettingData.SaveFile();
+        }
+
+        private static bool SynchronizeCollectors(BundleCollectorGroup group)
+        {
+            bool changed = false;
+            string root = ABEditor.abAssetPath.TrimEnd('/');
+            // 按 GUID 跟随重命名/移动，保留已有打包规则和标签；删除失效引用。
+            foreach (var collector in group.Collectors.ToArray())
+            {
+                if (collector.CollectPath != root &&
+                    !collector.CollectPath.StartsWith(root + "/", StringComparison.Ordinal)) continue;
+                string path = string.IsNullOrEmpty(collector.CollectorGUID) ? string.Empty
+                    : AssetDatabase.GUIDToAssetPath(collector.CollectorGUID);
+                if (string.IsNullOrEmpty(path)) path = collector.CollectPath;
+                if (!path.StartsWith(root + "/", StringComparison.Ordinal) ||
+                    (!AssetDatabase.IsValidFolder(path) && !File.Exists(path)))
+                {
+                    BundleCollectorSettingData.RemoveCollector(group, collector);
+                    changed = true;
+                    continue;
+                }
+                string guid = AssetDatabase.AssetPathToGUID(path);
+                if (collector.CollectPath != path || collector.CollectorGUID != guid)
+                {
+                    collector.CollectPath = path;
+                    collector.CollectorGUID = guid;
+                    changed = true;
+                }
+            }
+            // 为新增的一级目录补充收集器，保持 PackDirectory 分包方式。
             foreach (string directory in Directory.GetDirectories(ABEditor.abAssetPath))
             {
                 string path = directory.Replace('\\', '/');
                 if (path.EndsWith("~", StringComparison.Ordinal)) continue;
+                if (!AssetDatabase.IsValidFolder(path)) continue;
                 if (group.Collectors.Any(x => x.CollectPath == path ||
                     x.CollectPath.StartsWith(path + "/", StringComparison.Ordinal))) continue;
                 string folder = Path.GetFileName(path);
@@ -54,16 +100,15 @@ namespace FrameWork.Editor
                     FilterRuleName = nameof(CollectAll),
                     AssetTags = startup ? "startup" : folder
                 });
+                changed = true;
             }
-            BundleCollectorSettingData.ModifyPackage(package);
-            BundleCollectorSettingData.SaveFile();
+            return changed;
         }
 
         [MenuItem("FrameWork/YooAsset/构建当前平台资源")]
         public static void BuildResources()
         {
-            Configure();
-            var config = AssetDatabase.LoadAssetAtPath<ConfigData>("Assets/FrameWork/Resources/ConfigData.asset");
+            var config = AssetDatabase.LoadAssetAtPath<ConfigData>(Config.AssetPath);
             string version = (config != null ? config.versions : "1.0.0") + "-" + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
             Build(version);
         }
@@ -83,7 +128,8 @@ namespace FrameWork.Editor
                 PackageVersion = version,
                 VerifyBuildingResult = true,
                 CompressOption = ECompressOption.LZ4,
-                BundledCopyOption = EBundledCopyOption.ClearAndCopyByTags,
+                BundledCopyOption = runtime.playerMode == YooPlayerMode.Offline
+                    ? EBundledCopyOption.ClearAndCopyAll : EBundledCopyOption.None,
                 BundledCopyParams = "startup"
             };
             var result = new LegacyBuildPipeline().Run(parameters, true);
@@ -91,6 +137,46 @@ namespace FrameWork.Editor
                 throw new InvalidOperationException($"YooAsset 构建失败：{result.FailedTask}\n{result.ErrorInfo}");
             Debug.Log("YooAsset 资源构建完成：" + result.OutputPackageDirectory);
             return result;
+        }
+    }
+    [InitializeOnLoad]
+    internal sealed class YooAssetFolderPostprocessor : AssetPostprocessor
+    {
+        static YooAssetFolderPostprocessor()
+        {
+            QueueSync();
+        }
+
+        private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets,
+            string[] movedAssets, string[] movedFromAssetPaths)
+        {
+            if (importedAssets.Concat(deletedAssets).Concat(movedAssets).Concat(movedFromAssetPaths)
+                .Any(path => path == ABEditor.abAssetPath ||
+                    path.StartsWith(ABEditor.abAssetPath + "/", StringComparison.Ordinal)))
+                QueueSync();
+        }
+
+        private static void QueueSync()
+        {
+            EditorApplication.delayCall -= Sync;
+            EditorApplication.delayCall += Sync;
+        }
+
+        private static void Sync()
+        {
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                QueueSync();
+                return;
+            }
+            try
+            {
+                YooResourceEditor.SynchronizeAssetFolders();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
     }
 }

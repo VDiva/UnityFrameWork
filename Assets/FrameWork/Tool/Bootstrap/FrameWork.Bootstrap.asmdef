@@ -1,0 +1,5 @@
+{
+  "name": "FrameWork.Bootstrap",
+  "references": ["UniTask", "YooAsset", "HybridCLR.Runtime", "Unity.TextMeshPro", "UnityEngine.UI"],
+  "autoReferenced": true
+}

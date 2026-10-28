@@ -1,0 +1,9 @@
+.upstream/
+UnityProject/Library/
+UnityProject/Logs/
+UnityProject/Temp/
+UnityProject/obj/
+UnityProject/UserSettings/
+UnityProject/*.csproj
+UnityProject/*.sln
+Builds/

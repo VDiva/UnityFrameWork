@@ -5,6 +5,7 @@ namespace FrameWork
 {
     /// <summary>克隆对象持有独立句柄，销毁时释放，不受预制体缓存释放影响。</summary>
     [AddComponentMenu("")]
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, null, "FrameWork.Runtime", null)]
     public sealed class YooInstanceLease : MonoBehaviour
     {
         private AssetHandle _handle;

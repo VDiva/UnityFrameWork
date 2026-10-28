@@ -5,6 +5,7 @@ namespace FrameWork
     public enum YooPlayerMode { Offline, Host }
 
     [CreateAssetMenu(fileName = "YooResourceSettings", menuName = "FrameWork/YooAsset 资源配置")]
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, null, "FrameWork.Runtime", null)]
     public sealed class YooResourceSettings : ScriptableObject
     {
         public string packageName = "DefaultPackage";

@@ -18,6 +18,7 @@ namespace FrameWork.Editor
     {
         private const string PrepareStage = "FrameWork.PrepareClient.Stage";
         private const string PrepareBatch = "FrameWork.PrepareClient.Batch";
+        private const string PrepareForce = "FrameWork.PrepareClient.Force";
         private static double _nextPrepare;
         static FrameworkIntegrationEditor() => EditorApplication.update += AdvancePreparation;
         public const string BootSettingsPath = "Assets/FrameWork/Resources/FrameworkBootSettings.asset";
@@ -27,19 +28,23 @@ namespace FrameWork.Editor
         [MenuItem("FrameWork/HybridCLR/配置热更新程序集和启动场景")]
         public static void Configure()
         {
-            var hot = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>("Assets/FrameWork/Scripts/HotUpdate.asmdef");
+            var hot = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>("Assets/FrameWork/HotUpdate.asmdef");
             if (hot == null) throw new InvalidOperationException("HotUpdate.asmdef 尚未导入，请等 Unity 编译完成。");
             var settings = HybridCLRSettings.instance;
             settings.enable = true;
             settings.useGlobalIl2cpp = false;
             settings.hotUpdateAssemblyDefinitions = (settings.hotUpdateAssemblyDefinitions ?? Array.Empty<AssemblyDefinitionAsset>())
-                .Where(a => a != null).Concat(new[] { hot }).Distinct().ToArray();
-            settings.hotUpdateAssemblies = (settings.hotUpdateAssemblies ?? Array.Empty<string>()).Where(n => n != "HotUpdate").ToArray();
+                .Where(a => a != null && a.name != "FrameWork.Runtime")
+                .Concat(new[] { hot }).Distinct().ToArray();
+            settings.hotUpdateAssemblies = (settings.hotUpdateAssemblies ?? Array.Empty<string>())
+                .Where(n => n != "HotUpdate" && n != "FrameWork.Runtime").ToArray();
             settings.outputLinkFile = "FrameWork/Generated/HybridCLR/link.xml";
             settings.outputAOTGenericReferenceFile = "FrameWork/Generated/HybridCLR/AOTGenericReferences.cs";
             settings.hybridclrRepoURL = "https://github.com/focus-creative-games/hybridclr";
             settings.il2cppPlusRepoURL = "https://github.com/focus-creative-games/il2cpp_plus";
             HybridCLRSettings.Save();
+            // 动态资源中的原生引擎组件必须保留。
+            PlayerSettings.stripEngineCode = false;
             var group = EditorUserBuildSettings.selectedBuildTargetGroup;
             if (PlayerSettings.GetScriptingBackend(group) != ScriptingImplementation.IL2CPP)
                 PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
@@ -61,9 +66,9 @@ namespace FrameWork.Editor
                 EditorSceneManager.SaveScene(scene, BootScenePath);
                 EditorSceneManager.CloseScene(scene, true);
             }
-            var scenes = EditorBuildSettings.scenes.Where(s => s.path != BootScenePath).ToList();
-            scenes.Insert(0, new EditorBuildSettingsScene(BootScenePath, true));
-            EditorBuildSettings.scenes = scenes.ToArray();
+            // 安装包只包含启动场景；业务场景必须在 YooAsset 中加载，避免提前引用热更新脚本。
+            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(BootScenePath, true) };
+            FrameworkHotUpdateLayout.ValidateBootScene();
             AssetDatabase.SaveAssets();
         }
 
@@ -94,7 +99,7 @@ namespace FrameWork.Editor
             if (compilation.assemblies == null || compilation.assemblies.Count == 0)
                 throw new InvalidOperationException("热更新 Player 程序集编译失败，未使用上一次的旧 DLL。");
             var boot = AssetDatabase.LoadAssetAtPath<FrameworkBootSettings>(BootSettingsPath);
-            boot.hotUpdateDlls = SettingsUtil.HotUpdateAssemblyFilesExcludePreserved.ToArray();
+            boot.hotUpdateDlls = FrameworkHotUpdateLayout.OrderedDlls();
             foreach (string dll in boot.hotUpdateDlls)
             {
                 string source = Path.Combine(SettingsUtil.GetHotUpdateDllsOutputDirByTarget(target), dll);
@@ -114,7 +119,8 @@ namespace FrameWork.Editor
             if (!section.Success) throw new InvalidOperationException("未找到 HybridCLR 生成的 PatchedAOTAssemblyList。");
             var dlls = Regex.Matches(section.Groups[1].Value, "\"([^\"]+\\.dll)\"")
                 .Cast<Match>().Select(m => m.Groups[1].Value)
-                .Concat(new[] { "mscorlib.dll", "System.dll", "System.Core.dll", "UniTask.dll", "FrameWork.Runtime.dll" })
+                .Concat(new[] { "mscorlib.dll", "System.dll", "System.Core.dll", "UniTask.dll", "FrameWork.Bootstrap.dll" })
+                .Where(dll => !FrameworkHotUpdateLayout.AssemblyNames().Contains(Path.GetFileNameWithoutExtension(dll)))
                 .Distinct().ToArray();
             string root = SettingsUtil.GetAssembliesPostIl2CppStripDir(EditorUserBuildSettings.activeBuildTarget);
             foreach (string dll in dlls) File.Copy(Path.Combine(root, dll), Path.Combine(DllDirectory, dll + ".bytes"), true);
@@ -131,10 +137,16 @@ namespace FrameWork.Editor
 
         public static void PrepareClientBatch() => QueuePreparation(true);
 
-        private static void QueuePreparation(bool batch)
+        [MenuItem("FrameWork/发布/强制重建客户端基线（含 AOT）")]
+        public static void ForcePrepareClient() => QueuePreparation(false, true);
+
+        private static void QueuePreparation(bool batch, bool force = false)
         {
+            if (SessionState.GetString(PrepareStage, "") != "")
+                throw new InvalidOperationException("客户端基线正在准备中，请等待完成。");
             FrameworkSetup.Setup();
             SessionState.SetBool(PrepareBatch, batch);
+            SessionState.SetBool(PrepareForce, force);
             SessionState.SetString(PrepareStage, "generate");
             _nextPrepare = EditorApplication.timeSinceStartup + 2;
         }
@@ -149,18 +161,27 @@ namespace FrameWork.Editor
             {
                 if (stage == "generate")
                 {
-                    InstallNative();
-                    PrebuildCommand.GenerateAll();
-                    CopyAotMetadata();
+                    bool reuse = FrameworkReleaseEditor.CanReuseClientBaseline(out string reason);
+                    if (SessionState.GetBool(PrepareForce, false)) reuse = false;
+                    Debug.Log("[客户端基线] " + (SessionState.GetBool(PrepareForce, false) ? "用户强制重建 AOT" : reason));
+                    if (!reuse)
+                    {
+                        RunPreparationStep("安装本地解释器", InstallNative);
+                        RunPreparationStep("生成 AOT（包含 Unity 裁剪构建）", PrebuildCommand.GenerateAll);
+                        RunPreparationStep("复制 AOT 元数据", CopyAotMetadata);
+                    }
                     // 生成的 C# 要先完成 Unity 域重载，不能嵌套调用 Player 脚本编译。
-                    SessionState.SetString(PrepareStage, "finalize");
+                    SessionState.SetString(PrepareStage, reuse ? "finalize-reuse" : "finalize");
                     _nextPrepare = EditorApplication.timeSinceStartup + 2;
                 }
                 else
                 {
-                    CompileHotUpdate();
-                    YooResourceEditor.BuildResources();
-                    FrameworkReleaseEditor.SaveClientBaseline();
+                    if (stage == "finalize-reuse") AssertReusableBaseline();
+                    RunPreparationStep("编译热更新 DLL", CompileHotUpdate);
+                    if (stage == "finalize-reuse") AssertReusableBaseline();
+                    RunPreparationStep("构建 YooAsset 资源", YooResourceEditor.BuildResources);
+                    if (stage == "finalize-reuse") AssertReusableBaseline();
+                    RunPreparationStep("保存客户端基线", FrameworkReleaseEditor.SaveClientBaseline);
                     FrameworkSetup.AssertLayout();
                     Debug.Log("FRAMEWORK_CLIENT_BASELINE_OK");
                     if (SessionState.GetBool(PrepareBatch, false)) EditorApplication.Exit(0);
@@ -171,6 +192,20 @@ namespace FrameWork.Editor
                 YooBuiltinBuildProcessor.Cleanup(); Debug.LogException(error);
                 if (SessionState.GetBool(PrepareBatch, false)) EditorApplication.Exit(1);
             }
+        }
+
+        private static void AssertReusableBaseline()
+        {
+            if (!FrameworkReleaseEditor.CanReuseClientBaseline(out string reason))
+                throw new InvalidOperationException("准备期间客户端输入发生变化，请重新准备基线。" + reason);
+        }
+
+        private static void RunPreparationStep(string label, Action action)
+        {
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            Debug.Log("[客户端基线] 开始：" + label);
+            try { action(); }
+            finally { Debug.Log($"[客户端基线] {label}，耗时 {timer.Elapsed.TotalSeconds:F1} 秒"); }
         }
 
         [MenuItem("FrameWork/打开启动场景")]

@@ -27,75 +27,60 @@ namespace FrameWork
         public ActorType type;
         public string actorName;
         
-        public Actor()
-        {
-            // var type=GetType();
-            // var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
-            // if (infoAttribute==null||infoAttribute.PrefabName=="")return;
-            // GameObject go=null;
-            // go=ABMrg.Load<GameObject>(infoAttribute.PrefabName);
-            // _gameObject = GameObject.Instantiate(go);
-            // _gameObject.SetActive(false);
-            // //_identity = _gameObject.AddComponent<Identity>();
-            // var actorMono=_gameObject.AddComponent<ActorMono>();
-            // actorMono.SetActor(this);
-            // _gameObject.SetActive(true);
-            _=SpawnObject(null);
-        }
-       
-        public Actor(Transform trans)
-        {
-            // var type=GetType();
-            // var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
-            // if (infoAttribute==null||infoAttribute.PrefabName=="")return;
-            // GameObject go=null;
-            // go=ABMrg.Load<GameObject>(infoAttribute.PrefabName);
-            // _gameObject = GameObject.Instantiate(go,trans);
-            // _gameObject.SetActive(false);
-            // //_identity = _gameObject.AddComponent<Identity>();
-            // var actorMono=_gameObject.AddComponent<ActorMono>();
-            // actorMono.SetActor(this);
-            // _gameObject.SetActive(true);
-            _=SpawnObject(trans);
-        }
+        private readonly UniTaskCompletionSource<Actor> _initialization = new UniTaskCompletionSource<Actor>();
+        private bool _spawnStarted;
+        public UniTask<Actor> Initialization => _initialization.Task;
 
+        public Actor() { _ = SpawnObject(null); }
+        public Actor(Transform trans) { _ = SpawnObject(trans); }
 
-        public async UniTask<Actor> SpawnObject(Transform trans)
+        /// <summary>同一 Actor 只生成一次，可等待此任务获取初始化失败信息。</summary>
+        public UniTask<Actor> SpawnObject(Transform trans)
         {
-            var type=GetType();
-            var infoAttribute=type.GetCustomAttribute<ActorInfoAttribute>();
-            if (infoAttribute==null||infoAttribute.PrefabName=="")return null;
-            //GameObject go=null;
-            _gameObject=await ABMrg.InstantiateAsync(infoAttribute.PrefabName);
-            //_gameObject = GameObject.Instantiate(go,trans);
-            _gameObject.SetActive(false);
-            _gameObject.transform.SetParent(trans);
-            _gameObject.transform.localPosition = Vector3.zero;
-            _gameObject.transform.localRotation = Quaternion.identity;
-            _gameObject.transform.localScale = Vector3.one;
-            //_identity = _gameObject.AddComponent<Identity>();
-            var actorMono=_gameObject.AddComponent<ActorMono>();
-            actorMono.SetActor(this);
-            Awake();
-            _gameObject.SetActive(true);
-            Start();
-
-            if (trans)
+            if (!_spawnStarted)
             {
-                try
-                {
-                    var uiAtor = this as UiActor;
-                    uiAtor?.ResetRect();
-                    uiAtor?.OpenAnim();
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("转换失败:"+e.Message);
-                }
-                
+                _spawnStarted = true;
+                SpawnCore(trans).Forget(Debug.LogException);
             }
-            
-            return this;
+            return Initialization;
+        }
+
+        private async UniTask SpawnCore(Transform parent)
+        {
+            GameObject instance = null;
+            try
+            {
+                // 构造函数返回后再调用派生类生命周期。
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                var info = GetType().GetCustomAttribute<ActorInfoAttribute>();
+                if (info == null || string.IsNullOrWhiteSpace(info.PrefabName))
+                    throw new InvalidOperationException(GetType().Name + " 缺少有效的 ActorInfoAttribute");
+                instance = await ABMrg.InstantiateAsync(info.PrefabName);
+                instance.SetActive(false);
+                instance.transform.SetParent(parent, false);
+                instance.transform.localPosition = Vector3.zero;
+                instance.transform.localRotation = Quaternion.identity;
+                instance.transform.localScale = Vector3.one;
+                _gameObject = instance;
+                var actorMono = instance.AddComponent<ActorMono>();
+                actorMono.SetActor(this);
+                Awake();
+                instance.SetActive(true);
+                Start();
+                if (parent && this is UiActor ui)
+                {
+                    ui.ResetRect();
+                    ui.OpenAnim();
+                }
+                _initialization.TrySetResult(this);
+            }
+            catch (Exception error)
+            {
+                _gameObject = null;
+                if (instance != null) ABMrg.ReleaseInstantiate(instance);
+                _initialization.TrySetException(error);
+                Debug.LogException(error);
+            }
         }
 
         //public Identity GetIdentity() { return _identity; }

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -11,50 +9,48 @@ namespace FrameWork
     public class LayerAnim
     {
         private PlayableGraph _playableGraph;
-        
+
         private int lastMixProt = -1;
-        private int lastLayerProt = -1;
-        
+
         private int curMixProt=-1;
 
-        private int curLayerProt = -1;
-
         private float _lefpSpeed=1;
-        
+
         private AnimationMixerPlayable _mixerPlayable;
-        
-        private ConcurrentDictionary<string, int> _layerAnims;
-        private ConcurrentDictionary<int, AnimationClipPlayable> _animationClipPlayables;
-        private List<float> _animLenghts;
 
-
-        private StringBuilder _curAnim;
+        private readonly Dictionary<string, int> _layerAnims;
+        private readonly Dictionary<int, AnimationClipPlayable> _animationClipPlayables;
+        private readonly List<float> _animLenghts;
 
         private float _curAnimPlayLenght;
 
-        private AnimationClipPlayable _curPlayable;
-        private int _animIndex;
         public LayerAnim()
         {
-            _curAnim = new StringBuilder();
-            _layerAnims = new ConcurrentDictionary<string, int>();
+            _layerAnims = new Dictionary<string, int>();
             _animLenghts = new List<float>();
-            _animationClipPlayables = new ConcurrentDictionary<int, AnimationClipPlayable>();
+            _animationClipPlayables = new Dictionary<int, AnimationClipPlayable>();
         }
 
         public AnimationMixerPlayable GetMixer()
         {
             return _mixerPlayable;
         }
-        
+
         public void Init(AnimLayerData animLayerData,PlayableGraph playableGraph,Action<string,int> init,Action<AnimationMixerPlayable> end)
         {
+            _layerAnims.Clear();
+            _animationClipPlayables.Clear();
+            _animLenghts.Clear();
+            lastMixProt = curMixProt = -1;
+            _mixlerp = 1f;
+            _curAnimPlayLenght = 0f;
             _playableGraph = playableGraph;
-            _mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, animLayerData.AnimData.Count);
-            
-            for (int j = 0; j < animLayerData.AnimData.Count; j++)
+            _mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, (animLayerData.AnimData?.Count ?? 0));
+
+            for (int j = 0; j < (animLayerData.AnimData?.Count ?? 0); j++)
             {
                 var animationClip = animLayerData.AnimData[j];
+                if (animationClip == null) throw new ArgumentException("动画层包含空 AnimationClip。");
                 _animLenghts.Add(animationClip.length);
                 var clip = AnimationClipPlayable.Create(_playableGraph,animationClip);
                 _animationClipPlayables.TryAdd(j, clip);
@@ -67,8 +63,7 @@ namespace FrameWork
                 }
             }
             end?.Invoke(_mixerPlayable);
-            
-            
+
             if (_mixerPlayable.GetInputCount()>0)
             {
                 _mixerPlayable.SetInputWeight(0,1);
@@ -78,41 +73,54 @@ namespace FrameWork
             }
 
             _curAnimPlayLenght = 0;
-          
+
         }
-        
+
         public void Init(PlayableGraph playableGraph)
         {
+            _layerAnims.Clear();
+            _animationClipPlayables.Clear();
+            _animLenghts.Clear();
+            lastMixProt = curMixProt = -1;
+            _mixlerp = 1f;
+            _curAnimPlayLenght = 0f;
             _playableGraph = playableGraph;
-            _mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, 1);
-            //_mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, _animIndex);
-           
+            _mixerPlayable = AnimationMixerPlayable.Create(_playableGraph, 0);
+
             _curAnimPlayLenght = 0;
         }
-        
-        
+
         public void SetSpeed(float speed)
         {
             _mixerPlayable.SetSpeed(speed);
         }
-        
+
         public void Update()
         {
             LerpAnim();
-            
+
         }
-        
-        private AnimationClipPlayable _clipPlayable;
-        private int _prot = -1;
+
         private void SetAnim(int port,float lerpSpeed=1,bool isSetTime=false)
         {
-            if (_animationClipPlayables.TryGetValue(port, out _clipPlayable))
+            if (_animationClipPlayables.TryGetValue(port, out var clipPlayable))
             {
                 if (isSetTime)
                 {
-                    _clipPlayable.SetTime(0);
+                    clipPlayable.SetTime(0);
                 }
                 _curAnimPlayLenght = 0;
+                if (curMixProt == port)
+                {
+                    if (lerpSpeed == -1)
+                    {
+                        clipPlayable.SetTime(0);
+                        _mixlerp = 1f;
+                        _lefpSpeed = 1f;
+                        ApplyWeights();
+                    }
+                    return;
+                }
                 if (_mixlerp>=1)
                 {
                     _mixlerp = 0;
@@ -125,97 +133,80 @@ namespace FrameWork
                     {
                         _mixlerp = 1;
                     }
-                
-                    
-                    
-                    curMixProt = port; 
+
+                    curMixProt = port;
                 }
                 else
                 {
-                    _prot = lastMixProt;
-                    
-                    
+                    int previousPort = lastMixProt;
+
                     _curAnimPlayLenght = _animLenghts[port] * _mixlerp;
                     _lefpSpeed = lerpSpeed;
                     lastMixProt = curMixProt;
                     curMixProt = port;
                     _mixlerp = 1 - _mixlerp;
-                    
-                    
-                    if (_prot!=-1&& _prot!=port&& _mixlerp!=1)
+
+                    if (previousPort!=-1 && previousPort!=port && _mixlerp!=1)
                     {
-                        _mixerPlayable.SetInputWeight(_prot,0);
+                        _mixerPlayable.SetInputWeight(previousPort,0);
                     }
                 }
-                
+
                 if (lerpSpeed==-1)
                 {
                     _mixlerp = 1;
                     _lefpSpeed = 1;
-                    _clipPlayable.SetTime(0);
+                    clipPlayable.SetTime(0);
                 }
+                ApplyWeights();
             }
 
-            
-            
-            
-            
-            //InvokeRepeating("LerpAnim",0,0.02f);
         }
 
         public void SetAnim(AnimationClip animationClip,float lerpSpeed=1f,bool isSetTime=false)
         {
-            int curInput = _mixerPlayable.GetInputCount();
-            if (_layerAnims.TryAdd(animationClip.name,_layerAnims.Count))
+            if (animationClip == null) throw new ArgumentNullException(nameof(animationClip));
+            if (!_layerAnims.TryGetValue(animationClip.name, out int port))
             {
+                port = _animLenghts.Count;
+                _mixerPlayable.SetInputCount(port + 1);
+                var clip = AnimationClipPlayable.Create(_playableGraph, animationClip);
+                if (!_playableGraph.Connect(clip, 0, _mixerPlayable, port))
+                {
+                    _playableGraph.DestroyPlayable(clip);
+                    throw new InvalidOperationException("动画连接失败：" + animationClip.name);
+                }
                 _animLenghts.Add(animationClip.length);
-                var clip = AnimationClipPlayable.Create(_playableGraph,animationClip);
-                _playableGraph.Connect(clip, 0, _mixerPlayable, _layerAnims.Count-1);
-                _mixerPlayable.SetInputCount(curInput+1);
-                _curPlayable = clip;
-                _animationClipPlayables.TryAdd(_layerAnims.Count-1, clip);
-                SetAnim(_layerAnims.Count-1,lerpSpeed,isSetTime);
-                
+                _animationClipPlayables.Add(port, clip);
+                _layerAnims.Add(animationClip.name, port);
             }
-            else
-            {
-                SetAnim(_layerAnims[animationClip.name],lerpSpeed,isSetTime);
-            }
+            SetAnim(port, lerpSpeed, isSetTime);
         }
-        
-        
-        private int _port;
+
         public void SetAnim(string animName,float lerpSpeed=1,bool isSetTime=false)
         {
-            if (_layerAnims.TryGetValue(animName,out _port))
+            if (_layerAnims.TryGetValue(animName,out int port))
             {
-                SetAnim(_port,lerpSpeed,isSetTime);
-                _curAnim.Clear();
-                _curAnim.Append(animName);
-               // EventManager.DispatchEvent((int)MessageType.Animation,(int)AnimMessageType.Start,new object[]{animName});
-               
+                SetAnim(port,lerpSpeed,isSetTime);
+
             }
         }
-        
+
         private float _mixlerp=1;
         private void LerpAnim()
         {
-            _mixlerp += Time.deltaTime*_lefpSpeed;
-            
-            _mixlerp = Mathf.Clamp(_mixlerp, 0, 1);
             _curAnimPlayLenght += Time.deltaTime;
-            if (lastMixProt!=-1)
-            {
-                _mixerPlayable.SetInputWeight(lastMixProt,1-_mixlerp);
-            }
-
-            if (curMixProt!=-1)
-            {
-                _mixerPlayable.SetInputWeight(curMixProt,_mixlerp);
-            }
-            
+            if (_mixlerp >= 1f) return;
+            _mixlerp = Mathf.Clamp01(_mixlerp + Time.deltaTime * _lefpSpeed);
+            ApplyWeights();
         }
 
+        private void ApplyWeights()
+        {
+            if (lastMixProt != -1 && lastMixProt != curMixProt)
+                _mixerPlayable.SetInputWeight(lastMixProt, 1f - _mixlerp);
+            if (curMixProt != -1) _mixerPlayable.SetInputWeight(curMixProt, _mixlerp);
+        }
 
         public float GetLerp()
         {
@@ -224,7 +215,7 @@ namespace FrameWork
 
         public bool IsGreater(float value)
         {
-            if (_animationClipPlayables.TryGetValue(curMixProt,out var clipPlayable))
+            if (_animationClipPlayables.ContainsKey(curMixProt))
             {
                 return _curAnimPlayLenght >=value ;
             }
@@ -233,11 +224,11 @@ namespace FrameWork
                 return true;
             }
         }
-        
+
         public float GetCurAnimPlayLenght()
         {
             return _curAnimPlayLenght;
         }
-        
+
     }
 }

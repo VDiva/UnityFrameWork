@@ -1,6 +1,23 @@
 {
   "name": "FrameWork.Editor",
-  "references": ["FrameWork.Runtime", "UniTask", "YooAsset", "YooAsset.Editor", "HybridCLR.Runtime", "HybridCLR.Editor", "FancyScrollView", "FancyScrollView.Editor", "Unity.TextMeshPro", "UnityEngine.UI", "UnityEditor.UI", "spine-csharp", "spine-unity"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "FrameWork.Bootstrap",
+    "UniTask",
+    "YooAsset",
+    "YooAsset.Editor",
+    "HybridCLR.Runtime",
+    "HybridCLR.Editor",
+    "FancyScrollView",
+    "FancyScrollView.Editor",
+    "Unity.TextMeshPro",
+    "UnityEngine.UI",
+    "UnityEditor.UI",
+    "spine-csharp",
+    "spine-unity",
+    "HotUpdate"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "autoReferenced": true
 }

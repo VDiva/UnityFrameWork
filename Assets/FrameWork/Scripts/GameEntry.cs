@@ -9,8 +9,10 @@ namespace HotUpdate
     {
         public static async UniTask Start()
         {
-            UiManager.Init(new UiRoot());
-            await UniTask.WaitUntil(() => UiManager.GetCamera() != null);
+            await Config.InitializeAsync();
+            await UiManager.InitAsync(new UiRoot());
+            if (UiManager.GetCamera() == null)
+                throw new System.InvalidOperationException("UI 根节点缺少 Camera。");
             Debug.Log("HotUpdate.GameEntry.Start：YooAsset + HybridCLR 启动成功。");
             FrameworkLauncher.MarkHotUpdateStarted();
             // 在这里初始化业务服务、网络连接和首个游戏场景。

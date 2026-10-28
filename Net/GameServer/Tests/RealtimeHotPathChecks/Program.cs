@@ -192,15 +192,35 @@ var syncSocket = new BlockingWebSocket();
 using var syncReceiver = new PlayerSession("sync-receiver", syncSocket);
 roomProperty.SetValue(syncReceiver, aiRoomId);
 await sync.SendObjectStateAsync(syncReceiver, ownedIds[0]);
-await WaitForMessagesAsync(syncSocket, ServerMsgType.NetworkSyncVarUpdate, 1);
+await WaitForMessagesAsync(syncSocket, ServerMsgType.NetworkObjectStateBatch, 1);
 Msg onlyState = Msg.Parser.ParseFrom(syncSocket.Sent.Single());
-Check(onlyState.NetworkSyncVar.ObjectId == ownedIds[0] &&
-      onlyState.NetworkSyncVar.Sequence == 2 &&
-      onlyState.NetworkSyncVar.Value.ToStringUtf8() == "latest",
+Check(onlyState.NetworkSyncVars.Single().ObjectId == ownedIds[0] &&
+      onlyState.NetworkSyncVars.Single().Sequence == 2 &&
+      onlyState.NetworkSyncVars.Single().Value.ToStringUtf8() == "latest",
     "late join gets only requested object's newest sync var");
 sync.RemoveObject(ownedIds[0]);
 await sync.SendObjectStateAsync(syncReceiver, ownedIds[0]);
 Check(syncSocket.Sent.Count == 1, "removed object's sync var is absent");
+for (uint field=2;field<=101;field++)
+    await sync.RelayAsync(owner,new NetworkSyncVarData { ObjectId=ownedIds[1], BehaviourId=1, FieldId=field, Sequence=1, Value=ByteString.CopyFromUtf8("field") });
+var batchSocket=new BlockingWebSocket();
+using var batchReceiver=new PlayerSession("batch-state-receiver",batchSocket);
+roomProperty.SetValue(batchReceiver,aiRoomId);
+await sync.SendObjectStateAsync(batchReceiver,ownedIds[1]);
+await WaitForMessagesAsync(batchSocket,ServerMsgType.NetworkObjectStateBatch,1);
+Check(batchSocket.Sent.Count==1 && Msg.Parser.ParseFrom(batchSocket.Sent.Single()).NetworkSyncVars.Count==101,
+    "101 initial sync fields use one packet instead of 101");
+sync.RemoveObject(ownedIds[1]);
+for(uint field=1;field<=3;field++) await sync.RelayAsync(owner,new NetworkSyncVarData {
+    ObjectId=ownedIds[1], FieldId=field, Sequence=1, Value=ByteString.CopyFrom(new byte[32*1024]) });
+var splitSocket=new BlockingWebSocket();
+using var splitReceiver=new PlayerSession("split-state-receiver",splitSocket);
+roomProperty.SetValue(splitReceiver,aiRoomId);
+await sync.SendObjectStateAsync(splitReceiver,ownedIds[1]);
+await WaitForMessagesAsync(splitSocket,ServerMsgType.NetworkObjectStateBatch,3);
+Check(splitSocket.Sent.Count==3 && splitSocket.Sent.All(x=>x.Length<=48*1024) &&
+    splitSocket.Sent.Select(Msg.Parser.ParseFrom).Sum(x=>x.NetworkSyncVars.Count)==3,
+    "large initial state splits at packet budget without losing fields");
 sync.RemoveObject(ownedIds[1]);
 rooms.Leave(owner);
 await NetworkRoomObjectManager.Instance.HandleOwnerLeavingAsync(owner, aiRoomId);

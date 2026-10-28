@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "uvsgk/Fws2s=",
+  "dgSpecHash": "6G1S5HNpEgM=",
   "success": true,
-  "projectFilePath": "C:\\Svn\\Game\\Net\\GameServer\\Tests\\EquipmentRollChecks\\EquipmentRollChecks.csproj",
+  "projectFilePath": "G:\\Unity\\UnityFramework\\Net\\GameServer\\Tests\\EquipmentRollChecks\\EquipmentRollChecks.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\smr\\.nuget\\packages\\google.protobuf\\3.35.1\\google.protobuf.3.35.1.nupkg.sha512"
+    "G:\\Unity\\UnityFramework\\Temp\\NuGetPackages\\google.protobuf\\3.35.1\\google.protobuf.3.35.1.nupkg.sha512"
   ],
   "logs": []
 }

@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "com.karrar.netick": "https://github.com/NetickNetworking/NetickForUnity.git",
+    "com.karrar.unitytransportnetick": "https://github.com/NetickNetworking/NetickUnityTransport.git#2e8460ea240321c60553793a702a3f03b510d8a7",
+    "com.unity.transport": "2.4.0"
+  }
+}

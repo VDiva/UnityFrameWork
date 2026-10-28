@@ -660,6 +660,7 @@ namespace FrameWork
     
         public static T GetListIndex<T>(this List<T> list, int index)
         {
+            if (list == null || list.Count == 0) return default(T);
             if (index>=list.Count)
             {
                 return list.Last();
@@ -672,7 +673,7 @@ namespace FrameWork
         
         public static T GetListIndex<T>(this T[] list, int index)
         {
-            if (list.Length<=0)
+            if (list == null || list.Length<=0)
             {
                 return default(T);
             }

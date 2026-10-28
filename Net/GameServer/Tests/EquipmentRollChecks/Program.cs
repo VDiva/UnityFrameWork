@@ -132,6 +132,7 @@ namespace WebSocketDemo
         }
         public Task WaitForSnapshotSendCapacityAsync() => Task.CompletedTask;
         public void QueueLatestTransformBatch(ulong key, byte[] bytes) { }
+        public void QueueLatestTransformBatch(ulong key, TransformBatchPacket packet) { }
     }
     public sealed class PlayerSessionManager
     {
@@ -147,6 +148,7 @@ namespace WebSocketDemo
         public Task BroadcastBinaryAsync(byte[] data, string? excluded, uint room)
         { Broadcasts.Add(Msg.Parser.ParseFrom(data)); return Task.CompletedTask; }
         public void BroadcastLatestBinary(ulong key, byte[] bytes, string id, uint room, int maxAgeMs = 0) { }
+        public void BroadcastLatestBinary(ulong key, ISessionPacketPayload payload, string id, uint room, int maxAgeMs = 0) { }
         public static ulong CreateRealtimeKey(ServerMsgType type, uint id, int track = 0) => id;
     }
     public sealed class NetworkRoomManager

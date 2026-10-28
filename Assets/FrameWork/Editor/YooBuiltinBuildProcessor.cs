@@ -24,8 +24,19 @@ namespace FrameWork.Editor
 
         public void OnPreprocessBuild(BuildReport report)
         {
+            if (PlayerSettings.stripEngineCode)
+                throw new BuildFailedException("业务场景由 YooAsset 动态加载，必须关闭 Player Settings/Strip Engine Code。请先执行 FrameWork/HybridCLR/配置热更新程序集和启动场景，并重新准备客户端基线。");
             if (EditorUserBuildSettings.buildScriptsOnly) return; // HybridCLR 生成裁剪 AOT 的内部构建。
             Cleanup();
+            var settings = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(YooResourceEditor.SettingsPath);
+            if (settings == null) throw new BuildFailedException("缺少 YooResourceSettings，请先配置资源收集。");
+            if (settings.playerMode == YooPlayerMode.Host)
+            {
+                if (Directory.Exists(Target))
+                    throw new BuildFailedException("Host 为纯远程模式，请移除 Assets/StreamingAssets/yoo 中旧的内置资源后再构建。");
+                // 热更 DLL、AOT 元数据和业务资源均由远端包下载，不暂存内置首包。
+                return;
+            }
             string source = Path.Combine(YooResourceEditor.BuiltinRoot, report.summary.platform.ToString(), "yoo");
             if (!Directory.Exists(source))
             {

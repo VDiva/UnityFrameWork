@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace FrameWork
 {
     /// <summary>启动场景唯一入口：资源初始化 → 更新下载 → AOT 元数据 → DLL → 游戏。</summary>
     [DefaultExecutionOrder(-10000)]
+    [UnityEngine.Scripting.APIUpdating.MovedFrom(true, null, "FrameWork.Runtime", null)]
     public sealed class FrameworkLauncher : MonoBehaviour
     {
         private static FrameworkLauncher _instance;
@@ -73,6 +75,7 @@ namespace FrameWork
 #endif
                 ProgressChanged?.Invoke(0.8f, "加载热更新程序集");
                 Assembly entryAssembly = null;
+                var loadedAssemblies = new List<Assembly>();
                 foreach (string dll in settings.hotUpdateDlls)
                 {
                     Assembly assembly = null;
@@ -88,7 +91,12 @@ namespace FrameWork
                         finally { ABMrg.ReleaseAsset<TextAsset>(dll); }
                     }
                     if (new AssemblyName(assembly.FullName).Name == settings.entryAssembly) entryAssembly = assembly;
+                    loadedAssemblies.Add(assembly);
                 }
+#if !UNITY_EDITOR
+                // 动态加载 DLL 后 Unity 不会自动执行这些启动回调，需在业务入口前补齐。
+                InitializeHotUpdateAssemblies(loadedAssemblies);
+#endif
                 var type = entryAssembly?.GetType(settings.entryType, true);
                 var method = type?.GetMethod(settings.entryMethod, BindingFlags.Public | BindingFlags.Static,
                     null, Type.EmptyTypes, null);
@@ -115,5 +123,22 @@ namespace FrameWork
 
         [Preserve]
         public static void MarkHotUpdateStarted() => HotUpdateStarted = true;
+
+        private static void InitializeHotUpdateAssemblies(IEnumerable<Assembly> assemblies)
+        {
+            var callbacks = assemblies.SelectMany(a => a.GetTypes()).SelectMany(t =>
+                t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                .Select(method => new { Method = method, Attribute = method.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>() })
+                .Where(callback => callback.Attribute != null).ToArray();
+            var phases = new[] { RuntimeInitializeLoadType.SubsystemRegistration, RuntimeInitializeLoadType.AfterAssembliesLoaded,
+                RuntimeInitializeLoadType.BeforeSplashScreen, RuntimeInitializeLoadType.BeforeSceneLoad, RuntimeInitializeLoadType.AfterSceneLoad };
+            foreach (var phase in phases)
+                foreach (var callback in callbacks.Where(c => c.Attribute.loadType == phase))
+                {
+                    if (callback.Method.GetParameters().Length != 0 || callback.Method.ReturnType != typeof(void) || callback.Method.ContainsGenericParameters)
+                        throw new InvalidOperationException("热更新启动回调必须是无参数的静态 void 方法：" + callback.Method);
+                    callback.Method.Invoke(null, null);
+                }
+        }
     }
 }

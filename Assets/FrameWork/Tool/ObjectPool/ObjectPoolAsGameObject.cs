@@ -1,70 +1,71 @@
-using System.Collections.Concurrent;
-using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace FrameWork
 {
-    public class ObjectPoolAsGameObject
+    public class ObjectPoolAsGameObject 
     {
-       
-        private int _num;
-        private int _currentNum;
-        private GameObject _go;
-        private List<GameObject> _objectPool;
-        private Func<GameObject> _func;
-        public ObjectPoolAsGameObject(Func<GameObject> func,int num=-1)
+        private readonly int _capacity;
+        private int _created;
+        private readonly Func<GameObject> _factory;
+        private readonly Queue<GameObject> _items = new Queue<GameObject>();
+        private readonly HashSet<GameObject> _idle = new HashSet<GameObject>(PoolReferenceComparer<GameObject>.Instance);
+
+        public ObjectPoolAsGameObject(Func<GameObject> func, int num = -1)
         {
-            _func = func;
-            _objectPool = new List<GameObject>();
-            _currentNum = 0;
-            _num = num;
+            if (num < -1) throw new ArgumentOutOfRangeException(nameof(num));
+            _factory = func ?? throw new ArgumentNullException(nameof(func));
+            _capacity = num;
         }
+
         
-        public void EnQueue(GameObject go)
+
+        public void EnQueue(GameObject item)
         {
-            if (!_objectPool.Contains(go))
-            {
-                _objectPool.Add(go);
-                go.gameObject.SetActive(false);
-            }
-            else
+            if (item == null) return;
+            if (_idle.Contains(item))
             {
                 MyLog.LogError("添加重复的对象进对象池!!!!");
+                return;
             }
+            if (_capacity >= 0 && _items.Count >= _capacity)
+            {
+                UnityEngine.Object.Destroy(item);
+                return;
+            }
+            _idle.Add(item);
+            _items.Enqueue(item);
+            item.SetActive(false);
         }
-        
+
         public GameObject DeQueue()
         {
-            
-            if (_objectPool.Count>0)
+            while (_items.Count > 0)
             {
-                var item = _objectPool[0];
-                _objectPool.RemoveAt(0);
+                var item = _items.Dequeue();
+                _idle.Remove(item);
+                if (item == null)
+                {
+                    _created = Math.Max(0, _created - 1);
+                    continue;
+                }
                 item.SetActive(true);
                 return item;
             }
-            else
+            if (_capacity >= 0 && _created >= _capacity) return null;
+            _created++;
+            try
             {
-                if (_num==-1)
-                {
-                    GameObject obj = _func.Invoke();
-                    obj.SetActive(true);
-                    return obj;
-                }
-                else
-                {
-                    if (_currentNum>_num)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        GameObject obj = _func.Invoke();
-                        obj.SetActive(true);
-                        return obj;
-                    }
-                }
+                var item = _factory();
+                if (item == null) _created--;
+                else item.SetActive(true);
+                return item;
+            }
+            catch
+            {
+                _created--;
+                throw;
             }
         }
     }

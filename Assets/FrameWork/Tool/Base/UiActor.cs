@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace FrameWork
@@ -73,6 +74,10 @@ namespace FrameWork
         public override void OnDestroy()
         {
             base.OnDestroy();
+            animTweener?.Kill();
+            viewCanvasTweener?.Kill();
+            bgTweener?.Kill();
+            UiManager.ForgetUi(this);
             
             EventMrg.Unsubscribe<int>(MessageType.UiMessage,UiMessageType.Show,ShowUi);
             EventMrg.Unsubscribe<int>(MessageType.UiMessage,UiMessageType.Hide,HideUi);
@@ -90,7 +95,9 @@ namespace FrameWork
         {
             if (index.Equals(GetIndex()))
             {
-                GetGameObject().SetActive(true);
+                if (ReferenceEquals(UiManager.GetUiByType(GetType()), this))
+                    UiManager.OpenUi(GetType()).Forget(Debug.LogException);
+                else if (GetGameObject() != null) GetGameObject().SetActive(true);
             }
         }
 
@@ -102,7 +109,9 @@ namespace FrameWork
         {
             if (index.Equals(GetIndex())|| index==-1)
             {
-                GetGameObject().SetActive(false);
+                if (ReferenceEquals(UiManager.GetUiByType(GetType()), this))
+                    UiManager.HideUi(GetType());
+                else if (GetGameObject() != null) GetGameObject().SetActive(false);
             }
         }
 
@@ -115,7 +124,9 @@ namespace FrameWork
         {
             if (index.Equals(GetIndex())||index==-1)
             {
-                ABMrg.ReleaseInstantiate(GetGameObject());
+                if (ReferenceEquals(UiManager.GetUiByType(GetType()), this))
+                    UiManager.RemoveUi(GetType());
+                else ABMrg.ReleaseInstantiate(GetGameObject());
                 //GameObject.Destroy(GetGameObject());
             }
         }

@@ -7,7 +7,6 @@ namespace WebSocketDemo;
 public class OfflineSaveService : BackgroundService
 {
     private static readonly TimeSpan SaveTimeout = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan ReconnectGraceTime = TimeSpan.FromSeconds(2);
     private const int MaxConcurrentSaves = 16;
     private readonly SemaphoreSlim _concurrency = new(MaxConcurrentSaves, MaxConcurrentSaves);
 
@@ -34,7 +33,6 @@ public class OfflineSaveService : BackgroundService
         try
         {
             acquired = true;
-            await Task.Delay(ReconnectGraceTime, stoppingToken);
             using var timeoutCts = new CancellationTokenSource(SaveTimeout);
             var saveTask = GameDataMrg.SetPlayerOffline(user.UserId, user.ServerId);
             var completedTask = await Task.WhenAny(saveTask, Task.Delay(Timeout.InfiniteTimeSpan, timeoutCts.Token));

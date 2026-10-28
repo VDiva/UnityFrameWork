@@ -18,6 +18,9 @@ namespace WebSocketDemo
         private readonly ConcurrentDictionary<string, PlayerSession> _sessions;
         private readonly ConcurrentDictionary<string, string> _userSessions;
         private readonly ConcurrentDictionary<uint, ConcurrentDictionary<string, PlayerSession>> _roomSessions;
+        private const float LobbyVisibleDistance = 40f;
+        private readonly SpatialInterestIndex<PlayerSession> _lobbyInterest = new(LobbyVisibleDistance);
+        private readonly ConcurrentDictionary<uint, PlayerSession> _lobbySubjects = new();
         private int _nextNetworkObjectId;
         private bool _disposed;
 
@@ -180,8 +183,8 @@ namespace WebSocketDemo
         public bool HasRoomObserver(uint roomId, string exceptPlayerId)
         {
             if (!_roomSessions.TryGetValue(roomId, out var members)) return false;
-            foreach (PlayerSession session in members.Values)
-                if (session.IsConnected && !string.IsNullOrWhiteSpace(session.UserId) &&
+            foreach (var entry in members)
+                if (entry.Value is { } session && session.IsConnected && !string.IsNullOrWhiteSpace(session.UserId) &&
                     session.NetworkRoomId == roomId && session.PlayerId != exceptPlayerId)
                     return true;
             return false;
@@ -199,6 +202,7 @@ namespace WebSocketDemo
         private void RemoveRoomSession(PlayerSession session, uint? roomId = null)
         {
             uint id = roomId ?? session.NetworkRoomId;
+            if (id == NetworkRoomManager.LobbyRoomId) RemoveLobbyInterest(session);
             if (id != 0 && _roomSessions.TryGetValue(id, out var members))
                 members.TryRemove(session.PlayerId, out _);
         }
@@ -366,6 +370,27 @@ namespace WebSocketDemo
             }
         }
 
+        public void BroadcastLatestBinary(
+            ulong key,
+            ISessionPacketPayload data,
+            string? exceptPlayerId = null,
+            uint roomId = 0,
+            string? serverId = null,
+            int maxAgeMs = 0)
+        {
+            foreach (PlayerSession session in SessionsForRoom(roomId))
+            {
+                if (session.IsConnected &&
+                    !string.IsNullOrWhiteSpace(session.UserId) &&
+                    session.PlayerId != exceptPlayerId &&
+                    (serverId == null || session.ServerId == serverId) &&
+                    (roomId == 0 || session.NetworkRoomId == roomId))
+                {
+                    session.QueueLatestPayload(key, data, maxAgeMs);
+                }
+            }
+        }
+
         /// <summary>广播只需要最新版本的可靠状态，不等待 socket 写完。</summary>
         public void BroadcastLatestControlBinary(
             ulong key, byte[] data, string? exceptPlayerId = null,
@@ -383,9 +408,13 @@ namespace WebSocketDemo
 
         internal IEnumerable<PlayerSession> SessionsForRoom(uint roomId)
         {
-            if (roomId == 0) return _sessions.Values;
-            return _roomSessions.TryGetValue(roomId, out var members)
-                ? members.Values : Array.Empty<PlayerSession>();
+            // ConcurrentDictionary.Values 会复制集合；热路径直接遍历键值枚举器。
+            if (roomId == 0)
+            {
+                foreach (var entry in _sessions) yield return entry.Value;
+            }
+            else if (_roomSessions.TryGetValue(roomId, out var members))
+                foreach (var entry in members) yield return entry.Value;
         }
 
         /// <summary>为已登录会话分配类似 Mirror netId 的进程内唯一大厅对象 ID。</summary>
@@ -445,13 +474,13 @@ namespace WebSocketDemo
                     }.ToByteArray());
                 }
 
-                if (existing.LastNetworkAnimation != null)
+                foreach (var animation in existing.NetworkAnimations.Values)
                 {
                     await session.SendBinaryAsync(new Msg
                     {
                         MsgType = ProtobufMsgType.Server,
                         ServerMsgType = ServerMsgType.NetworkAnimationUpdate,
-                        NetworkAnimation = existing.LastNetworkAnimation.Clone()
+                        NetworkAnimation = animation.Clone()
                     }.ToByteArray());
                 }
                 await NetworkSyncVarManager.Instance.SendObjectStateAsync(session, existing.NetworkObjectId);
@@ -509,12 +538,11 @@ namespace WebSocketDemo
                 return;
             }
 
-            foreach (PlayerSession other in GetRoomSessions(NetworkRoomManager.LobbyRoomId))
+            RemoveLobbyInterest(session);
+            foreach (var visible in session.VisibleNetworkObjects)
             {
-                if (other == session) continue;
-                if (other.VisibleNetworkObjects.TryRemove(objectId, out _))
-                    await other.SendBinaryAsync(despawn);
-                session.VisibleNetworkObjects.TryRemove(other.NetworkObjectId, out _);
+                if (!_lobbySubjects.TryGetValue(visible.Key, out var other) || other == session) continue;
+                if (other.VisibleNetworkObjects.TryRemove(objectId, out _)) await other.SendBinaryAsync(despawn);
             }
             session.VisibleNetworkObjects.Clear();
         }
@@ -525,22 +553,23 @@ namespace WebSocketDemo
                 previous.RoomId == snapshot.RoomId && previous.SceneEpoch == snapshot.SceneEpoch &&
                 snapshot.Sequence <= previous.Sequence)
                 return;
-            sender.LastNetworkTransform = snapshot.Clone();
+            var cached = snapshot.Clone();
+            sender.LastNetworkTransform = cached;
             if (sender.NetworkRoomId == NetworkRoomManager.LobbyRoomId)
             {
                 await UpdateLobbyAoiAsync(sender);
-                byte[] bytes = new Msg { MsgType = ProtobufMsgType.Server,
+                var bytes = DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
                     ServerMsgType = ServerMsgType.NetworkTransformUpdate,
-                    NetworkTransform = snapshot }.ToByteArray();
+                    NetworkTransform = cached });
                 SendToObserversLatest(sender, CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate,
                     snapshot.ObjectId), bytes, maxAgeMs: 250);
             }
             else
             {
                 if (!HasRoomObserver(sender.NetworkRoomId, sender.PlayerId)) return;
-                byte[] bytes = new Msg { MsgType = ProtobufMsgType.Server,
+                var bytes = DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
                     ServerMsgType = ServerMsgType.NetworkTransformUpdate,
-                    NetworkTransform = snapshot }.ToByteArray();
+                    NetworkTransform = cached });
                 BroadcastLatestBinary(CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate, snapshot.ObjectId),
                     bytes, sender.PlayerId, sender.NetworkRoomId, sender.ServerId, maxAgeMs: 250);
             }
@@ -548,10 +577,15 @@ namespace WebSocketDemo
 
         public Task RelayNetworkAnimationAsync(PlayerSession sender, NetworkAnimationData snapshot)
         {
-            sender.LastNetworkAnimation = snapshot.Clone();
-            byte[] bytes = new Msg { MsgType = ProtobufMsgType.Server,
+            if (!NetworkStateValidation.IsValid(snapshot)) return Task.CompletedTask;
+            var cached = snapshot.Clone();
+            var accepted = sender.NetworkAnimations.AddOrUpdate(snapshot.TrackIndex, cached,
+                (_, old) => cached.Sequence > old.Sequence ? cached : old);
+            if (!ReferenceEquals(accepted, cached)) return Task.CompletedTask;
+            sender.LastNetworkAnimation = cached;
+            var bytes = DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
                 ServerMsgType = ServerMsgType.NetworkAnimationUpdate,
-                NetworkAnimation = snapshot }.ToByteArray();
+                NetworkAnimation = cached });
             if (sender.NetworkRoomId == NetworkRoomManager.LobbyRoomId)
                 SendToObserversLatest(sender, CreateRealtimeKey(ServerMsgType.NetworkAnimationUpdate,
                     snapshot.ObjectId, snapshot.TrackIndex), bytes);
@@ -561,30 +595,48 @@ namespace WebSocketDemo
             return Task.CompletedTask;
         }
 
+        private void RemoveLobbyInterest(PlayerSession session)
+        {
+            _lobbyInterest.Remove(session);
+            ((ICollection<KeyValuePair<uint, PlayerSession>>)_lobbySubjects).Remove(
+                new KeyValuePair<uint, PlayerSession>(session.NetworkObjectId, session));
+        }
+
         private async Task UpdateLobbyAoiAsync(PlayerSession sender)
         {
-            const float visibleDistance = 40f;
-            NetworkTransformData? a = sender.LastNetworkTransform;
-            if (a == null) return;
-            float maxDistanceSqr = visibleDistance * visibleDistance;
-
-            foreach (PlayerSession other in SessionsForRoom(NetworkRoomManager.LobbyRoomId))
+            var a = sender.LastNetworkTransform;
+            if (a == null || sender.NetworkRoomId != NetworkRoomManager.LobbyRoomId || sender.NetworkObjectId == 0) return;
+            _lobbyInterest.Update(sender, sender.ServerId ?? string.Empty, a.PositionX, a.PositionY, a.PositionZ);
+            _lobbySubjects[sender.NetworkObjectId] = sender;
+            if (sender.NetworkRoomId != NetworkRoomManager.LobbyRoomId || sender.LastNetworkTransform != a)
             {
-                if (other == sender || other.NetworkRoomId != NetworkRoomManager.LobbyRoomId ||
-                    other.ServerId != sender.ServerId ||
-                    other.NetworkObjectId == 0 || other.LastNetworkTransform == null) continue;
-                NetworkTransformData b = other.LastNetworkTransform;
-                float dx = a.PositionX - b.PositionX;
-                float dy = a.PositionY - b.PositionY;
-                float dz = a.PositionZ - b.PositionZ;
-                bool visible = dx * dx + dy * dy + dz * dz <= maxDistanceSqr;
-
+                RemoveLobbyInterest(sender);
+                return;
+            }
+            var candidates = new HashSet<PlayerSession>();
+            _lobbyInterest.CollectNearby(sender.ServerId ?? string.Empty, a.PositionX, a.PositionY, a.PositionZ, candidates);
+            // 必须同时检查旧可见对象，跨格/瞬移后才能及时发送 Despawn。
+            foreach (var visible in sender.VisibleNetworkObjects)
+            {
+                if (_lobbySubjects.TryGetValue(visible.Key, out var subject)) candidates.Add(subject);
+                else sender.VisibleNetworkObjects.TryRemove(visible.Key, out _);
+            }
+            double maxDistanceSqr = LobbyVisibleDistance * LobbyVisibleDistance;
+            foreach (var other in candidates)
+            {
+                if (other == sender) continue;
+                var b = other.LastNetworkTransform;
+                bool eligible = sender.NetworkRoomId == NetworkRoomManager.LobbyRoomId &&
+                    other.IsConnected && other.NetworkRoomId == NetworkRoomManager.LobbyRoomId &&
+                    other.ServerId == sender.ServerId && other.NetworkObjectId != 0 && b != null;
+                double dx = b == null ? double.PositiveInfinity : (double)a.PositionX - b.PositionX;
+                double dy = b == null ? double.PositiveInfinity : (double)a.PositionY - b.PositionY;
+                double dz = b == null ? double.PositiveInfinity : (double)a.PositionZ - b.PositionZ;
+                bool visible = eligible && dx * dx + dy * dy + dz * dz <= maxDistanceSqr;
                 if (visible)
                 {
-                    if (sender.VisibleNetworkObjects.TryAdd(other.NetworkObjectId, 0))
-                        await SendSpawnAndStateAsync(sender, other);
-                    if (other.VisibleNetworkObjects.TryAdd(sender.NetworkObjectId, 0))
-                        await SendSpawnAndStateAsync(other, sender);
+                    if (sender.VisibleNetworkObjects.TryAdd(other.NetworkObjectId, 0)) await SendSpawnAndStateAsync(sender, other);
+                    if (other.VisibleNetworkObjects.TryAdd(sender.NetworkObjectId, 0)) await SendSpawnAndStateAsync(other, sender);
                 }
                 else
                 {
@@ -606,10 +658,10 @@ namespace WebSocketDemo
                 await receiver.SendBinaryAsync(new Msg { MsgType = ProtobufMsgType.Server,
                     ServerMsgType = ServerMsgType.NetworkTransformUpdate,
                     NetworkTransform = subject.LastNetworkTransform.Clone() }.ToByteArray());
-            if (subject.LastNetworkAnimation != null)
+            foreach (var animation in subject.NetworkAnimations.Values)
                 await receiver.SendBinaryAsync(new Msg { MsgType = ProtobufMsgType.Server,
                     ServerMsgType = ServerMsgType.NetworkAnimationUpdate,
-                    NetworkAnimation = subject.LastNetworkAnimation.Clone() }.ToByteArray());
+                    NetworkAnimation = animation.Clone() }.ToByteArray());
             await NetworkSyncVarManager.Instance.SendObjectStateAsync(receiver, subject.NetworkObjectId);
         }
 
@@ -678,12 +730,14 @@ namespace WebSocketDemo
                 await BroadcastAllPlayersEnteredAsync(mapTransitionCompletedRoom);
         }
 
-        private void SendToObserversLatest(PlayerSession sender, ulong key, byte[] data,
+        private void SendToObserversLatest(PlayerSession sender, ulong key, ISessionPacketPayload data,
             int maxAgeMs = 0)
         {
-            foreach (PlayerSession target in SessionsForRoom(NetworkRoomManager.LobbyRoomId))
-                if (target.IsConnected && target.VisibleNetworkObjects.ContainsKey(sender.NetworkObjectId))
-                    target.QueueLatestBinary(key, data, maxAgeMs);
+            foreach (var visible in sender.VisibleNetworkObjects)
+                if (_lobbySubjects.TryGetValue(visible.Key, out var target) && target.IsConnected &&
+                    target.NetworkRoomId == NetworkRoomManager.LobbyRoomId && target.ServerId == sender.ServerId &&
+                    target.VisibleNetworkObjects.ContainsKey(sender.NetworkObjectId))
+                    target.QueueLatestPayload(key, data, maxAgeMs);
         }
 
         public static ulong CreateRealtimeKey(ServerMsgType messageType, uint objectId, int trackIndex = 0)
@@ -740,6 +794,8 @@ namespace WebSocketDemo
             _sessions.Clear();
             _userSessions.Clear();
             _roomSessions.Clear();
+            _lobbyInterest.Clear();
+            _lobbySubjects.Clear();
             _disposed = true;
         }
     }

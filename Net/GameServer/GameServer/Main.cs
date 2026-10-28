@@ -4,6 +4,7 @@ using WebSocketDemo;
 var builder = WebApplication.CreateBuilder(args);
 WeChatLoginService.Configure(builder.Configuration);
 ServerVersionProtocol.Configure(builder.Configuration);
+ReplicationSettings.Configure(builder.Configuration);
 builder.Services.AddHostedService<DirtyUserSaveService>();
 builder.Services.AddHostedService<WeeklyRankClearService>();
 builder.Services.AddHostedService<EmailCacheRefreshService>();

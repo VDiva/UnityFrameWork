@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,42 +26,122 @@ namespace FrameWork.Editor
     [Serializable] internal sealed class ClientBaseline
     {
         public string platform, clientBuildId, aotFingerprint;
+        public List<ReleaseFile> inputs;
     }
 
     public static class FrameworkReleaseEditor
     {
         private const string BaselinePath = "ProjectSettings/FrameWorkReleaseBaseline.json";
-        public static string Fingerprint()
+        public static string Fingerprint() => Fingerprint(null);
+
+        internal static string Fingerprint(List<ReleaseFile> inputs)
         {
-            string root = "Assets/FrameWork";
+            // Keep legacy baseline hashes when SDKs only toggle an inactive platform.
+            var reference = File.Exists(BaselinePath)
+                ? JsonUtility.FromJson<ClientBaseline>(File.ReadAllText(BaselinePath)) : null;
+            var referenceInputs = reference?.platform == EditorUserBuildSettings.activeBuildTarget.ToString()
+                ? reference.inputs?.ToDictionary(x => x.path, x => x.sha256) : null;
+            var hotSources = FrameworkHotUpdateLayout.SourceFiles();
+            var hotDlls = FrameworkHotUpdateLayout.AssemblyNames();
+            var included = new HashSet<string>(StringComparer.Ordinal);
             var builder = new StringBuilder(Application.unityVersion + "\n" + EditorUserBuildSettings.activeBuildTarget + "\n");
-            foreach (string path in Directory.GetFiles(root, "*", SearchOption.AllDirectories).OrderBy(x => x, StringComparer.Ordinal))
+            builder.Append("business-hotupdate-v1\n").Append(string.Join(";", hotDlls.OrderBy(n => n, StringComparer.Ordinal))).Append('\n');
+            foreach (string path in Directory.GetFiles("Assets", "*", SearchOption.AllDirectories).OrderBy(x => x, StringComparer.Ordinal))
             {
                 string normalized = path.Replace('\\', '/');
-                if (normalized.StartsWith(root + "/Scripts/", StringComparison.Ordinal) ||
-                    normalized.Contains("/Editor/") || normalized.Contains("/Data~/") || normalized.Contains("/Samples~/")) continue;
-                string extension = Path.GetExtension(path);
-                bool embedded = normalized.StartsWith(root + "/Resources/", StringComparison.Ordinal);
-                bool metadata = normalized.StartsWith(root + "/Asset/Dll/", StringComparison.Ordinal) && !normalized.EndsWith("/HotUpdate.dll.bytes", StringComparison.Ordinal);
-                bool nativeMeta = normalized.EndsWith(".cs.meta", StringComparison.Ordinal) || normalized.EndsWith(".asmdef.meta", StringComparison.Ordinal) || normalized.EndsWith(".dll.meta", StringComparison.Ordinal);
-                if (extension != ".cs" && extension != ".asmdef" && extension != ".dll" && !embedded && !metadata && !nativeMeta) continue;
-                builder.Append(normalized).Append(':').Append(Hash(path)).Append('\n');
+                if (!ClientBaselineInputPolicy.Includes(normalized, hotSources, hotDlls)) continue;
+                string hash = Hash(path);
+                if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL &&
+                    normalized.EndsWith(".a.meta", StringComparison.OrdinalIgnoreCase) &&
+                    referenceInputs != null && referenceInputs.TryGetValue(normalized, out string previousHash) &&
+                    hash != previousHash && MatchesInactiveWeixinToggle(File.ReadAllBytes(path), previousHash))
+                    hash = previousHash;
+                inputs?.Add(new ReleaseFile { path = normalized, sha256 = hash });
+                included.Add(normalized);
+                builder.Append(normalized).Append(':').Append(hash).Append('\n');
             }
             builder.Append(File.ReadAllText("Packages/manifest.json"));
-            foreach (string setting in new[] { "ProjectSettings/ProjectSettings.asset", FrameworkIntegrationEditor.BootScenePath })
-                if (File.Exists(setting)) builder.Append(setting).Append(':').Append(Hash(setting)).Append('\n');
+            inputs?.Add(new ReleaseFile { path = "Packages/manifest.json", sha256 = Hash("Packages/manifest.json") });
+            var startupInputs = new[] { "ProjectSettings/ProjectSettings.asset", FrameworkIntegrationEditor.BootScenePath }
+                .Concat(AssetDatabase.GetDependencies(FrameworkIntegrationEditor.BootScenePath, true))
+                .SelectMany(path => new[] { path, path + ".meta" }).Distinct();
+            foreach (string setting in startupInputs)
+                if (File.Exists(setting) && included.Add(setting))
+                {
+                    string hash = Hash(setting);
+                    inputs?.Add(new ReleaseFile { path = setting, sha256 = hash });
+                    builder.Append(setting).Append(':').Append(hash).Append('\n');
+                }
             using var algorithm = SHA256.Create();
             return Hex(algorithm.ComputeHash(Encoding.UTF8.GetBytes(builder.ToString())));
+        }
+
+        // SDKs serialize the Tuanjie WeixinMiniGame switch even in Unity WebGL projects.
+        // Accept only a byte-exact match after flipping that single inactive switch;
+        // WebGL compatibility, plugin contents and all other importer settings remain guarded.
+        internal static bool MatchesInactiveWeixinToggle(byte[] metadata, string expectedHash)
+        {
+            string text = Encoding.UTF8.GetString(metadata);
+            var match = System.Text.RegularExpressions.Regex.Match(text,
+                @"(?m)^  - first:\r?\n      WeixinMiniGame: WeixinMiniGame\r?\n    second:\r?\n      enabled: ([01])\r?$");
+            if (!match.Success) return false;
+            int index = match.Groups[1].Index;
+            string alternate = text.Substring(0, index) + (text[index] == '0' ? "1" : "0") + text.Substring(index + 1);
+            using var algorithm = SHA256.Create();
+            return Hex(algorithm.ComputeHash(Encoding.UTF8.GetBytes(alternate))) == expectedHash;
         }
 
         public static void SaveClientBaseline()
         {
             var boot = AssetDatabase.LoadAssetAtPath<FrameworkBootSettings>(FrameworkIntegrationEditor.BootSettingsPath);
+            var inputs = new List<ReleaseFile>();
             var baseline = new ClientBaseline {
                 platform = EditorUserBuildSettings.activeBuildTarget.ToString(),
-                clientBuildId = boot.clientBuildId, aotFingerprint = Fingerprint()
+                clientBuildId = boot.clientBuildId, aotFingerprint = Fingerprint(inputs), inputs = inputs
             };
             File.WriteAllText(BaselinePath, JsonUtility.ToJson(baseline, true));
+        }
+
+        internal static bool CanReuseClientBaseline(out string reason)
+        {
+            reason = "尚未生成客户端基线";
+            if (!File.Exists(BaselinePath)) return false;
+            var baseline = JsonUtility.FromJson<ClientBaseline>(File.ReadAllText(BaselinePath));
+            var boot = AssetDatabase.LoadAssetAtPath<FrameworkBootSettings>(FrameworkIntegrationEditor.BootSettingsPath);
+            if (baseline == null || boot == null || string.IsNullOrEmpty(boot.clientBuildId) ||
+                baseline.clientBuildId != boot.clientBuildId)
+            {
+                reason = "客户端 ID 与基线不一致";
+                return false;
+            }
+            if (baseline.platform != EditorUserBuildSettings.activeBuildTarget.ToString())
+            {
+                reason = "构建平台已变化";
+                return false;
+            }
+            if (boot.aotMetadataDlls == null || boot.aotMetadataDlls.Length == 0 ||
+                boot.aotMetadataDlls.Any(dll => !File.Exists(Path.Combine(FrameworkIntegrationEditor.DllDirectory, dll + ".bytes"))))
+            {
+                reason = "AOT 元数据缺失";
+                return false;
+            }
+            var inputs = new List<ReleaseFile>();
+            if (baseline.aotFingerprint == Fingerprint(inputs))
+            {
+                reason = "客户端输入未变化，复用现有 AOT 和客户端 ID";
+                return true;
+            }
+            reason = "客户端输入已变化（含嵌入安装包的 Resources）";
+            if (baseline.inputs != null)
+            {
+                var previous = baseline.inputs.ToDictionary(x => x.path, x => x.sha256);
+                var current = inputs.ToDictionary(x => x.path, x => x.sha256);
+                var changed = previous.Keys.Union(current.Keys).Where(path =>
+                    !previous.TryGetValue(path, out string oldHash) ||
+                    !current.TryGetValue(path, out string newHash) || oldHash != newHash).Take(8);
+                reason += "：\n" + string.Join("\n", changed);
+            }
+            return false;
         }
 
         [MenuItem("FrameWork/发布/发布热更新版本（DLL 和资源）")]
@@ -76,13 +156,15 @@ namespace FrameWork.Editor
             if (!File.Exists(BaselinePath)) throw new InvalidOperationException("请先准备新的客户端基线（含 AOT）。");
             var baseline = JsonUtility.FromJson<ClientBaseline>(File.ReadAllText(BaselinePath));
             var boot = AssetDatabase.LoadAssetAtPath<FrameworkBootSettings>(FrameworkIntegrationEditor.BootSettingsPath);
-            if (baseline.aotFingerprint != Fingerprint() || baseline.clientBuildId != boot.clientBuildId ||
-                baseline.platform != EditorUserBuildSettings.activeBuildTarget.ToString())
-                throw new InvalidOperationException("AOT 框架、插件、包依赖或平台已变化，需要重新准备客户端基线和安装包，不能作为旧客户端热更新发布。");
+            if (!CanReuseClientBaseline(out string reason))
+                throw new InvalidOperationException("需要重新准备客户端基线和安装包：" + reason);
             var runtime = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(YooResourceEditor.SettingsPath);
             string publish = Path.Combine("Publish", baseline.platform, baseline.clientBuildId, runtime.packageName);
-            string archive = Path.Combine(publish, "_releases", version);
-            if (Directory.Exists(archive)) throw new InvalidOperationException("该版本已发布，请使用新的版本号：" + version);
+            string archive = Path.Combine("Publish", "_releases", baseline.platform,
+                baseline.clientBuildId, runtime.packageName, version);
+            // 兼容尚未迁移的历史存档，仍禁止重复发布旧版本。
+            if (Directory.Exists(archive) || Directory.Exists(Path.Combine(publish, "_releases", version)))
+                throw new InvalidOperationException("该版本已发布，请使用新的版本号：" + version);
             FrameworkIntegrationEditor.CompileHotUpdate();
             // 编译热更新不能改动 AOT 基线；生成变化后的 AOT 源码同样需要新客户端。
             if (baseline.aotFingerprint != Fingerprint()) throw new InvalidOperationException("编译后检测到 AOT 代码变化。");
@@ -183,7 +265,7 @@ namespace FrameWork.Editor
         private void OnGUI()
         {
             _version = EditorGUILayout.TextField("资源版本", _version);
-            EditorGUILayout.HelpBox("只发布 HotUpdate 程序集和资源。AOT 代码变化时请先准备新客户端基线。发布产物保存在项目 Publish 目录。", UnityEditor.MessageType.Info);
+            EditorGUILayout.HelpBox("发布统一的 HotUpdate.dll（框架业务和游戏逻辑）及 YooAsset 资源。只有启动壳、AOT 插件或平台变化才需要新客户端。产物保存在 Publish 目录。", UnityEditor.MessageType.Info);
             if (GUILayout.Button("编译 DLL 并生成发布文件"))
             {
                 try { FrameworkReleaseEditor.Publish(_version); Close(); }

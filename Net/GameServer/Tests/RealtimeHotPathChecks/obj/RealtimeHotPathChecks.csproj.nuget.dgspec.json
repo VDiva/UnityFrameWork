@@ -1,34 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Svn\\Game\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj": {}
+    "G:\\Unity\\UnityFramework\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj": {}
   },
   "projects": {
-    "C:\\Svn\\Game\\Net\\GameServer\\GameServer\\GameServer.csproj": {
+    "G:\\Unity\\UnityFramework\\Net\\GameServer\\GameServer\\GameServer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Svn\\Game\\Net\\GameServer\\GameServer\\GameServer.csproj",
+        "projectUniqueName": "G:\\Unity\\UnityFramework\\Net\\GameServer\\GameServer\\GameServer.csproj",
         "projectName": "GameServer",
-        "projectPath": "C:\\Svn\\Game\\Net\\GameServer\\GameServer\\GameServer.csproj",
-        "packagesPath": "C:\\Users\\smr\\.nuget\\packages",
-        "outputPath": "C:\\Svn\\Game\\Net\\GameServer\\GameServer\\obj\\",
+        "projectPath": "G:\\Unity\\UnityFramework\\Net\\GameServer\\GameServer\\GameServer.csproj",
+        "packagesPath": "G:\\Unity\\UnityFramework\\Temp\\NuGetPackages",
+        "outputPath": "G:\\Unity\\UnityFramework\\Net\\GameServer\\GameServer\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Svn\\Game\\Packages": {}
+          "G:\\Unity\\UnityFramework\\Temp\\NuGetFeed": {}
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -39,13 +35,15 @@
           ]
         },
         "restoreAuditProperties": {
-          "enableAudit": "true",
+          "enableAudit": "false",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "Google.Protobuf": {
@@ -80,39 +78,35 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Svn\\Game\\.dotnet\\sdk\\8.0.425/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Svn\\Game\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj": {
+    "G:\\Unity\\UnityFramework\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Svn\\Game\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj",
+        "projectUniqueName": "G:\\Unity\\UnityFramework\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj",
         "projectName": "RealtimeHotPathChecks",
-        "projectPath": "C:\\Svn\\Game\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj",
-        "packagesPath": "C:\\Users\\smr\\.nuget\\packages",
-        "outputPath": "C:\\Svn\\Game\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\obj\\",
+        "projectPath": "G:\\Unity\\UnityFramework\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\RealtimeHotPathChecks.csproj",
+        "packagesPath": "G:\\Unity\\UnityFramework\\Temp\\NuGetPackages",
+        "outputPath": "G:\\Unity\\UnityFramework\\Net\\GameServer\\Tests\\RealtimeHotPathChecks\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\smr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Svn\\Game\\Packages": {}
+          "G:\\Unity\\UnityFramework\\Temp\\NuGetFeed": {}
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Svn\\Game\\Net\\GameServer\\GameServer\\GameServer.csproj": {
-                "projectPath": "C:\\Svn\\Game\\Net\\GameServer\\GameServer\\GameServer.csproj"
+              "G:\\Unity\\UnityFramework\\Net\\GameServer\\GameServer\\GameServer.csproj": {
+                "projectPath": "G:\\Unity\\UnityFramework\\Net\\GameServer\\GameServer\\GameServer.csproj"
               }
             }
           }
@@ -123,13 +117,15 @@
           ]
         },
         "restoreAuditProperties": {
-          "enableAudit": "true",
+          "enableAudit": "false",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "imports": [
             "net461",
@@ -147,7 +143,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Svn\\Game\\.dotnet\\sdk\\8.0.425/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

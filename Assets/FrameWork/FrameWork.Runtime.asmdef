@@ -1,6 +1,0 @@
-{
-  "name": "FrameWork.Runtime",
-  "references": ["UniTask", "YooAsset", "HybridCLR.Runtime", "UnityWebSocket.Runtime", "FancyScrollView", "spine-csharp", "spine-unity", "AstarPathfindingProject", "Unity.TextMeshPro", "UnityEngine.UI"],
-  "allowUnsafeCode": true,
-  "autoReferenced": true
-}
