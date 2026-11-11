@@ -10,6 +10,9 @@ namespace FrameWork
     /// <summary>保留框架原调用入口，资源后端使用 YooAsset。</summary>
     public static class ABMrg
     {
+        /// <summary>WebGL 资源加载与下载的并发上限，在初始化资源系统时生效。</summary>
+        public static int WebGLMaxConcurrentRequests = 4;
+
         public static Func<string, UniTask> SceneLoading;
         public static Action BeforeSceneLoading;
         public static Action<string> SceneLoaded;
@@ -110,6 +113,8 @@ namespace FrameWork
 #endif
             bool host = settings.playerMode == YooPlayerMode.Host;
 #if UNITY_WEBGL && !UNITY_EDITOR
+            // Only the shared queue limits WeChat; other WebGL runtimes keep their defaults.
+            WebGLRequestQueue.MaxConcurrency = Mathf.Clamp(WebGLMaxConcurrentRequests, 1, 4);
             var web = new WebPlayModeOptions();
             if (host) web.WebNetworkFileSystemParameters =
                 FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(CreateRemote(settings));
@@ -206,7 +211,7 @@ namespace FrameWork
             var key = (name, typeof(T));
             if (!Assets.TryGetValue(key, out var handle))
             {
-                handle = Package.LoadAssetAsync(name, typeof(T));
+                handle = Package.LoadAssetAsync(GameResourceAliases.Resolve(name, typeof(T)), typeof(T));
                 Assets.Add(key, handle);
             }
             while (handle.IsValid && !handle.IsDone) await UniTask.Yield(PlayerLoopTiming.Update);
@@ -233,7 +238,7 @@ namespace FrameWork
 #else
             if (Assets.ContainsKey((name, typeof(T))))
                 throw new InvalidOperationException("该资源正在异步加载，请等待 LoadAsync 完成：" + name);
-            var handle = Package.LoadAssetSync(name, typeof(T));
+            var handle = Package.LoadAssetSync(GameResourceAliases.Resolve(name, typeof(T)), typeof(T));
             if (handle.Status != EOperationStatus.Succeeded)
             {
                 string error = handle.Error;
@@ -271,7 +276,7 @@ namespace FrameWork
         public static async UniTask<GameObject> InstantiateAsync(string name, Transform parent = null)
         {
             await Init();
-            var handle = Package.LoadAssetAsync<GameObject>(name);
+            var handle = Package.LoadAssetAsync<GameObject>(GameResourceAliases.Resolve(name, typeof(GameObject)));
             try
             {
                 while (!handle.IsDone) await UniTask.Yield();

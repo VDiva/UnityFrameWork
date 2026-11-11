@@ -20,6 +20,9 @@ namespace YooAsset
         private readonly WebNetworkFileSystem _fileSystem;
         private PreloadConflictController.AccessRequest _conflictRequest;
         private UnityWebRequest _webRequest;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        private WebGLRequestQueue.Ticket _queueTicket;
+#endif
         private UnityWebRequestAsyncOperation _requestOperation;
         private ESteps _steps = ESteps.None;
 
@@ -62,12 +65,21 @@ namespace YooAsset
             // 创建下载请求
             if (_steps == ESteps.CreateRequest)
             {
+                if (_webRequest == null)
+                {
                 var args = new WebPreloadRequestArgs(Url);
                 _webRequest = _fileSystem.PreloadStrategy.CreatePreloadRequest(args);
                 if (_webRequest == null)
                     throw new YooInternalException($"{nameof(IWebPreloadStrategy)} returned null web request.");
 
+                }
+#if UNITY_WEBGL && !UNITY_EDITOR
+                if (_queueTicket == null) _queueTicket = WebGLRequestQueue.Enqueue(_webRequest);
+                if (!_queueTicket.TryStart()) return;
+                _requestOperation = _queueTicket.Operation;
+#else
                 _requestOperation = _webRequest.SendWebRequest();
+#endif
                 _steps = ESteps.CheckRequest;
             }
 
@@ -125,6 +137,10 @@ namespace YooAsset
                 if (_webRequest != null)
                 {
                     _webRequest.Dispose();
+#if UNITY_WEBGL && !UNITY_EDITOR
+                    _queueTicket?.Dispose();
+                    _queueTicket = null;
+#endif
                     _webRequest = null;
                     _requestOperation = null;
                 }

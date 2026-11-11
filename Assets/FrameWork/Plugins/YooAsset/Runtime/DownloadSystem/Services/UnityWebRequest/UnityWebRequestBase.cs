@@ -27,6 +27,9 @@ namespace YooAsset
         /// UnityWebRequest 实例（基类私有持有）
         /// </summary>
         private UnityWebRequest _webRequest;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        private WebGLRequestQueue.Ticket _queueTicket;
+#endif
 
         /// <summary>
         /// 是否启用看门狗
@@ -140,7 +143,11 @@ namespace YooAsset
                     else
                     {
                         ApplyRequestConfig();
+#if UNITY_WEBGL && !UNITY_EDITOR
+                        _queueTicket = WebGLRequestQueue.Enqueue(_webRequest);
+#else
                         _webRequest.SendWebRequest();
+#endif
                     }
                 }
                 catch (Exception ex)
@@ -241,6 +248,27 @@ namespace YooAsset
             if (Status != EDownloadRequestStatus.Running && Status != EDownloadRequestStatus.Aborting)
                 return;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+            if (_queueTicket != null && _queueTicket.Operation == null)
+            {
+                if (Status == EDownloadRequestStatus.Aborting)
+                {
+                    Status = EDownloadRequestStatus.Failed;
+                    Error = "Request canceled while queued.";
+                    CleanupWebRequest();
+                    return;
+                }
+                try { if (!_queueTicket.TryStart()) return; }
+                catch (Exception ex)
+                {
+                    Status = EDownloadRequestStatus.Failed;
+                    Error = ex.Message;
+                    CleanupWebRequest();
+                    return;
+                }
+                _lastDataReceivedTime = TimeUtility.RealtimeSinceStartup;
+            }
+#endif
             DownloadProgress = _webRequest.downloadProgress;
             DownloadedBytes = (long)_webRequest.downloadedBytes;
 
@@ -312,6 +340,10 @@ namespace YooAsset
             {
                 //注意：引擎底层会自动调用Abort方法
                 _webRequest.Dispose();
+#if UNITY_WEBGL && !UNITY_EDITOR
+                _queueTicket?.Dispose();
+                _queueTicket = null;
+#endif
                 _webRequest = null;
             }
         }

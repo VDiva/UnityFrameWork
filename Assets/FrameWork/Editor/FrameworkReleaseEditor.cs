@@ -116,13 +116,20 @@ namespace FrameWork.Editor
             }
             if (baseline.platform != EditorUserBuildSettings.activeBuildTarget.ToString())
             {
-                reason = "构建平台已变化";
+                reason = $"构建平台已变化：{baseline.platform} → {EditorUserBuildSettings.activeBuildTarget}";
                 return false;
             }
-            if (boot.aotMetadataDlls == null || boot.aotMetadataDlls.Length == 0 ||
-                boot.aotMetadataDlls.Any(dll => !File.Exists(Path.Combine(FrameworkIntegrationEditor.DllDirectory, dll + ".bytes"))))
+            if (boot.aotMetadataDlls == null || boot.aotMetadataDlls.Length == 0)
             {
-                reason = "AOT 元数据缺失";
+                reason = "AOT 元数据清单为空：" + FrameworkIntegrationEditor.BootSettingsPath;
+                return false;
+            }
+            var missingMetadata = boot.aotMetadataDlls
+                .Select(dll => Path.Combine(FrameworkIntegrationEditor.DllDirectory, dll + ".bytes").Replace('\\', '/'))
+                .Where(path => !File.Exists(path)).ToArray();
+            if (missingMetadata.Length > 0)
+            {
+                reason = "AOT 元数据文件缺失：\n" + string.Join("\n", missingMetadata);
                 return false;
             }
             var inputs = new List<ReleaseFile>();
@@ -131,17 +138,27 @@ namespace FrameWork.Editor
                 reason = "客户端输入未变化，复用现有 AOT 和客户端 ID";
                 return true;
             }
-            reason = "客户端输入已变化（含嵌入安装包的 Resources）";
-            if (baseline.inputs != null)
-            {
-                var previous = baseline.inputs.ToDictionary(x => x.path, x => x.sha256);
-                var current = inputs.ToDictionary(x => x.path, x => x.sha256);
-                var changed = previous.Keys.Union(current.Keys).Where(path =>
-                    !previous.TryGetValue(path, out string oldHash) ||
-                    !current.TryGetValue(path, out string newHash) || oldHash != newHash).Take(8);
-                reason += "：\n" + string.Join("\n", changed);
-            }
+            reason = DescribeInputChanges(baseline.inputs, inputs);
             return false;
+        }
+
+        internal static string DescribeInputChanges(List<ReleaseFile> previousInputs, List<ReleaseFile> currentInputs)
+        {
+            const string title = "客户端输入已变化（含嵌入安装包的 Resources）";
+            if (previousInputs == null)
+                return title + "；旧基线未保存文件清单，无法定位具体文件。重新准备基线后可显示文件差异。";
+            var previous = previousInputs.ToDictionary(x => x.path, x => x.sha256);
+            var current = currentInputs.ToDictionary(x => x.path, x => x.sha256);
+            var changes = new List<string>();
+            foreach (string path in previous.Keys.Union(current.Keys).OrderBy(x => x, StringComparer.Ordinal))
+            {
+                if (!previous.TryGetValue(path, out string oldHash)) changes.Add("[新增] " + path);
+                else if (!current.TryGetValue(path, out string newHash)) changes.Add("[删除] " + path);
+                else if (oldHash != newHash) changes.Add("[修改] " + path);
+            }
+            if (changes.Count == 0)
+                return title + "；文件内容未变化，请检查 Unity 版本或热更新程序集清单。";
+            return title + $"，共 {changes.Count} 个文件：\n" + string.Join("\n", changes);
         }
 
         [MenuItem("FrameWork/发布/发布热更新版本（DLL 和资源）")]
@@ -167,7 +184,8 @@ namespace FrameWork.Editor
                 throw new InvalidOperationException("该版本已发布，请使用新的版本号：" + version);
             FrameworkIntegrationEditor.CompileHotUpdate();
             // 编译热更新不能改动 AOT 基线；生成变化后的 AOT 源码同样需要新客户端。
-            if (baseline.aotFingerprint != Fingerprint()) throw new InvalidOperationException("编译后检测到 AOT 代码变化。");
+            if (!CanReuseClientBaseline(out string compileReason))
+                throw new InvalidOperationException("编译后检测到客户端基线变化，需要重新准备基线和安装包：" + compileReason);
             var result = YooResourceEditor.Build(version);
             var manifest = new FrameworkReleaseManifest {
                 platform = baseline.platform, clientBuildId = baseline.clientBuildId,

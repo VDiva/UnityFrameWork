@@ -13,6 +13,33 @@ namespace FrameWork.Editor
         public const string SettingsPath = "Assets/FrameWork/Resources/YooResourceSettings.asset";
         public const string BuiltinRoot = "Library/FrameWork/YooAssetBuiltin";
 
+        [MenuItem("FrameWork/刷新资源索引")]
+        public static void RefreshResourceIndex()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Debug.LogWarning("请先停止运行，再刷新资源索引；运行中的资源包仍持有旧清单。");
+                return;
+            }
+            try
+            {
+                EditorUtility.DisplayProgressBar("刷新资源索引", "扫描资源并更新收集路径…", 0.2f);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+                Configure();
+                AssetDatabase.SaveAssets();
+                var settings = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(SettingsPath);
+                EditorUtility.DisplayProgressBar("刷新资源索引", "重新生成编辑器模拟资源清单…", 0.7f);
+                var result = EditorSimulateBuildInvoker.Build(settings.packageName, (int)EBundleType.VirtualAssetBundle);
+                if (result == null || string.IsNullOrEmpty(result.PackageRootDirectory))
+                    throw new InvalidOperationException("模拟资源索引生成失败：未返回清单目录。");
+                Debug.Log("资源索引已刷新：收集路径和编辑器模拟清单已更新。重新运行游戏生效；真机和远端资源需重新构建并发布热更新。");
+            }
+            finally { EditorUtility.ClearProgressBar(); }
+        }
+
+        [MenuItem("FrameWork/刷新资源索引", true)]
+        private static bool CanRefreshResourceIndex() => !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
+
         [MenuItem("FrameWork/YooAsset/配置资源收集")]
         public static void Configure()
         {
