@@ -61,7 +61,7 @@ namespace FrameWork.FPS
         internal override int SlotCount => 1;
         internal override int GetSlot(string field) => field == nameof(child) ? 0 : -1;
         internal override RpgBehaviorStatus Tick(RpgBehaviorProgram tree, RpgEnemyAgent agent, float deltaTime) =>
-            tree.GetChild(this, 0).Tick(tree, agent, deltaTime);
+            tree.TickNode(tree.GetChild(this, 0), this, agent, deltaTime);
     }
 
     [Serializable]
@@ -90,7 +90,7 @@ namespace FrameWork.FPS
             {
                 var child = tree.GetChild(this, i);
                 if (child == null) continue;
-                var result = child.Tick(tree, agent, deltaTime);
+                var result = tree.TickNode(child, this, agent, deltaTime);
                 if (result != continueOn) return result;
             }
             return continueOn;
@@ -123,7 +123,7 @@ namespace FrameWork.FPS
 
         internal override RpgBehaviorStatus Tick(RpgBehaviorProgram tree, RpgEnemyAgent agent, float deltaTime)
         {
-            var result = tree.GetChild(this, 0).Tick(tree, agent, deltaTime);
+            var result = tree.TickNode(tree.GetChild(this, 0), this, agent, deltaTime);
             if (result == RpgBehaviorStatus.Success) return RpgBehaviorStatus.Failure;
             return result == RpgBehaviorStatus.Failure ? RpgBehaviorStatus.Success : result;
         }

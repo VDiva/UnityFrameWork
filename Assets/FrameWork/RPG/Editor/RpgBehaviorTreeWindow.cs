@@ -9,6 +9,8 @@ namespace FrameWork.RPG.Editor
 {
     public sealed class RpgBehaviorTreeWindow : BaseGraphWindow
     {
+        private RpgBehaviorDebugView debugger;
+
         [MenuItem("FrameWork/RPG/行为树编辑器")]
         public static void OpenFromSelection()
         {
@@ -25,17 +27,19 @@ namespace FrameWork.RPG.Editor
             return true;
         }
 
-        internal static RpgBehaviorTreeWindow Open(RpgBehaviorTree tree)
+        internal static RpgBehaviorTreeWindow Open(RpgBehaviorTree tree, RpgEnemyAgent debugTarget = null)
         {
             if (tree == null) return null;
             var window = GetWindow<RpgBehaviorTreeWindow>();
             if (!window.isGraphLoaded || window.graph != tree)
             {
+                window.ReleaseDebugger();
                 window.graphView?.SaveGraphToDisk();
                 window.graphView?.Dispose();
                 window.graphView = null;
                 window.InitializeGraph(tree);
             }
+            if (debugTarget != null) window.debugger?.SelectAgent(debugTarget);
             window.Show();
             window.Focus();
             return window;
@@ -90,8 +94,10 @@ namespace FrameWork.RPG.Editor
             minSize = new Vector2(520f, 300f);
             if (graphView == null)
             {
-                graphView = new BaseGraphView(this);
+                graphView = new RpgBehaviorDebugGraphView(this);
                 graphView.Add(new BehaviorToolbar(graphView));
+                debugger = new RpgBehaviorDebugView(graphView, (RpgBehaviorTree)data);
+                graphView.Add(debugger);
             }
             rootView.Add(graphView);
         }
@@ -105,10 +111,29 @@ namespace FrameWork.RPG.Editor
         protected override void OnDisable()
         {
             Undo.undoRedoPerformed -= OnUndo;
+            ReleaseDebugger();
             base.OnDisable();
             if (graph != null) AssetDatabase.SaveAssetIfDirty(graph);
             graphView?.Dispose();
             graphView = null;
+        }
+
+        protected override void Update()
+        {
+            if (!isGraphLoaded) base.Update();
+            debugger?.Refresh();
+        }
+
+        public override void OnGraphDeleted()
+        {
+            ReleaseDebugger();
+            base.OnGraphDeleted();
+        }
+
+        private void ReleaseDebugger()
+        {
+            debugger?.Dispose();
+            debugger = null;
         }
 
         private void OnUndo()

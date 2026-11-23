@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FrameWork.FPS
@@ -24,10 +25,27 @@ namespace FrameWork.FPS
         private RpgEnemyState state;
         private Vector3 movement;
         private bool? canAttackThisTick;
+        private bool? canPursueThisTick;
+        private bool? lineOfSightThisTick;
         private string lastTreeError;
+        private List<RpgBehaviorTraceStep> trace;
+        private Dictionary<string, string> traceParameters;
 
         public RpgEnemyState State => health != null && health.IsDepleted ? RpgEnemyState.Defeated : state;
         public RpgBehaviorTree BehaviorTree => behaviorTree;
+        public RpgEnemyDefinition Definition => definition;
+        public FpsWeapon Weapon => weapon;
+        public Transform Target => target;
+        public float TargetDistance => target != null ? HorizontalOffset(transform.position, target.position).magnitude : float.NaN;
+        public float HomeDistance => HorizontalOffset(transform.position, home).magnitude;
+        public bool? LastCanPursue => canPursueThisTick;
+        public bool? LastCanAttack => canAttackThisTick;
+        public bool? LastHasLineOfSight => lineOfSightThisTick;
+        public string LastBehaviorError => lastTreeError;
+        public bool IsTracingBehavior => trace != null;
+        public int BehaviorTraceFrame { get; private set; } = -1;
+        public IReadOnlyList<RpgBehaviorTraceStep> BehaviorTrace => trace;
+        public IReadOnlyDictionary<string, string> BehaviorParameters => traceParameters;
 
         private void Awake()
         {
@@ -60,6 +78,14 @@ namespace FrameWork.FPS
 
             movement = Vector3.zero;
             canAttackThisTick = null;
+            canPursueThisTick = null;
+            lineOfSightThisTick = null;
+            if (trace != null)
+            {
+                trace.Clear();
+                traceParameters.Clear();
+                BehaviorTraceFrame = Time.frameCount;
+            }
             if (behaviorTree == null)
             {
                 if (AttackTarget(deltaTime) == RpgBehaviorStatus.Failure &&
@@ -78,6 +104,36 @@ namespace FrameWork.FPS
             verticalSpeed -= 20f * deltaTime;
             movement.y = verticalSpeed;
             motor.Move(movement * deltaTime);
+        }
+
+        public void SetBehaviorTracing(bool enabled)
+        {
+            if (enabled == IsTracingBehavior) return;
+            trace = enabled ? new List<RpgBehaviorTraceStep>() : null;
+            traceParameters = enabled ? new Dictionary<string, string>() : null;
+            BehaviorTraceFrame = -1;
+        }
+
+        /// <summary>发布自定义动作这一帧的调试参数。</summary>
+        public void ReportBehaviorParameter(string name, object value)
+        {
+            if (traceParameters == null || string.IsNullOrWhiteSpace(name)) return;
+            traceParameters[name] = value?.ToString() ?? "null";
+        }
+
+        internal int BeginBehaviorTraceStep(RpgBehaviorNode node, RpgBehaviorNode parent)
+        {
+            if (trace == null) return -1;
+            int index = trace.Count;
+            trace.Add(new RpgBehaviorTraceStep(node, parent, RpgBehaviorStatus.Running));
+            return index;
+        }
+
+        internal void EndBehaviorTraceStep(int index, RpgBehaviorStatus result)
+        {
+            if (trace == null || index < 0 || index >= trace.Count) return;
+            var step = trace[index];
+            trace[index] = new RpgBehaviorTraceStep(step.Node, step.Parent, result);
         }
 
         internal bool CheckCondition(RpgEnemyCondition condition)
@@ -121,7 +177,12 @@ namespace FrameWork.FPS
 
             Vector3 origin = weapon.transform.position;
             Vector3 aim = TargetAimPoint() - origin;
-            bool clear = aim.sqrMagnitude > 0.0001f && HasLineOfSight(origin, aim);
+            bool clear = false;
+            if (aim.sqrMagnitude > 0.0001f)
+            {
+                clear = HasLineOfSight(origin, aim);
+                lineOfSightThisTick = clear;
+            }
             canAttackThisTick = clear;
             return clear;
         }
@@ -170,6 +231,13 @@ namespace FrameWork.FPS
         private Vector3 TargetAimPoint() => targetMotor != null ? targetMotor.bounds.center : target.position;
 
         private bool CanPursue()
+        {
+            bool result = CanPursueCore();
+            canPursueThisTick = result;
+            return result;
+        }
+
+        private bool CanPursueCore()
         {
             if (target == null || !target.gameObject.activeInHierarchy ||
                 (targetHealth != null && targetHealth.IsDepleted)) return false;

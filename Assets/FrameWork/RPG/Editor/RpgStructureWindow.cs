@@ -395,7 +395,7 @@ namespace FrameWork.RPG.Editor
             }
 
             if (selected is RpgEnemyAgent enemy && enemy.BehaviorTree != null)
-                DrawBehaviorTreeActions(enemy.BehaviorTree);
+                DrawBehaviorTreeActions(enemy.BehaviorTree, enemy);
 
             assetPreview.Draw(selected);
             if (inspectorTarget != selected)
@@ -407,11 +407,11 @@ namespace FrameWork.RPG.Editor
             inspector?.Draw(true);
         }
 
-        private static void DrawBehaviorTreeActions(RpgBehaviorTree tree)
+        private static void DrawBehaviorTreeActions(RpgBehaviorTree tree, RpgEnemyAgent debugTarget = null)
         {
             using var row = new EditorGUILayout.HorizontalScope();
             if (GUILayout.Button("打开行为树", GUILayout.Height(28f)))
-                EditorApplication.delayCall += () => RpgBehaviorTreeWindow.Open(tree);
+                EditorApplication.delayCall += () => RpgBehaviorTreeWindow.Open(tree, debugTarget);
             if (GUILayout.Button("新建动作脚本", GUILayout.Height(28f)))
                 EditorApplication.delayCall += RpgActionScriptCreator.Create;
 
