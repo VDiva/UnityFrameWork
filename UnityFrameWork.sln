@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "spine-unity", "spine-unity.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AstarPathfindingProjectEditor", "AstarPathfindingProjectEditor.csproj", "{e256ecf5-4d90-89a5-1ed0-aea9e54920d7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.FPS", "FrameWork.FPS.csproj", "{782ba7ed-b190-cb4b-3b8a-e43a0f05dbf4}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FancyScrollView", "FancyScrollView.csproj", "{83e60635-b3f5-194b-90c6-ad80c4848227}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HybridCLR.Runtime", "HybridCLR.Runtime.csproj", "{d76774de-817d-fbea-292a-61ab77636c14}"
@@ -74,6 +76,8 @@ Global
 		{4be9816d-7a79-aab1-ee0b-8054d073a6e7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{e256ecf5-4d90-89a5-1ed0-aea9e54920d7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{e256ecf5-4d90-89a5-1ed0-aea9e54920d7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{782ba7ed-b190-cb4b-3b8a-e43a0f05dbf4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{782ba7ed-b190-cb4b-3b8a-e43a0f05dbf4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83e60635-b3f5-194b-90c6-ad80c4848227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{83e60635-b3f5-194b-90c6-ad80c4848227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{d76774de-817d-fbea-292a-61ab77636c14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

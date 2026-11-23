@@ -1,0 +1,6 @@
+{
+  "name": "FrameWork.RPG.Editor",
+  "rootNamespace": "FrameWork.RPG.Editor",
+  "references": ["FrameWork.FPS"],
+  "includePlatforms": ["Editor"]
+}

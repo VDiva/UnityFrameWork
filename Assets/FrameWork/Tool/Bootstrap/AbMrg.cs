@@ -193,9 +193,18 @@ namespace FrameWork
                 throw new InvalidOperationException(operation.Error);
         }
 
+        private static bool TryGetCachedHandle((string, Type) key, out AssetHandle handle)
+        {
+            if (!Assets.TryGetValue(key, out handle)) return false;
+            if (handle.IsValid) return true;
+            Assets.Remove(key);
+            handle = null;
+            return false;
+        }
+
         public static bool TryGetLoaded<T>(string name, out T asset)
         {
-            if (Assets.TryGetValue((name, typeof(T)), out var handle) && handle.IsValid &&
+            if (TryGetCachedHandle((name, typeof(T)), out var handle) &&
                 handle.IsDone && handle.Status == EOperationStatus.Succeeded && handle.AssetObject is T result)
             {
                 asset = result;
@@ -209,7 +218,7 @@ namespace FrameWork
         {
             await Init();
             var key = (name, typeof(T));
-            if (!Assets.TryGetValue(key, out var handle))
+            if (!TryGetCachedHandle(key, out var handle))
             {
                 handle = Package.LoadAssetAsync(name, typeof(T));
                 Assets.Add(key, handle);
@@ -258,18 +267,24 @@ namespace FrameWork
         public static bool ReleaseAsset<T>(string name)
         {
             var key = (name, typeof(T));
-            if (!Assets.TryGetValue(key, out var handle)) return false;
+            if (!TryGetCachedHandle(key, out var handle)) return false;
             if (!handle.IsDone) throw new InvalidOperationException("资源仍在加载：" + name);
             Assets.Remove(key);
-            if (handle.IsValid) handle.Release();
+            handle.Release();
             return true;
         }
 
         public static void Release(AssetHandle handle)
         {
             if (handle == null) return;
-            foreach (var entry in new List<KeyValuePair<(string, Type), AssetHandle>>(Assets))
-                if (ReferenceEquals(entry.Value, handle)) Assets.Remove(entry.Key);
+            (string, Type)? key = null;
+            foreach (var entry in Assets)
+            {
+                if (!ReferenceEquals(entry.Value, handle)) continue;
+                key = entry.Key;
+                break;
+            }
+            if (key.HasValue) Assets.Remove(key.Value);
             if (handle.IsValid) handle.Release();
         }
 
@@ -279,7 +294,8 @@ namespace FrameWork
             var handle = Package.LoadAssetAsync<GameObject>(name);
             try
             {
-                while (!handle.IsDone) await UniTask.Yield();
+                while (handle.IsValid && !handle.IsDone) await UniTask.Yield();
+                if (!handle.IsValid) throw new InvalidOperationException("预制体句柄已失效：" + name);
                 if (handle.Status != EOperationStatus.Succeeded)
                     throw new InvalidOperationException($"预制体加载失败：{name}，{handle.Error}");
                 var instance = Object.Instantiate(handle.GetAssetObject<GameObject>(), parent);
