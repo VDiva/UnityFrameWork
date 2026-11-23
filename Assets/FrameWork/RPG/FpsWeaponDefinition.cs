@@ -11,6 +11,7 @@ namespace FrameWork.FPS
     {
         [SerializeField] private string displayName;
         [SerializeField] private Sprite icon;
+        [SerializeField] private GameObject viewModelPrefab;
         [SerializeField] private RuntimeAnimatorController animatorController;
         [SerializeField] private FpsWeaponKind kind;
         [SerializeField] private FpsAmmoType ammoType;
@@ -30,6 +31,7 @@ namespace FrameWork.FPS
 
         public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
         public Sprite Icon => icon;
+        public GameObject ViewModelPrefab => viewModelPrefab;
         public RuntimeAnimatorController AnimatorController => animatorController;
         public FpsWeaponKind Kind => kind;
         public FpsAmmoType AmmoType => ammoType;

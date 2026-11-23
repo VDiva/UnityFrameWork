@@ -1,5 +1,6 @@
 using System.IO;
 using FrameWork.FPS;
+using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -8,40 +9,47 @@ namespace FrameWork.RPG.Editor
 {
     internal static class RpgWeaponEditorActions
     {
-        internal static FpsWeaponDefinition CreateWeapon()
-        {
-            string path = EditorUtility.SaveFilePanelInProject("新建武器配置", "新武器", "asset", "选择武器 SO 的保存位置。");
-            if (!CanCreate(path)) return null;
-
-            var weapon = ScriptableObject.CreateInstance<FpsWeaponDefinition>();
-            AssetDatabase.CreateAsset(weapon, path);
-            return weapon;
-        }
-
         internal static void DrawActions(FpsWeaponDefinition weapon, ref FpsLoadout loadout)
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("武器动画树", EditorStyles.boldLabel);
-            if (weapon.AnimatorController == null)
+            SirenixEditorGUI.BeginBox("武器动画树");
+            try
             {
-                if (weapon.Kind == FpsWeaponKind.Firearm && weapon.ReloadCompletion == FpsReloadCompletion.External)
-                    EditorGUILayout.HelpBox("外部完成模式需要动画事件或代码回调。", MessageType.Warning);
-                if (GUILayout.Button("创建并绑定动画树模板")) CreateController(weapon);
+                if (weapon.AnimatorController == null)
+                {
+                    if (weapon.Kind == FpsWeaponKind.Firearm && weapon.ReloadCompletion == FpsReloadCompletion.External)
+                        EditorGUILayout.HelpBox("外部完成模式需要动画事件或代码回调。", MessageType.Warning);
+                    if (GUILayout.Button("创建并绑定动画树模板", GUILayout.Height(26f)))
+                        EditorApplication.delayCall += () => { if (weapon != null) CreateController(weapon); };
+                }
+                else if (GUILayout.Button("打开 Animator 动画树", GUILayout.Height(26f)))
+                {
+                    var controller = weapon.AnimatorController;
+                    EditorApplication.delayCall += () => { if (controller != null) AssetDatabase.OpenAsset(controller); };
+                }
             }
-            else if (GUILayout.Button("打开 Animator 动画树"))
-            {
-                AssetDatabase.OpenAsset(weapon.AnimatorController);
-            }
+            finally { SirenixEditorGUI.EndBox(); }
 
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("添加到场景装备栏", EditorStyles.boldLabel);
-            loadout = (FpsLoadout)EditorGUILayout.ObjectField("目标装备栏", loadout, typeof(FpsLoadout), true);
-            using (new EditorGUI.DisabledScope(Application.isPlaying || loadout == null ||
-                !loadout.gameObject.scene.IsValid() || EditorUtility.IsPersistent(loadout)))
+            SirenixEditorGUI.BeginBox("场景装备栏");
+            try
             {
-                if (GUILayout.Button("添加武器到装备栏")) AddToLoadout(weapon, loadout);
+                loadout = (FpsLoadout)EditorGUILayout.ObjectField("目标装备栏", loadout, typeof(FpsLoadout), true);
+                using var disabled = new EditorGUI.DisabledScope(!CanEditLoadout(loadout));
+                if (GUILayout.Button("添加武器到装备栏", GUILayout.Height(26f)))
+                {
+                    var target = loadout;
+                    EditorApplication.delayCall += () =>
+                    {
+                        if (weapon != null && CanEditLoadout(target)) AddToLoadout(weapon, target);
+                    };
+                }
             }
+            finally { SirenixEditorGUI.EndBox(); }
         }
+
+        private static bool CanEditLoadout(FpsLoadout loadout) => !Application.isPlaying &&
+            loadout != null && loadout.gameObject.scene.IsValid() && !EditorUtility.IsPersistent(loadout);
 
         private static void CreateController(FpsWeaponDefinition weapon)
         {
@@ -130,6 +138,10 @@ namespace FrameWork.RPG.Editor
             instance.transform.localPosition = Vector3.zero;
             instance.transform.localRotation = Quaternion.identity;
 
+            if (definition.ViewModelPrefab != null &&
+                PrefabUtility.InstantiatePrefab(definition.ViewModelPrefab, instance.transform) is GameObject model)
+                Undo.RegisterCreatedObjectUndo(model, "添加武器模型");
+
             var component = Undo.AddComponent<FpsWeapon>(instance);
             var weapon = new SerializedObject(component);
             weapon.FindProperty("definition").objectReferenceValue = definition;
@@ -147,7 +159,7 @@ namespace FrameWork.RPG.Editor
             EditorGUIUtility.PingObject(instance);
         }
 
-        private static bool CanCreate(string path)
+        internal static bool CanCreate(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;
             if (!File.Exists(path)) return true;

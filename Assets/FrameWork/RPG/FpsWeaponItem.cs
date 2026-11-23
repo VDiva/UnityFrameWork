@@ -7,6 +7,8 @@ namespace FrameWork.FPS
     {
         [SerializeField] private FpsWeapon weaponPrefab;
 
+        public FpsWeapon WeaponPrefab => weaponPrefab;
+
         public override bool TryApply(GameObject user)
         {
             var loadout = user.GetComponent<FpsLoadout>();
