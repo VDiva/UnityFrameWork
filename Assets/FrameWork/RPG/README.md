@@ -10,6 +10,8 @@
 
 选中资产后，右侧可以预览已绑定的图标和预制体模型。三个练习场武器配置都绑定了可预览模型。选中武器后，指定场景中的 `FpsLoadout`，再点 **添加武器到装备栏**。面板会创建武器节点、挂上已绑定的模型并注册到装备栏，操作可撤销。可按场景需要调整枪口和命中层。
 
+选中武器 SO 或场景武器时，右侧顶部的 **攻击参数** 可直接编辑伤害、射程和攻击间隔。近战武器还显示判定半径，已绑定弹丸的枪械还显示弹丸速度。场景武器绑定了 SO 时，修改会应用到共享该配置的所有武器。选中弹丸预制体也能查看并编辑引用它的武器参数。
+
 在同一配置中可绑定已有的 Animator Controller，也可点 **创建并绑定动画树模板**。先设置武器类型，模板会按类型生成状态。创建后，可从面板打开 Unity Animator 并为状态分配动作 Clip。
 
 在角色的 Animator 所在节点挂上 `FpsWeaponAnimator`。组件会自动寻找父节点的 `FpsLoadout`，也可以手动指定。换武器时自动应用其动画树。枪械模板使用 `Equip`、`Fire`、`Reload` Trigger，近战模板使用 `Equip`、`Melee` Trigger。自定义动画树可沿用同名参数。需要按动作帧结算换弹时，在 Reload 动画的装弹帧添加调用 `CompleteReloadFromAnimation` 的 Animation Event，再将枪械 SO 的 Reload Completion 改为 External。

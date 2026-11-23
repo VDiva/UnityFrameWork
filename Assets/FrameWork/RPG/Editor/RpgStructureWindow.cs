@@ -335,6 +335,41 @@ namespace FrameWork.RPG.Editor
                 }
             }
 
+            if (selected is FpsWeaponDefinition definition)
+            {
+                using var settings = new SerializedObject(definition);
+                RpgWeaponInspectorLayout.DrawAttack(settings, definition.Kind == FpsWeaponKind.Melee);
+                assetPreview.Draw(selected);
+                RpgWeaponInspectorLayout.DrawDefinition(settings);
+                if (settings.ApplyModifiedProperties()) InvalidateAssets();
+                RpgWeaponEditorActions.DrawActions(definition, ref targetLoadout);
+                return;
+            }
+
+            if (selected is FpsWeapon weapon)
+            {
+                using var instanceSettings = new SerializedObject(weapon);
+                var weaponDefinition = weapon.Definition;
+                if (weaponDefinition != null)
+                {
+                    EditorGUILayout.LabelField("共享武器配置", weaponDefinition.DisplayName, EditorStyles.miniLabel);
+                    using var settings = new SerializedObject(weaponDefinition);
+                    RpgWeaponInspectorLayout.DrawAttack(settings, weapon.IsMelee);
+                    if (settings.ApplyModifiedProperties()) InvalidateAssets();
+                }
+                else
+                {
+                    RpgWeaponInspectorLayout.DrawAttack(instanceSettings, false);
+                }
+                assetPreview.Draw(selected);
+                RpgWeaponInspectorLayout.DrawInstance(instanceSettings);
+                instanceSettings.ApplyModifiedProperties();
+                return;
+            }
+
+            if (selected is FpsProjectile projectile && EditorUtility.IsPersistent(projectile))
+                DrawProjectileWeapons(projectile);
+
             assetPreview.Draw(selected);
             if (inspectorTarget != selected)
             {
@@ -342,13 +377,20 @@ namespace FrameWork.RPG.Editor
                 inspector = PropertyTree.Create(new SerializedObject(selected));
                 inspectorTarget = selected;
             }
-            EditorGUI.BeginChangeCheck();
             inspector?.Draw(true);
-            if (EditorGUI.EndChangeCheck() && selected is FpsWeaponDefinition) InvalidateAssets();
-            if (selected is FpsWeaponDefinition weapon)
-                RpgWeaponEditorActions.DrawActions(weapon, ref targetLoadout);
-            else if (selected is FpsProjectile && EditorUtility.IsPersistent(selected))
-                EditorGUILayout.HelpBox("弹丸速度、射程和伤害由引用该预制体的武器配置决定。", MessageType.Info);
+        }
+
+        private void DrawProjectileWeapons(FpsProjectile projectile)
+        {
+            foreach (var entry in assetEntries)
+            {
+                if (!(entry.Target is FpsWeaponDefinition definition) || definition.ProjectilePrefab != projectile) continue;
+                EditorGUILayout.LabelField(definition.DisplayName, EditorStyles.boldLabel);
+                using var settings = new SerializedObject(definition);
+                RpgWeaponInspectorLayout.DrawAttack(settings, false);
+                if (settings.ApplyModifiedProperties()) InvalidateAssets();
+            }
+            EditorGUILayout.HelpBox("弹丸速度、射程和伤害保存在使用它的武器配置中。", MessageType.Info);
         }
 
         private void ReleaseInspector()

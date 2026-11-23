@@ -1,46 +1,86 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using FrameWork.FPS;
-using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities.Editor;
+using UnityEditor;
+using UnityEngine;
 
 namespace FrameWork.RPG.Editor
 {
-    public sealed class RpgWeaponInspectorLayout : OdinAttributeProcessor<FpsWeaponDefinition>
+    internal static class RpgWeaponInspectorLayout
     {
-        public override void ProcessChildMemberAttributes(InspectorProperty parentProperty,
-            MemberInfo member, List<Attribute> attributes)
+        internal static void DrawAttack(SerializedObject settings, bool melee)
         {
-            (string label, string group, int order, FpsWeaponKind? kind) layout = member.Name switch
+            SirenixEditorGUI.BeginBox("攻击参数");
+            try
             {
-                "displayName" => ("显示名称", "基础信息", 0, null),
-                "icon" => ("图标", "基础信息", 0, null),
-                "kind" => ("武器类型", "基础信息", 0, null),
-                "viewModelPrefab" => ("武器模型预制体", "基础信息", 0, null),
-                "damage" => ("伤害", "攻击参数", 1, null),
-                "range" => ("有效距离", "攻击参数", 1, null),
-                "shotInterval" => ("攻击间隔（秒）", "攻击参数", 1, null),
-                "meleeRadius" => ("近战判定半径", "攻击参数", 1, FpsWeaponKind.Melee),
-                "ammoType" => ("弹种", "枪械与弹药", 2, FpsWeaponKind.Firearm),
-                "fireMode" => ("射击模式", "枪械与弹药", 2, FpsWeaponKind.Firearm),
-                "magazineSize" => ("弹匣容量", "枪械与弹药", 2, FpsWeaponKind.Firearm),
-                "reserveCapacity" => ("备弹上限", "枪械与弹药", 2, FpsWeaponKind.Firearm),
-                "startingReserve" => ("初始备弹", "枪械与弹药", 2, FpsWeaponKind.Firearm),
-                "autoReload" => ("自动换弹", "换弹", 3, FpsWeaponKind.Firearm),
-                "reloadCompletion" => ("换弹完成方式", "换弹", 3, FpsWeaponKind.Firearm),
-                "reloadDuration" => ("换弹时长（秒）", "换弹", 3, FpsWeaponKind.Firearm),
-                "projectilePrefab" => ("弹丸预制体", "弹丸", 4, FpsWeaponKind.Firearm),
-                "projectileSpeed" => ("弹丸速度", "弹丸", 4, FpsWeaponKind.Firearm),
-                "animatorController" => ("Animator Controller", "动画配置", 5, null),
-                _ => (null, null, 0, null)
-            };
+                Field(settings, "damage", "伤害");
+                Field(settings, "range", melee ? "近战距离" : "射程");
+                Field(settings, "shotInterval", "攻击间隔（秒）");
+                if (melee) Field(settings, "meleeRadius", "近战判定半径");
+                else if (settings.FindProperty("projectilePrefab")?.objectReferenceValue != null)
+                    Field(settings, "projectileSpeed", "弹丸速度");
+            }
+            finally { SirenixEditorGUI.EndBox(); }
+        }
 
-            var (label, group, order, kind) = layout;
-            if (label == null) return;
-            attributes.Add(new LabelTextAttribute(label));
-            attributes.Add(new BoxGroupAttribute(group, order: order));
-            if (kind.HasValue) attributes.Add(new ShowIfAttribute(nameof(FpsWeaponDefinition.Kind), kind.Value));
+        internal static void DrawDefinition(SerializedObject settings)
+        {
+            SirenixEditorGUI.BeginBox("基础信息");
+            try
+            {
+                Field(settings, "displayName", "显示名称");
+                Field(settings, "kind", "武器类型");
+                Field(settings, "icon", "图标");
+                Field(settings, "viewModelPrefab", "武器模型预制体");
+                Field(settings, "animatorController", "动画控制器");
+            }
+            finally { SirenixEditorGUI.EndBox(); }
+
+            if (settings.FindProperty("kind").enumValueIndex == (int)FpsWeaponKind.Melee) return;
+
+            SirenixEditorGUI.BeginBox("枪械与弹药");
+            try
+            {
+                Field(settings, "fireMode", "射击模式");
+                Field(settings, "ammoType", "弹种");
+                Field(settings, "magazineSize", "弹匣容量");
+                Field(settings, "startingReserve", "初始备弹");
+                Field(settings, "reserveCapacity", "备弹上限");
+                Field(settings, "projectilePrefab", "弹丸预制体");
+            }
+            finally { SirenixEditorGUI.EndBox(); }
+
+            SirenixEditorGUI.BeginBox("换弹");
+            try
+            {
+                Field(settings, "autoReload", "自动换弹");
+                Field(settings, "reloadCompletion", "换弹完成方式");
+                if (settings.FindProperty("reloadCompletion").enumValueIndex == (int)FpsReloadCompletion.Timed)
+                    Field(settings, "reloadDuration", "换弹时长（秒）");
+            }
+            finally { SirenixEditorGUI.EndBox(); }
+        }
+
+        internal static void DrawInstance(SerializedObject settings)
+        {
+            SirenixEditorGUI.BeginBox("场景武器");
+            try
+            {
+                Field(settings, "definition", "武器配置");
+                Field(settings, "muzzle", "枪口");
+                Field(settings, "hitLayers", "命中层");
+                if (settings.FindProperty("definition").objectReferenceValue != null) return;
+
+                Field(settings, "automatic", "自动射击");
+                Field(settings, "magazineSize", "弹匣容量");
+                Field(settings, "startingReserve", "初始备弹");
+                Field(settings, "reloadDuration", "换弹时长（秒）");
+            }
+            finally { SirenixEditorGUI.EndBox(); }
+        }
+
+        private static void Field(SerializedObject settings, string name, string label)
+        {
+            EditorGUILayout.PropertyField(settings.FindProperty(name), new GUIContent(label));
         }
     }
 }
