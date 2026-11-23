@@ -1,4 +1,5 @@
 {
   "name": "FrameWork.FPS",
-  "rootNamespace": "FrameWork.FPS"
+  "rootNamespace": "FrameWork.FPS",
+  "references": ["com.alelievr.NodeGraphProcessor.Runtime"]
 }

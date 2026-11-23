@@ -1,6 +1,6 @@
 {
   "name": "FrameWork.RPG.Editor",
   "rootNamespace": "FrameWork.RPG.Editor",
-  "references": ["FrameWork.FPS"],
+  "references": ["FrameWork.FPS", "com.alelievr.NodeGraphProcessor.Runtime", "com.alelievr.NodeGraphProcessor.Editor"],
   "includePlatforms": ["Editor"]
 }

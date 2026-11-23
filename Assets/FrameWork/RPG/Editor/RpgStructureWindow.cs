@@ -14,7 +14,7 @@ namespace FrameWork.RPG.Editor
     public sealed class RpgStructureWindow : EditorWindow
     {
         private enum Tab { Overview, Scene, Assets }
-        private enum AssetSection { None, Firearms, Melee, AmmoTypes, Projectiles, AmmoPacks, Items, Growth }
+        private enum AssetSection { None, Firearms, Melee, AmmoTypes, Projectiles, AmmoPacks, Items, Growth, Enemies, BehaviorTrees }
 
         private sealed class Entry
         {
@@ -29,12 +29,12 @@ namespace FrameWork.RPG.Editor
         private static readonly Color ItemColor = new Color(0.32f, 0.72f, 0.54f);
         private static readonly Color GrowthColor = new Color(0.86f, 0.62f, 0.31f);
         private static readonly string[] Tabs = { "架构总览", "场景组件", "资产配置" };
-        private static readonly string[] AssetFilters = { "全部类型", "武器", "子弹与弹药", "其他道具", "角色成长" };
-        private static readonly string[] CreateLabels = { "新建资产", "新建武器", "新建子弹", "新建道具", "新建等级曲线" };
+        private static readonly string[] AssetFilters = { "全部类型", "武器", "子弹与弹药", "其他道具", "角色成长", "敌人" };
+        private static readonly string[] CreateLabels = { "新建资产", "新建武器", "新建子弹", "新建道具", "新建等级曲线", "新建敌人" };
         private static readonly string[] SectionNames =
         {
             "", "武器 · 枪械", "武器 · 近战", "子弹与弹药 · 弹种", "子弹与弹药 · 弹丸预制体",
-            "子弹与弹药 · 弹药包", "其他道具", "角色成长 · 等级曲线"
+            "子弹与弹药 · 弹药包", "其他道具", "角色成长 · 等级曲线", "敌人 · 行为配置", "敌人 · 行为树"
         };
 
         [SerializeField] private Tab tab;
@@ -169,6 +169,11 @@ namespace FrameWork.RPG.Editor
             }
             if (all || assetFilter == 4)
                 AddCreateItem(menu, "等级曲线", () => RpgAssetCreation.CreateAsset<RpgLevelCurve>("新等级曲线"));
+            if (all || assetFilter == 5)
+            {
+                AddCreateItem(menu, all ? "敌人/行为配置" : "行为配置", () => RpgAssetCreation.CreateAsset<RpgEnemyDefinition>("新敌人"));
+                AddCreateItem(menu, all ? "敌人/行为树" : "行为树", RpgBehaviorTreeWindow.CreateAsset);
+            }
             menu.DropDown(GUILayoutUtility.GetLastRect());
         }
 
@@ -212,6 +217,8 @@ namespace FrameWork.RPG.Editor
                     "道具效果\nFpsItemDefinition", "补给 / 治疗 / 装备");
                 DrawFlow("角色成长", GrowthColor, "目标击败\nFpsHealth.Defeated", "经验归属\nRpgExperienceReward",
                     "等级进度\nRpgProgression", "经验曲线\nRpgLevelCurve");
+                DrawFlow("敌人", BattleColor, "行为配置\nRpgEnemyDefinition", "发现与追击\nRpgEnemyAgent",
+                    "攻击\nFpsWeapon", "击败与奖励\nRpgExperienceReward");
                 DrawFlow("武器动画", BattleColor, "武器配置\nFpsWeaponDefinition", "装备变更\nFpsLoadout",
                     "动画驱动\nFpsWeaponAnimator", "状态机\nAnimator Controller");
                 EditorGUILayout.Space(8f);
@@ -370,6 +377,17 @@ namespace FrameWork.RPG.Editor
             if (selected is FpsProjectile projectile && EditorUtility.IsPersistent(projectile))
                 DrawProjectileWeapons(projectile);
 
+            if (selected is RpgBehaviorTree tree)
+            {
+                EditorGUILayout.LabelField("节点", tree.nodes.Count.ToString());
+                EditorGUILayout.LabelField("连线", tree.edges.Count.ToString());
+                DrawBehaviorTreeActions(tree);
+                return;
+            }
+
+            if (selected is RpgEnemyAgent enemy && enemy.BehaviorTree != null)
+                DrawBehaviorTreeActions(enemy.BehaviorTree);
+
             assetPreview.Draw(selected);
             if (inspectorTarget != selected)
             {
@@ -378,6 +396,36 @@ namespace FrameWork.RPG.Editor
                 inspectorTarget = selected;
             }
             inspector?.Draw(true);
+        }
+
+        private static void DrawBehaviorTreeActions(RpgBehaviorTree tree)
+        {
+            using var row = new EditorGUILayout.HorizontalScope();
+            if (GUILayout.Button("打开行为树", GUILayout.Height(28f)))
+                EditorApplication.delayCall += () => RpgBehaviorTreeWindow.Open(tree);
+            if (GUILayout.Button("新建动作脚本", GUILayout.Height(28f)))
+                EditorApplication.delayCall += RpgActionScriptCreator.Create;
+
+            if (!GUILayout.Button("插入已有动作 ▾", GUILayout.Height(28f))) return;
+            var menu = new GenericMenu();
+            foreach (RpgEnemyAction action in Enum.GetValues(typeof(RpgEnemyAction)))
+            {
+                string name = action.ToString();
+                var field = typeof(RpgEnemyAction).GetField(name);
+                var title = Attribute.GetCustomAttribute(field, typeof(InspectorNameAttribute)) as InspectorNameAttribute;
+                menu.AddItem(new GUIContent(title?.displayName ?? ObjectNames.NicifyVariableName(name)), false,
+                    () => EditorApplication.delayCall += () => RpgBehaviorTreeWindow.AddAction(tree, action));
+            }
+            foreach (var type in TypeCache.GetTypesDerivedFrom<RpgCustomBehaviorAction>()
+                         .Where(type => !type.IsAbstract && !type.ContainsGenericParameters)
+                         .OrderBy(type => type.Name, StringComparer.Ordinal))
+            {
+                string name = type.Name.StartsWith(RpgActionScriptCreator.ClassPrefix, StringComparison.Ordinal)
+                    ? type.Name.Substring(RpgActionScriptCreator.ClassPrefix.Length) : type.Name;
+                menu.AddItem(new GUIContent("自定义/" + ObjectNames.NicifyVariableName(name)), false,
+                    () => EditorApplication.delayCall += () => RpgBehaviorTreeWindow.AddCustomAction(tree, type));
+            }
+            menu.DropDown(GUILayoutUtility.GetLastRect());
         }
 
         private void DrawProjectileWeapons(FpsProjectile projectile)
@@ -409,6 +457,7 @@ namespace FrameWork.RPG.Editor
                 2 => entry.Section is AssetSection.AmmoTypes or AssetSection.Projectiles or AssetSection.AmmoPacks,
                 3 => entry.Section == AssetSection.Items,
                 4 => entry.Section == AssetSection.Growth,
+                5 => entry.Section is AssetSection.Enemies or AssetSection.BehaviorTrees,
                 _ => true
             });
             return included && (string.IsNullOrWhiteSpace(query) ||
@@ -456,7 +505,8 @@ namespace FrameWork.RPG.Editor
             assetsDirty = false;
             assetEntries.Clear();
             var types = TypeCache.GetTypesDerivedFrom<FpsItemDefinition>().Where(type => !type.IsAbstract)
-                .Concat(new[] { typeof(FpsWeaponDefinition), typeof(FpsAmmoType), typeof(RpgLevelCurve) });
+                .Concat(new[] { typeof(FpsWeaponDefinition), typeof(FpsAmmoType), typeof(RpgLevelCurve),
+                    typeof(RpgEnemyDefinition), typeof(RpgBehaviorTree) });
             var paths = new HashSet<string>();
             foreach (var type in types)
             foreach (var guid in AssetDatabase.FindAssets("t:" + type.Name))
@@ -473,6 +523,8 @@ namespace FrameWork.RPG.Editor
                     FpsAmmoItem => AssetSection.AmmoPacks,
                     FpsItemDefinition => AssetSection.Items,
                     RpgLevelCurve => AssetSection.Growth,
+                    RpgEnemyDefinition => AssetSection.Enemies,
+                    RpgBehaviorTree => AssetSection.BehaviorTrees,
                     _ => AssetSection.None
                 };
                 if (section == AssetSection.None) continue;
