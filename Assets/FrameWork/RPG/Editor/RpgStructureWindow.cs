@@ -28,6 +28,7 @@ namespace FrameWork.RPG.Editor
 
         [SerializeField] private Tab tab;
         [SerializeField] private Object selected;
+        [SerializeField] private FpsLoadout targetLoadout;
         private readonly List<Entry> sceneEntries = new List<Entry>();
         private readonly List<Entry> assetEntries = new List<Entry>();
         private bool sceneDirty = true;
@@ -79,6 +80,16 @@ namespace FrameWork.RPG.Editor
             {
                 var next = (Tab)GUILayout.Toolbar((int)tab, Tabs, EditorStyles.toolbarButton);
                 if (next != tab) SwitchTab(next);
+                if (GUILayout.Button("新建武器", EditorStyles.toolbarButton, GUILayout.Width(76f)))
+                {
+                    var weapon = RpgWeaponEditorActions.CreateWeapon();
+                    if (weapon != null)
+                    {
+                        SwitchTab(Tab.Assets);
+                        selected = weapon;
+                        InvalidateAssets();
+                    }
+                }
                 if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(54f)))
                 {
                     InvalidateScene();
@@ -211,6 +222,8 @@ namespace FrameWork.RPG.Editor
             EditorGUILayout.Space(6f);
             UnityEditor.Editor.CreateCachedEditor(selected, null, ref inspector);
             if (inspector != null) inspector.OnInspectorGUI();
+            if (selected is FpsWeaponDefinition weapon)
+                RpgWeaponEditorActions.DrawActions(weapon, ref targetLoadout);
         }
 
         private bool Matches(Entry entry) => string.IsNullOrWhiteSpace(query) ||

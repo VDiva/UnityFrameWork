@@ -25,6 +25,7 @@ namespace FrameWork.FPS
         public int MagazineAmmo { get; private set; }
         public int ReserveAmmo { get; private set; }
         public bool IsReloading { get; private set; }
+        public int? PendingReloadRequestId => IsReloading ? reloadRequestId : (int?)null;
         public FpsWeaponDefinition Definition => definition;
         public bool IsMelee => definition != null && definition.Kind == FpsWeaponKind.Melee;
         public bool Automatic => !IsMelee && (definition != null ? definition.FireMode == FpsFireMode.Automatic : automatic);
@@ -60,9 +61,7 @@ namespace FrameWork.FPS
 
         private void OnDisable()
         {
-            if (!IsReloading) return;
-            IsReloading = false;
-            AmmoChanged?.Invoke();
+            TryCancelReload(reloadRequestId);
         }
 
         public bool TryFire(Ray aim, GameObject instigator)
@@ -177,6 +176,15 @@ namespace FrameWork.FPS
             int count = Mathf.Min(Mathf.Max(0, MagazineSize - MagazineAmmo), ReserveAmmo);
             MagazineAmmo += count;
             ReserveAmmo -= count;
+            IsReloading = false;
+            AmmoChanged?.Invoke();
+            return true;
+        }
+
+        public bool TryCancelReload(int requestId)
+        {
+            if (!IsReloading || requestId != reloadRequestId) return false;
+
             IsReloading = false;
             AmmoChanged?.Invoke();
             return true;

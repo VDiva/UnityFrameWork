@@ -6,6 +6,12 @@
 
 在 Unity 中打开 `FrameWork → RPG → 架构编辑面板`。架构总览显示战斗、背包道具和角色成长的关系。场景组件页显示当前已加载场景的 RPG 组件，SO 配置页列出项目中的武器、弹种、道具和等级曲线。搜索并选中条目后，可在右侧直接编辑 Inspector 字段，也可以定位到 Hierarchy 或 Project 窗口。
 
+点击 **新建武器** 创建武器 SO。选中武器后，指定场景中的 `FpsLoadout`，再点 **添加武器到装备栏**。面板会在武器挂点下创建并注册一个武器节点，可撤销。将武器模型挂到该节点下，并按场景需要调整枪口和命中层。
+
+在同一配置中可绑定已有的 Animator Controller，也可点 **创建并绑定动画树模板**。先设置武器类型，模板会按类型生成状态。创建后，可从面板打开 Unity Animator 并为状态分配动作 Clip。
+
+在角色的 Animator 所在节点挂上 `FpsWeaponAnimator`。组件会自动寻找父节点的 `FpsLoadout`，也可以手动指定。换武器时自动应用其动画树。枪械模板使用 `Equip`、`Fire`、`Reload` Trigger，近战模板使用 `Equip`、`Melee` Trigger。自定义动画树可沿用同名参数。需要按动作帧结算换弹时，在 Reload 动画的装弹帧添加调用 `CompleteReloadFromAnimation` 的 Animation Event，再将枪械 SO 的 Reload Completion 改为 External。
+
 ## 运行示例
 
 打开 `Example/FpsTrainingRange.unity` 并进入 Play Mode。场景默认使用俯视视角。WASD 按屏幕方向移动，角色转向鼠标在地面上的位置，左键朝该方向攻击。按 1、2、3 分别装备卡宾枪、手枪和训练剑。测试训练剑时，走到靶子附近再按左键。出生点左前方是弹药包，右前方是治疗包，走近即可拾取。按 F 补充当前武器的备弹，按 H 治疗。示例玩家初始生命值为 60，便于直接测试治疗。
