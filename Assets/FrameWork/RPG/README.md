@@ -2,6 +2,15 @@
 
 适用于项目当前的 Unity Input Manager。模块位于 `FrameWork.FPS` 程序集和同名命名空间中。其他 asmdef 中的代码如需直接引用这些类型，可在其 References 中加入 `FrameWork.FPS`。
 
+## 快速开始
+
+1. 在 Unity 中选择 **FrameWork → RPG → 打开 Ember Vault 示例**，进入 Play Mode，体验守卫战斗、道具补给、经验和关卡撤离。[Ember Vault 场景](Example/Dungeon/EmberVault.unity)
+2. 单独调试射击、近战、换弹或视角时，打开练习场。默认使用俯视视角，角色面向鼠标瞄准方向。按 V 可切换第一人称和第三人称。[练习场场景](Example/FpsTrainingRange.unity)
+3. 选择 **FrameWork → RPG → 架构编辑面板**，在 **资产配置** 中选择武器、子弹或敌人，再创建或编辑对应类型。将武器加到场景中的装备栏后，可直接进入 Play Mode 验证参数。
+4. 选择 **FrameWork → RPG → 行为树编辑器** 打开敌人绑定的图，沿着高亮节点和连线查看执行顺序，在侧栏核对感知距离、当前目标和自定义参数。
+
+武器 Animator Controller 负责装备、射击、挥砍和换弹动作。敌人 Behavior Tree 负责要在什么时候执行追击、攻击或返回等逻辑。前者绑定到武器配置，后者绑定到 `RpgEnemyAgent`。
+
 ## 架构编辑面板
 
 在 Unity 中打开 `FrameWork → RPG → 架构编辑面板`。架构总览显示战斗、背包道具、角色成长和武器动画的关系。场景组件页显示当前已加载场景的 RPG 组件。资产配置页把武器分为枪械和近战，把子弹与弹药分为弹种、武器引用的弹丸预制体和弹药包，其他道具和等级曲线另有分组。搜索并选中条目后，可在右侧使用 Odin 编辑配置，或定位到 Hierarchy／Project 窗口。

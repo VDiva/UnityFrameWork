@@ -1,6 +1,6 @@
 # UnityFrameWork 框架使用说明
 
-更新日期：2026-10-28。本文依据当前源码编写，适用于独立框架项目及已同步的 Game 项目。
+本文依据当前源码编写。RPG 和影游示例位于框架源项目中，Game 项目以实际同步的模块为准。
 
 框架源项目：`C:\Svn\Game\UnityFrameWork`。业务项目：`C:\Svn\Game`。
 
@@ -17,7 +17,15 @@
 | UiManager | UI 根节点、窗口打开关闭、层级和提示接入 |
 | 配置表工具 | 从 XLSX 生成 C# 类型、查询代码及运行时数据 |
 | WebNet | WebSocket 连接、消息、房间、RPC、对象同步及语音 |
+| RPG | 枪械和近战、装备栏、道具、等级、三种视角和敌人行为树 |
+| 影游 | 视频剧情连线、可增删的选项分支及场景播放器 |
 | 编辑器发布工具 | 客户端基线检查、热更新 DLL 和资源发布 |
+
+| 模块 | Unity 菜单 | 使用说明 |
+| --- | --- | --- |
+| RPG | **FrameWork → RPG → 架构编辑面板** | [RPG 战斗模块](Assets/FrameWork/RPG/README.md) |
+| RPG 行为树 | **FrameWork → RPG → 行为树编辑器** | [新建动作脚本与运行调试](Assets/FrameWork/RPG/README.md#可视化行为树) |
+| 影游 | **FrameWork → 影游 → 影游编辑器** | [影游编辑器](Assets/FrameWork/InteractiveFilm/README.md) |
 
 当前资源后端是 **YooAsset**。`ABMrg` 名称作为原调用入口保留，并不表示仍在使用 Addressables。Game 项目中的旧 Addressables 包、配置及扩展已移除。
 
@@ -36,6 +44,8 @@ Assets/FrameWork/
 ├─ Generated/HybridCLR/             # 生成的 link.xml、AOT 泛型引用等
 ├─ Networking/Protocol/             # 共享网络协议
 ├─ Plugins/                         # 框架依赖；Game 中部分插件保留原目录
+├─ RPG/                             # 战斗运行时、Odin 面板、行为树和示例场景
+├─ InteractiveFilm/                 # 剧情图、视频播放器和雾港示例
 ├─ Resources/                       # 安装包内的启动和资源系统配置
 │  ├─ FrameworkBootSettings.asset
 │  └─ YooResourceSettings.asset
@@ -250,6 +260,8 @@ UiManager.RemoveUi<MyWindow>(); // 移除窗口
 
 示例中的 UiRoot、MyWindow 必须是项目实际生成的类型，UiRoot 应包含项目所需的层级和 Camera。
 
+同一窗口类型正在打开时，后续调用会等待同一个请求，打开参数以第一次调用为准。隐藏、移除或切场景会使尚未完成的对应请求失效，异步加载结束后窗口不会再弹出。打开失败或请求失效时，调用方应检查返回值是否为 `null`。
+
 提示与 UI 特效由业务接入：
 
 ```csharp
@@ -276,6 +288,8 @@ await FrameWork.Tool.LoadAllXlsx();
 ```
 
 随后通过 `Xlsx_表名_Query.data` 直接取得资产中的列表，或通过 `XlsxDataAsOneKey` 按主键查询。旧表可继续使用原文本资产，重新生成并验证后可清理对应的旧文本资产，再执行一次生成以刷新清单。修改表格结构后，需要同时发布匹配的 HotUpdate DLL 与 YooAsset 配置数据。
+
+以仓库内的 Test 表为例，`Xlsx_Test` 是行类型，`XlsxAsset_Test.Rows` 保存行对象列表，预加载后可通过 `Xlsx_Test_Query.data` 直接使用该列表。业务代码应把列表和行对象当作只读配置，避免原地修改后影响其他使用方或让查询索引与列表不同步。
 
 ## 10. 网络接入
 
@@ -368,3 +382,10 @@ Publish/<平台>/<客户端基线ID>/<资源包名>/
 - `Library`、`Temp` 和验证输出属于生成内容；资源和脚本的 `.meta` 属于引用身份，应正确保留。
 
 Game 项目的历史迁移说明见根目录 `FRAMEWORK_MIGRATION.md`，最近一次同步说明见 `FRAMEWORK_SYNC_20261028.md`。当前程序集结构以本文及最新源码为准。
+
+## 14. RPG、影游及编辑器依赖
+
+- **RPG** 可以通过 **FrameWork → RPG → 打开 Ember Vault 示例** 体验带骨骼动画和守卫的关卡。架构面板可分类创建 SO、预览图标和模型、编辑攻击参数并为武器绑定 Animator Controller。行为树可以生成 C# 动作脚本，在 Play Mode 查看高亮连线和运行参数。[RPG 接入说明](Assets/FrameWork/RPG/README.md)
+- **影游** 可以通过 **FrameWork → 影游 → 打开雾港示例** 体验剧情分支。选项节点的输出端口随选项增删，旧图的选项和连线会迁移到新格式。将剧情图绑定到 `FilmPlayer` 即可在自己的场景播放。[影游接入说明](Assets/FrameWork/InteractiveFilm/README.md)
+- **编辑器依赖** 中，Odin（`Sirenix`）和 `NodeGraphProcessor` 位于 `Assets/FrameWork/Plugins`。RPG 架构面板使用 Odin，两种连线编辑器均使用 NodeGraphProcessor。复制模块时保留相应插件目录及其 `.meta`。
+- **WebRPC 代码生成** 通过 `Packages/manifest.json` 声明的 `com.unity.nuget.mono-cecil` 获取 Mono.Cecil。同步框架后若 `WebRpc.CodeGen` 找不到 Mono.Cecil，检查该包是否已解析。
