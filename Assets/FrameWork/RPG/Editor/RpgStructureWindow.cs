@@ -5,6 +5,7 @@ using FrameWork.FPS;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -67,6 +68,14 @@ namespace FrameWork.RPG.Editor
             window.titleContent = new GUIContent("RPG 架构");
             window.minSize = new Vector2(600f, 320f);
             window.Show();
+        }
+
+        [MenuItem("FrameWork/RPG/打开 Ember Vault 示例")]
+        private static void OpenDungeonExample()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                EditorSceneManager.OpenScene("Assets/FrameWork/RPG/Example/Dungeon/EmberVault.unity");
         }
 
         private void OnEnable()

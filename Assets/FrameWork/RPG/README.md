@@ -18,7 +18,13 @@
 
 ## 运行示例
 
-打开 `Example/FpsTrainingRange.unity` 并进入 Play Mode。场景默认使用俯视视角。WASD 按屏幕方向移动，角色转向鼠标在地面上的位置，左键朝该方向攻击。按 1、2、3 分别装备卡宾枪、手枪和训练剑。测试训练剑时，走到靶子附近再按左键。出生点左前方是弹药包，右前方是治疗包，走近即可拾取。按 F 补充当前武器的备弹，按 H 治疗。示例玩家初始生命值为 60，便于直接测试治疗。
+**Ember Vault** 是一张独立的样板关卡。通过 **FrameWork → RPG → 打开 Ember Vault 示例** 打开场景并进入 Play Mode。击败两名守卫后，地牢门会打开。走到门后青色区域完成撤离。失败或通关后按 Enter 重开。守卫使用现有可视化行为树，关卡复用弹药、治疗包、武器栏和经验系统。
+
+复制该场景制作关卡时，可在 `RpgEncounterGate` 中指定必须击败的敌人和对应的门，撤离位置由示例的 Extraction 节点决定。布景在进入 Play Mode 后生成，模型来自 Kenney 的 [Mini Dungeon](https://kenney.nl/assets/mini-dungeon)，授权文件保存在 `Example/Dungeon`。
+
+示例中的玩家和守卫使用 FBX 骨骼动作，移动时在待机、行走和奔跑之间切换。开火、挥砍和换弹由现有武器事件驱动，受伤时会闪红，守卫倒地动作播放后再隐藏。示例的动作代码位于 `Example/Dungeon`，其他关卡也可以继续使用自己的 Animator Controller。
+
+原练习场 `Example/FpsTrainingRange.unity` 适合单独测试武器。两张场景默认使用俯视视角，WASD 移动，鼠标瞄准，左键攻击。1、2、3 分别装备卡宾枪、手枪和训练剑，R 换弹，F 补给，H 治疗，V 切换视角。
 
 ## 场景接入
 
