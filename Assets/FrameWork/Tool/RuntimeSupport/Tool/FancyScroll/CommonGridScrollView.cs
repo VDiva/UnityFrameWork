@@ -22,6 +22,7 @@ namespace FancyScrollView
         [SerializeField, Min(1)] private int editorPreviewLineCount = 3;
 #endif
 
+        private readonly List<CommonGridScrollCell> visibleCells = new List<CommonGridScrollCell>();
         private Action<int, GameObject> bindItem;
         private Action<int, GameObject> clickItem;
 
@@ -100,15 +101,17 @@ namespace FancyScrollView
                 return null;
 
             CommonGridScrollCell firstCell = null;
-            var visibleCells = cellContainer.GetComponentsInChildren<CommonGridScrollCell>(false);
+            cellContainer.GetComponentsInChildren(false, visibleCells);
             foreach (var cell in visibleCells)
             {
-                if (!cell.gameObject.activeInHierarchy || cell.Index < 0 || cell.Index >= DataCount)
+                if (cell == null || !cell.gameObject.activeInHierarchy ||
+                    cell.Index < 0 || cell.Index >= DataCount)
                     continue;
                 if (firstCell == null || cell.Index < firstCell.Index)
                     firstCell = cell;
             }
 
+            visibleCells.Clear();
             return firstCell == null ? null : firstCell.gameObject;
         }
 

@@ -267,7 +267,7 @@ UiManager.UiFxHandler = ShowUiFxAsync;
 | 运行时数据 | `Assets/FrameWork/Asset/Xlsx` |
 | 生成代码 | `Assets/FrameWork/Scripts/Xlsx` |
 
-表格基本格式为第一行描述、第二行类型、第三行字段名，第四行开始是数据。执行 `FrameWork/配置表/生成所有配置表代码` 生成类型、查询代码和数据索引。
+表格基本格式为第一行描述、第二行类型、第三行字段名，第四行开始是数据。执行 `FrameWork/配置表/生成所有配置表代码`，等待 Unity 编译后生成每张表的 `XlsxAsset_表名.asset` 和预加载清单 `AllXlsxAssets.json`。每一行是继承自 ScriptableObject 的子资源，按表格顺序保存在资产的 `Rows` 中。
 
 在业务管理器和查询类的静态初始化触发前，先预加载配置表：
 
@@ -275,7 +275,7 @@ UiManager.UiFxHandler = ShowUiFxAsync;
 await FrameWork.Tool.LoadAllXlsx();
 ```
 
-随后使用生成的 `Xlsx_表名_Query` 查询。具体字段、枚举键和查询维度以当前生成代码为准。修改表格结构并重新生成代码后，需要同时发布匹配的 HotUpdate DLL 与配置数据。
+随后通过 `Xlsx_表名_Query.data` 直接取得资产中的列表，或通过 `XlsxDataAsOneKey` 按主键查询。旧表可继续使用原文本资产，重新生成并验证后可清理对应的旧文本资产，再执行一次生成以刷新清单。修改表格结构后，需要同时发布匹配的 HotUpdate DLL 与 YooAsset 配置数据。
 
 ## 10. 网络接入
 

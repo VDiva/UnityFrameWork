@@ -54,3 +54,11 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: startup
         UserData: 
+      - CollectPath: Assets/FrameWork/Asset/Base
+        CollectorGUID: a560a3cfab435e74caf03c688f6d4fbc
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: startup
+        UserData: 

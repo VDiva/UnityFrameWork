@@ -162,7 +162,7 @@ namespace FrameWork
 
             if (dic.TryGetValue(eventId, out var action))
             {
-                if (action is not Action<T>)
+                if (action.GetType() != callback.GetType())
                 {
                     Debug.LogError($"事件类型不匹配：{eventId} 已注册为其他参数类型");
                     return;
@@ -206,11 +206,10 @@ namespace FrameWork
             int eventId,
             Action<T> callback)
         {
-            if (!eventDic.TryGetValue(type, out var dic))
-                return;
-
-
-            if (!dic.TryGetValue(eventId, out var action))
+            if (callback == null ||
+                !eventDic.TryGetValue(type, out var dic) ||
+                !dic.TryGetValue(eventId, out var action) ||
+                action.GetType() != callback.GetType())
                 return;
 
 

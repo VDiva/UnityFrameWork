@@ -61,7 +61,7 @@ namespace FrameWork
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    return 0;
+                    return 0L;
                 }
 
                 return long.Parse(value);
@@ -703,19 +703,33 @@ namespace FrameWork
 
         public static async UniTask LoadAllXlsx()
         {
-            var allXlsx =await ABMrg.LoadAsync<TextAsset>("AllXlsx");
-            var list = JsonMapper.ToObject<List<string>>(allXlsx.text);
-            for (int i = 0; i < list.Count; i++)
+            await ABMrg.Init();
+            if (ABMrg.Package.IsLocationValid("AllXlsxAssets"))
             {
-                await ABMrg.LoadAsync<TextAsset>(list[i]);
+                var manifest = await ABMrg.LoadAsync<TextAsset>("AllXlsxAssets");
+                foreach (var address in JsonMapper.ToObject<List<string>>(manifest.text))
+                    await ABMrg.LoadAsync<ScriptableObject>(address);
             }
+            if (ABMrg.Package.IsLocationValid("AllXlsx"))
+            {
+                var manifest = await ABMrg.LoadAsync<TextAsset>("AllXlsx");
+                foreach (var address in JsonMapper.ToObject<List<string>>(manifest.text))
+                    await ABMrg.LoadAsync<TextAsset>(address);
+            }
+        }
+
+        public static T LoadXlsxAsset<T>(string address) where T : ScriptableObject
+        {
+            if (ABMrg.TryGetLoaded<ScriptableObject>(address, out var asset) && asset is T table)
+                return table;
+            throw new InvalidOperationException($"配置表 {address} 不可用或类型不匹配，请检查资源包并先 await Tool.LoadAllXlsx()。");
         }
         
         public static string LoadXlsx(string key)
         {
             var asset = ABMrg.Load<TextAsset>(key);
             if (asset == null)
-                throw new InvalidOperationException("配置表 " + key + " 不可用，请先 await Tool.PreloadAllXlsx()。");
+                throw new InvalidOperationException("配置表 " + key + " 不可用，请先 await Tool.LoadAllXlsx()。");
             return asset.text;
         }
 

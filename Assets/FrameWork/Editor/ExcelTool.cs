@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 using ExcelDataReader;
 using LitJson;
 using UnityEditor;
@@ -56,7 +55,6 @@ namespace FrameWork
     {
         
         static List<List<object>> _rows = new List<List<object>>();
-        static StringBuilder _stringBuilder = new StringBuilder();
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
             string[] movedFromAssetPaths)
         {
@@ -134,23 +132,12 @@ namespace FrameWork
                     if (table.Rows[1][0].ToString() == "string") SpawnKey(name, table.Rows);
                     SpawnClass(name, _rows);
                     SpawnQueryClass(name, _rows[1], _rows[2]);
-                    _stringBuilder.Clear();
-                    foreach (DataRow row in table.Rows)
-                    {
-                        for (int column = 0; column < table.Columns.Count; column++)
-                        {
-                            if (column > 0) _stringBuilder.Append('|');
-                            _stringBuilder.Append(row[column]);
-                        }
-                        _stringBuilder.Append('\n');
-                    }
-                    Directory.CreateDirectory(ExcelToolData.xlsxOutPath);
-                    File.WriteAllText(Path.Combine(ExcelToolData.xlsxOutPath, name + ".txt"), _stringBuilder.ToString());
+                    XlsxAssetWriter.Queue(name, path);
                 }
                 catch (Exception error) { Debug.LogError($"[配置表] {path}：{error.Message}"); }
             }
-            SpawnAllXlsxText();
             AssetDatabase.Refresh();
+            XlsxAssetWriter.Schedule();
         }
 
         private static readonly HashSet<string> SupportedTypes = new HashSet<string>
@@ -184,9 +171,7 @@ namespace FrameWork
                 if (!names.Add(name)) Error(3, column + 1, "重复字段名：" + name);
                 for (int row = 0; row < table.Rows.Count; row++)
                 {
-                    string value = table.Rows[row][column].ToString();
-                    if (value.IndexOfAny(new[] { '|', '\r', '\n' }) >= 0)
-                        Error(row + 1, column + 1, "单元格包含配置格式不支持的分隔符或换行。");
+                    string value = Convert.ToString(table.Rows[row][column], System.Globalization.CultureInfo.InvariantCulture);
                     if (row < 3 || !supported) continue;
                     if (column == 0 && string.IsNullOrWhiteSpace(value)) Error(row + 1, 1, "主 key 不能为空。");
                     if (column == 0 && type == "string" && (!IsIdentifier(value) || value == generatedName + "_Key"))
@@ -209,7 +194,6 @@ namespace FrameWork
 
         private static void SpawnKey(string fileName,DataRowCollection coll)
         {
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>(Config.AssetPath);
             var xlsxName = fileName.Substring("Xlsx_".Length);
             var xlsxKeyName = "Xlsx_"+xlsxName+"_Key";
             var xlsxTypeName = "Xlsx_"+xlsxName+"_Type";
@@ -222,7 +206,7 @@ namespace FrameWork
                 Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw = new StreamWriter(outPath + "\\" + xlsxKeyName + ".cs", false))
+            using (StreamWriter sw = new StreamWriter(Path.Combine(outPath, xlsxKeyName + ".cs"), false))
             {
                 sw.WriteLine("namespace Xlsx");
                 sw.WriteLine("{");
@@ -255,13 +239,10 @@ namespace FrameWork
             }
         }
 
-        private static StringBuilder _queryClassBuilder = new StringBuilder();
         public static void SpawnQueryClass(string fileName,List<object> row,List<object> row2)
         {
-            //var configData=AssetDatabase.LoadAssetAtPath<ConfigData>(Config.AssetPath);
-            _queryClassBuilder.Clear();
-            var xlsxName = fileName.Substring("Xlsx_".Length);
             var xlsxQueryName = fileName+"_Query";
+            var assetName = XlsxAssetWriter.AssetName(fileName);
 
             var outPath = ExcelToolData.xlsxOutScriptPath;
             
@@ -270,7 +251,7 @@ namespace FrameWork
                 Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw = new StreamWriter(outPath + "\\" + xlsxQueryName + ".cs", false))
+            using (StreamWriter sw = new StreamWriter(Path.Combine(outPath, xlsxQueryName + ".cs"), false))
             {
                 // sw.WriteLine("using System.Collections.Generic;");
                 // sw.WriteLine("using UnityEngine;");
@@ -298,27 +279,7 @@ namespace FrameWork
                 
                 sw.WriteLine("\t\tpublic static void Update()");
                 sw.WriteLine("\t\t{");
-                sw.WriteLine($"\t\t\tvar xlsx=Tool.LoadXlsx(\"{fileName}\");");
-                sw.WriteLine("\t\t\tvar itemData=xlsx.Split('\\n');");
-                sw.WriteLine("\t\t\tvar fileNames = itemData[2].Split('|');");
-                sw.WriteLine("\t\t\tvar fileTypes = itemData[1].Split('|');");
-                sw.WriteLine($"\t\t\tvar nextData = new List<{fileName}>();");
-                sw.WriteLine($"\t\t\tvar type = typeof({fileName});");
-                sw.WriteLine("\t\t\tvar fields = new System.Reflection.FieldInfo[fileNames.Length];");
-                sw.WriteLine("\t\t\tfor (int j = 0; j < fields.Length; j++) fields[j] = type.GetField(fileNames[j]);");
-                sw.WriteLine("\t\t\tfor (int i = 3; i < itemData.Length; i++)");
-                sw.WriteLine("\t\t\t{");
-                sw.WriteLine("\t\t\t\tif (string.IsNullOrEmpty(itemData[i]))continue;");
-                sw.WriteLine("\t\t\t\tvar items = itemData[i].Split('|');");
-                sw.WriteLine($"\t\t\t\tvar xlsxData = new {fileName}();");
-
-                sw.WriteLine("\t\t\t\tfor (int j = 0; j < items.Length; j++)");
-                sw.WriteLine("\t\t\t\t{");
-                //sw.WriteLine("\t\t\t\t\tif (string.IsNullOrEmpty(items[j]))continue;");
-                sw.WriteLine("\t\t\t\t\tfields[j].SetValue(xlsxData,Tool.ConversionType(fileTypes[j],items[j]));");
-                sw.WriteLine("\t\t\t\t}");
-                sw.WriteLine("\t\t\t\tnextData.Add(xlsxData);");
-                sw.WriteLine("\t\t\t}");
+                sw.WriteLine($"\t\t\tvar nextData = Tool.LoadXlsxAsset<{assetName}>(\"{assetName}\").Rows;");
                 sw.WriteLine($"\t\t\tvar nextIndex = new XlsxData<{row[0]},{fileName}>(\"{row2[0]}\", nextData);");
                 sw.WriteLine("\t\t\tdata = nextData;");
                 sw.WriteLine("\t\t\tXlsxDataAsOneKey = nextIndex;");
@@ -334,11 +295,8 @@ namespace FrameWork
         }
         
 
-        private static StringBuilder _classBuilder = new StringBuilder();
         public static void SpawnClass(string fileName,List<List<object>> book)
         {
-            var configData=AssetDatabase.LoadAssetAtPath<ConfigData>(Config.AssetPath);
-            _classBuilder.Clear();
             var outPath = ExcelToolData.xlsxOutScriptPath;
 
             if (!Directory.Exists(outPath))
@@ -346,7 +304,7 @@ namespace FrameWork
                 Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw=new StreamWriter(outPath+"\\"+fileName+".cs",false))
+            using (StreamWriter sw = new StreamWriter(Path.Combine(outPath, fileName + ".cs"), false))
             {
                 // sw.WriteLine("using System.Collections.Generic;");
                 // sw.WriteLine("using UnityEngine;");
@@ -358,53 +316,19 @@ namespace FrameWork
                 
                 sw.WriteLine("namespace Xlsx");
                 sw.WriteLine("{");
-                sw.WriteLine("\tpublic class "+fileName);
+                sw.WriteLine("\tpublic class " + fileName + " : ScriptableObject");
                 sw.WriteLine("\t{");
                 
-                string gz = "";
-                string fz = "";
                 for (int i = 0; i < book[0].Count; i++)
                 {
-                    _classBuilder.AppendLine("\t\tpublic static " + fileName + " By" + book[2][i] + "GetXlsx(" +book[1][i] + " value){");
-                    _classBuilder.AppendLine("\t\t\tforeach (var item in _xlsxs)");
-                    _classBuilder.AppendLine("\t\t\t{");
-                    _classBuilder.AppendLine("\t\t\t\tif (item."+book[2][i]+".Equals(value))");
-                    _classBuilder.AppendLine("\t\t\t\t{");
-                    _classBuilder.AppendLine("\t\t\t\t\treturn item;");
-                    _classBuilder.AppendLine("\t\t\t\t}");
-                    _classBuilder.AppendLine("\t\t\t}");
-                    _classBuilder.AppendLine("\t\t\treturn null;");
-                    _classBuilder.AppendLine("\t\t}");
-                    _classBuilder.AppendLine("");
-                    
-                    
                     sw.WriteLine("\t\t/// <summary>");
-                    sw.WriteLine("\t\t/// "+book[0][i]);
+                    foreach (var line in book[0][i].ToString().Replace("\r", "").Split('\n'))
+                        sw.WriteLine("\t\t/// " + System.Security.SecurityElement.Escape(line));
                     sw.WriteLine("\t\t/// </summary>");
                     sw.WriteLine("\t\tpublic "+book[1][i]+" "+book[2][i]+";");
                     sw.WriteLine("");
                     
-                    fz += "\t\t\tthis." + book[2][i] + "=" + book[2][i]+";\n";
-                    
-                    if (i!=book[0].Count-1)
-                    {
-                        gz += book[1][i] + " " + book[2][i]+",";
-                    }
-                    else
-                    {
-                        gz += book[1][i] + " " + book[2][i];
-                    }
                 }
-                sw.Write("\t\tpublic "+fileName+"(");
-                sw.Write(gz);
-                sw.Write(")");
-                sw.WriteLine("{");
-                sw.WriteLine(fz);
-                sw.WriteLine("\t\t}");
-                // sw.WriteLine("public void css(int value){Debug.Log(value);}");
-                
-                sw.Write("\t\tpublic "+fileName+"(){}");
-                
                 sw.WriteLine("\t}");
                 sw.WriteLine("}");
             }
@@ -436,6 +360,159 @@ namespace FrameWork
             using (StreamWriter sw = new StreamWriter(ExcelToolData.xlsxOutPath+"/AllXlsx.json", false))
             {
                 sw.WriteLine(JsonMapper.ToJson(list));
+            }
+        }
+    }
+
+    internal static class XlsxAssetWriter
+    {
+        private const string PendingKey = "FrameWork.Xlsx.PendingAssets";
+
+        internal static string AssetName(string rowName) => "XlsxAsset_" + rowName.Substring("Xlsx_".Length);
+
+        internal static void Queue(string rowName, string path)
+        {
+            string assetName = AssetName(rowName);
+            string script = Path.Combine(ExcelToolData.xlsxOutScriptPath, assetName + ".cs");
+            string source = "using System.Collections.Generic;\nusing UnityEngine;\n\n" +
+                "namespace Xlsx\n{\n" +
+                $"    public sealed class {assetName} : ScriptableObject\n    {{\n" +
+                $"        public List<{rowName}> Rows = new List<{rowName}>();\n" +
+                "    }\n}\n";
+            if (!File.Exists(script) || File.ReadAllText(script) != source)
+                File.WriteAllText(script, source);
+
+            var pending = ReadPending();
+            if (!pending.Contains(path, StringComparer.OrdinalIgnoreCase))
+                pending.Add(path);
+            SessionState.SetString(PendingKey, JsonMapper.ToJson(pending));
+        }
+
+        private static List<string> ReadPending() =>
+            JsonMapper.ToObject<List<string>>(SessionState.GetString(PendingKey, "[]"));
+
+        [InitializeOnLoadMethod]
+        internal static void Schedule()
+        {
+            EditorApplication.delayCall -= GeneratePending;
+            EditorApplication.delayCall += GeneratePending;
+        }
+
+        private static void GeneratePending()
+        {
+            var paths = ReadPending();
+            if (paths.Count == 0)
+                return;
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                Schedule();
+                return;
+            }
+
+            SessionState.EraseString(PendingKey);
+            Directory.CreateDirectory(ExcelToolData.xlsxOutPath);
+            AssetDatabase.Refresh();
+            foreach (var path in paths)
+            {
+                try
+                {
+                    using var data = XlsxAssetPostprocessor.GetTabelData(path);
+                    var table = data.Tables.Count > 0 ? data.Tables[0] : null;
+                    var errors = XlsxAssetPostprocessor.ValidateTable(table, path);
+                    if (errors.Count > 0)
+                    {
+                        foreach (var error in errors) Debug.LogError(error);
+                        continue;
+                    }
+
+                    string rowName = "Xlsx_" + Path.GetFileNameWithoutExtension(path);
+                    SaveTable(rowName, table);
+                }
+                catch (Exception error)
+                {
+                    Debug.LogError($"[配置表] {path}：{error}");
+                }
+            }
+
+            AssetDatabase.SaveAssets();
+            var addresses = Directory.GetFiles(ExcelToolData.xlsxOutPath, "XlsxAsset_*.asset")
+                .Select(Path.GetFileNameWithoutExtension).OrderBy(name => name, StringComparer.Ordinal).ToList();
+            File.WriteAllText(Path.Combine(ExcelToolData.xlsxOutPath, "AllXlsxAssets.json"), JsonMapper.ToJson(addresses));
+            XlsxAssetPostprocessor.SpawnAllXlsxText();
+            AssetDatabase.Refresh();
+        }
+
+        private static void SaveTable(string rowName, DataTable table)
+        {
+            var assembly = typeof(Tool).Assembly;
+            string assetName = AssetName(rowName);
+            var rowType = assembly.GetType("Xlsx." + rowName, throwOnError: true);
+            var assetType = assembly.GetType("Xlsx." + assetName, throwOnError: true);
+            if (!typeof(ScriptableObject).IsAssignableFrom(rowType))
+                throw new InvalidOperationException($"请等待 {rowName} 的 ScriptableObject 类型编译完成后重新转换。");
+
+            var rowsField = assetType.GetField("Rows");
+            var rows = (System.Collections.IList)Activator.CreateInstance(rowsField.FieldType);
+            const System.Reflection.BindingFlags fieldFlags = System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly;
+            var fields = new System.Reflection.FieldInfo[table.Columns.Count];
+            for (int column = 0; column < fields.Length; column++)
+            {
+                string fieldName = table.Rows[2][column].ToString();
+                string fieldType = table.Rows[1][column].ToString();
+                var sample = Tool.ConversionType(fieldType, "");
+                var expectedType = sample?.GetType() ?? (fieldType == "Vector2" ? typeof(Vector2) : typeof(Vector3));
+                var field = rowType.GetField(fieldName, fieldFlags);
+                if (field == null || field.FieldType != expectedType)
+                    throw new InvalidOperationException($"已编译的配置字段与表头不匹配：{rowName}.{fieldName}");
+                fields[column] = field;
+            }
+            if (rowType.GetFields(fieldFlags).Length != fields.Length)
+                throw new InvalidOperationException($"已编译的配置字段数量与表头不匹配：{rowName}");
+
+            string path = Path.Combine(ExcelToolData.xlsxOutPath, assetName + ".asset").Replace('\\', '/');
+            var asset = AssetDatabase.LoadMainAssetAtPath(path);
+            if (asset != null && asset.GetType() != assetType)
+                throw new InvalidOperationException($"配置资产路径已被占用：{path}");
+            var oldRows = AssetDatabase.LoadAllAssetsAtPath(path)
+                .Where(item => item != null && item.GetType() == rowType).ToArray();
+
+            bool committed = false;
+            try
+            {
+                for (int index = 3; index < table.Rows.Count; index++)
+                {
+                    var row = ScriptableObject.CreateInstance(rowType);
+                    rows.Add(row);
+                    row.name = $"{rowName}_{index - 2}";
+                    for (int column = 0; column < fields.Length; column++)
+                    {
+                        string type = table.Rows[1][column].ToString();
+                        string value = Convert.ToString(table.Rows[index][column], System.Globalization.CultureInfo.InvariantCulture);
+                        var converted = Tool.ConversionType(type, value);
+                        if (converted != null)
+                            fields[column].SetValue(row, converted);
+                    }
+                }
+
+                if (asset == null)
+                {
+                    asset = ScriptableObject.CreateInstance(assetType);
+                    AssetDatabase.CreateAsset(asset, path);
+                }
+                foreach (ScriptableObject row in rows)
+                    AssetDatabase.AddObjectToAsset(row, asset);
+                rowsField.SetValue(asset, rows);
+                EditorUtility.SetDirty(asset);
+                committed = true;
+                foreach (var row in oldRows)
+                    UnityEngine.Object.DestroyImmediate(row, true);
+            }
+            finally
+            {
+                if (!committed)
+                    foreach (ScriptableObject row in rows)
+                        UnityEngine.Object.DestroyImmediate(row, true);
             }
         }
     }

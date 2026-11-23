@@ -9,7 +9,6 @@ namespace FrameWork
     /// </summary>
     public static class Timer
     {
-        private static readonly HashSet<TimeData> TimeDatas = new HashSet<TimeData>();
         private static readonly Dictionary<string, TimeData> TimeDic = new Dictionary<string, TimeData>();
 
         /// <summary>
@@ -100,8 +99,6 @@ namespace FrameWork
 
         internal static void OnTimerFinished(TimeData timeData)
         {
-            TimeDatas.Remove(timeData);
-
             var key = timeData.Key;
             if (key != null && TimeDic.TryGetValue(key, out var current) && ReferenceEquals(current, timeData))
                 TimeDic.Remove(key);
@@ -114,7 +111,6 @@ namespace FrameWork
             CancelKeyTimer(key, false);
             var data = new TimeData { Key = key };
             TimeDic[key] = data;
-            TimeDatas.Add(data);
             data.Init(interval, time, -1f, call, count);
         }
 
@@ -122,7 +118,6 @@ namespace FrameWork
             bool isInterval, float delay, float duration, Action call, int callCount = -1)
         {
             var data = new TimeData();
-            TimeDatas.Add(data);
             data.Init(isInterval, delay, duration, call, callCount);
             return data;
         }

@@ -211,7 +211,7 @@ namespace FrameWork
             var key = (name, typeof(T));
             if (!Assets.TryGetValue(key, out var handle))
             {
-                handle = Package.LoadAssetAsync(GameResourceAliases.Resolve(name, typeof(T)), typeof(T));
+                handle = Package.LoadAssetAsync(name, typeof(T));
                 Assets.Add(key, handle);
             }
             while (handle.IsValid && !handle.IsDone) await UniTask.Yield(PlayerLoopTiming.Update);
@@ -238,7 +238,7 @@ namespace FrameWork
 #else
             if (Assets.ContainsKey((name, typeof(T))))
                 throw new InvalidOperationException("该资源正在异步加载，请等待 LoadAsync 完成：" + name);
-            var handle = Package.LoadAssetSync(GameResourceAliases.Resolve(name, typeof(T)), typeof(T));
+            var handle = Package.LoadAssetSync(name, typeof(T));
             if (handle.Status != EOperationStatus.Succeeded)
             {
                 string error = handle.Error;
@@ -276,7 +276,7 @@ namespace FrameWork
         public static async UniTask<GameObject> InstantiateAsync(string name, Transform parent = null)
         {
             await Init();
-            var handle = Package.LoadAssetAsync<GameObject>(GameResourceAliases.Resolve(name, typeof(GameObject)));
+            var handle = Package.LoadAssetAsync<GameObject>(name);
             try
             {
                 while (!handle.IsDone) await UniTask.Yield();
