@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.alelievr.NodeGraphProce
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YooAsset", "YooAsset.csproj", "{646c5e7c-346b-0052-1cf4-82039cc9cb35}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.InteractiveFilm", "FrameWork.InteractiveFilm.csproj", "{06f36971-c692-1fd4-e899-5e47c7261050}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTask.Linq", "UniTask.Linq.csproj", "{9ebf4cf1-79c3-6cf4-fee6-e4e992e79fff}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTask.DOTween", "UniTask.DOTween.csproj", "{1db7f260-051a-7f99-433b-8d5ac0daebfb}"
@@ -38,6 +40,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityWebSocket.Runtime", "UnityWebSocket.Runtime.csproj", "{8420c7c2-994f-5547-cd83-568d963c1488}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Editor", "FrameWork.Editor.csproj", "{d3c8f46c-b406-968f-0924-7e219d8250f1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.InteractiveFilm.Editor", "FrameWork.InteractiveFilm.Editor.csproj", "{9f95e635-1cd4-721a-b59e-e2c47b29243f}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebRpc.CodeGen", "Unity.WebRpc.CodeGen.csproj", "{45f751dc-a8bf-1106-d9b2-2ce840f98b8b}"
 EndProject
@@ -72,6 +76,8 @@ Global
 		{0cd5c53e-18d1-bcce-d709-23ec9b3a9ef7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{646c5e7c-346b-0052-1cf4-82039cc9cb35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{646c5e7c-346b-0052-1cf4-82039cc9cb35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06f36971-c692-1fd4-e899-5e47c7261050}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06f36971-c692-1fd4-e899-5e47c7261050}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9ebf4cf1-79c3-6cf4-fee6-e4e992e79fff}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9ebf4cf1-79c3-6cf4-fee6-e4e992e79fff}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1db7f260-051a-7f99-433b-8d5ac0daebfb}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -100,6 +106,8 @@ Global
 		{8420c7c2-994f-5547-cd83-568d963c1488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9f95e635-1cd4-721a-b59e-e2c47b29243f}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9f95e635-1cd4-721a-b59e-e2c47b29243f}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45f751dc-a8bf-1106-d9b2-2ce840f98b8b}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{45f751dc-a8bf-1106-d9b2-2ce840f98b8b}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{b35c4ce7-4cbb-bf57-af80-400bb5125c8c}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
