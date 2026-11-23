@@ -11,10 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9934e5aa2f24602ac3f5905a6db6ae7b, type: 3}
   m_Name: Training Sidearm
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   displayName: Training Sidearm
   icon: {fileID: 0}
   viewModelPrefab: {fileID: 700, guid: 8c733b0409414db09944d80456730ac5, type: 3}
+  animatorController: {fileID: 0}
+  kind: 0
   ammoType: {fileID: 11400000, guid: f8373cd257014db0ba0d55ee5a87ae90, type: 2}
   fireMode: 0
   magazineSize: 6
@@ -26,3 +28,6 @@ MonoBehaviour:
   reloadCompletion: 0
   range: 100
   damage: 34
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 35
+  meleeRadius: 0.25
