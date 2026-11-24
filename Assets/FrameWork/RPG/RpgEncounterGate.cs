@@ -9,6 +9,7 @@ namespace FrameWork.FPS
     {
         [SerializeField] private FpsHealth[] requiredEnemies = Array.Empty<FpsHealth>();
         [SerializeField] private GameObject barrier;
+        [SerializeField] private bool openAutomatically = true;
 
         private readonly HashSet<FpsHealth> enemies = new HashSet<FpsHealth>();
         private bool started;
@@ -51,8 +52,12 @@ namespace FrameWork.FPS
                 if (enemy != null && !enemy.IsDepleted) count++;
 
             Remaining = count;
-            if (count != 0) return;
+            if (count == 0 && openAutomatically) Open();
+        }
 
+        public void Open()
+        {
+            if (IsOpen) return;
             IsOpen = true;
             if (barrier != null) barrier.SetActive(false);
             Opened?.Invoke();

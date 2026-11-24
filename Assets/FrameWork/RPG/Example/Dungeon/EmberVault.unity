@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 105}
   - component: {fileID: 106}
   - component: {fileID: 108}
+  - component: {fileID: 109}
   m_Layer: 2
   m_Name: Player
   m_TagString: Untagged
@@ -1369,7 +1370,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6ea072be0818983498668e4aed725b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: caaba4c2b5f5e199fe8ec8a3541e6da1, type: 2}
+  item: {fileID: 11400000, guid: 2677c22696474980bbeedc14e9f9c483, type: 2}
   quantity: 1
 --- !u!1 &1620
 GameObject:
@@ -1936,6 +1937,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   maxHealth: 75
+  baseArmor: 50
   onDepleted:
     m_PersistentCalls:
       m_Calls: []
@@ -2139,6 +2141,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   maxHealth: 75
+  baseArmor: 50
   onDepleted:
     m_PersistentCalls:
       m_Calls: []
@@ -2325,10 +2328,38 @@ MonoBehaviour:
   inventory: {fileID: 105}
   progression: {fileID: 108}
   ammoPack: {fileID: 11400000, guid: 0fdc3226df894bcea57f9e8baa0e9c01, type: 2}
-  medkit: {fileID: 11400000, guid: caaba4c2b5f5e199fe8ec8a3541e6da1, type: 2}
+  medkit: {fileID: 11400000, guid: 2677c22696474980bbeedc14e9f9c483, type: 2}
   gate: {fileID: 2603}
   extraction: {fileID: 2801}
   extractionRadius: 1.6
+  encounterGraph: {fileID: 11400000, guid: 8fa66d2cbe314a26aeb1190c404a261c, type: 2}
+  encounterEvents: []
+--- !u!114 &109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94cb6368e77a4e209ecf50f5de87c311, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  slots:
+  - key: 113
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb220, type: 2}
+  - key: 101
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb221, type: 2}
+  - key: 99
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb222, type: 2}
+  - key: 120
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb223, type: 2}
+  - key: 122
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb224, type: 2}
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!114 &2603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2345,6 +2376,7 @@ MonoBehaviour:
   - {fileID: 2403}
   - {fileID: 2503}
   barrier: {fileID: 2700}
+  openAutomatically: 0
 --- !u!114 &2604
 MonoBehaviour:
   m_ObjectHideFlags: 0

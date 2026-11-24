@@ -15,7 +15,7 @@ namespace FrameWork.RPG.Editor
     public sealed class RpgStructureWindow : EditorWindow
     {
         private enum Tab { Overview, Scene, Assets }
-        private enum AssetSection { None, Firearms, Melee, AmmoTypes, Projectiles, AmmoPacks, Items, Growth, Enemies, BehaviorTrees }
+        private enum AssetSection { None, Firearms, Melee, AmmoTypes, Projectiles, AmmoPacks, Items, Growth, Enemies, BehaviorTrees, Skills }
 
         private sealed class Entry
         {
@@ -30,8 +30,8 @@ namespace FrameWork.RPG.Editor
         private static readonly Color ItemColor = new Color(0.32f, 0.72f, 0.54f);
         private static readonly Color GrowthColor = new Color(0.86f, 0.62f, 0.31f);
         private static readonly string[] Tabs = { "架构总览", "场景组件", "资产配置" };
-        private static readonly string[] AssetFilters = { "全部类型", "武器", "子弹与弹药", "其他道具", "角色成长", "敌人" };
-        private static readonly string[] CreateLabels = { "新建资产", "新建武器", "新建子弹", "新建道具", "新建等级曲线", "新建敌人" };
+        private static readonly string[] AssetFilters = { "全部类型", "武器", "子弹与弹药", "其他道具", "角色成长", "敌人", "技能" };
+        private static readonly string[] CreateLabels = { "新建资产", "新建武器", "新建子弹", "新建道具", "新建等级曲线", "新建敌人", "新建技能" };
         private static readonly string[] SectionNames =
         {
             "", "武器 · 枪械", "武器 · 近战", "子弹与弹药 · 弹种", "子弹与弹药 · 弹丸预制体",
@@ -174,6 +174,7 @@ namespace FrameWork.RPG.Editor
             if (all || assetFilter == 3)
             {
                 AddCreateItem(menu, all ? "其他道具/治疗包" : "治疗包", () => RpgAssetCreation.CreateAsset<FpsHealthItem>("新治疗包"));
+                AddCreateItem(menu, all ? "其他道具/状态效果" : "状态效果", () => RpgAssetCreation.CreateAsset<RpgStatusEffect>("新状态效果"));
                 AddCreateItem(menu, all ? "其他道具/武器拾取" : "武器拾取", () => RpgAssetCreation.CreateAsset<FpsWeaponItem>("新武器拾取道具"));
             }
             if (all || assetFilter == 4)
@@ -183,6 +184,8 @@ namespace FrameWork.RPG.Editor
                 AddCreateItem(menu, all ? "敌人/行为配置" : "行为配置", () => RpgAssetCreation.CreateAsset<RpgEnemyDefinition>("新敌人"));
                 AddCreateItem(menu, all ? "敌人/行为树" : "行为树", RpgBehaviorTreeWindow.CreateAsset);
             }
+            if (all || assetFilter == 6)
+                AddCreateItem(menu, "技能配置", () => RpgAssetCreation.CreateAsset<RpgSkillDefinition>("新技能"));
             menu.DropDown(GUILayoutUtility.GetLastRect());
         }
 
@@ -351,6 +354,21 @@ namespace FrameWork.RPG.Editor
                 }
             }
 
+            if (Application.isPlaying && selected is FpsHealth health)
+            {
+                EditorGUILayout.LabelField("运行时属性", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("生命", $"{health.CurrentHealth:0.0} / {health.MaxHealth:0.0}");
+                EditorGUILayout.LabelField("护甲", $"{health.Armor:0.##}");
+                EditorGUILayout.LabelField("移速倍率", $"{health.MovementMultiplier:0.##}");
+                foreach (var effect in health.ActiveEffects)
+                {
+                    if (effect.Definition == null) continue;
+                    string source = effect.Source != null ? effect.Source.name : "—";
+                    EditorGUILayout.LabelField(effect.Definition.name, $"{effect.Remaining:0.0}s · {source}");
+                }
+                Repaint();
+            }
+
             if (selected is FpsWeaponDefinition definition)
             {
                 using var settings = new SerializedObject(definition);
@@ -467,6 +485,7 @@ namespace FrameWork.RPG.Editor
                 3 => entry.Section == AssetSection.Items,
                 4 => entry.Section == AssetSection.Growth,
                 5 => entry.Section is AssetSection.Enemies or AssetSection.BehaviorTrees,
+                6 => entry.Section == AssetSection.Skills,
                 _ => true
             });
             return included && (string.IsNullOrWhiteSpace(query) ||
@@ -515,7 +534,7 @@ namespace FrameWork.RPG.Editor
             assetEntries.Clear();
             var types = TypeCache.GetTypesDerivedFrom<FpsItemDefinition>().Where(type => !type.IsAbstract)
                 .Concat(new[] { typeof(FpsWeaponDefinition), typeof(FpsAmmoType), typeof(RpgLevelCurve),
-                    typeof(RpgEnemyDefinition), typeof(RpgBehaviorTree) });
+                    typeof(RpgEnemyDefinition), typeof(RpgBehaviorTree), typeof(RpgStatusEffect), typeof(RpgSkillDefinition) });
             var paths = new HashSet<string>();
             foreach (var type in types)
             foreach (var guid in AssetDatabase.FindAssets("t:" + type.Name))
@@ -531,9 +550,11 @@ namespace FrameWork.RPG.Editor
                     FpsAmmoType => AssetSection.AmmoTypes,
                     FpsAmmoItem => AssetSection.AmmoPacks,
                     FpsItemDefinition => AssetSection.Items,
+                    RpgStatusEffect => AssetSection.Items,
                     RpgLevelCurve => AssetSection.Growth,
                     RpgEnemyDefinition => AssetSection.Enemies,
                     RpgBehaviorTree => AssetSection.BehaviorTrees,
+                    RpgSkillDefinition => AssetSection.Skills,
                     _ => AssetSection.None
                 };
                 if (section == AssetSection.None) continue;

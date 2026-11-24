@@ -35,6 +35,14 @@
 
 原练习场 `Example/FpsTrainingRange.unity` 适合单独测试武器。两张场景默认使用俯视视角，WASD 移动，鼠标瞄准，左键攻击。1、2、3 分别装备卡宾枪、手枪和训练剑，R 换弹，F 补给，H 治疗，V 切换视角。
 
+## 关卡事件图
+
+打开 **FrameWork → RPG → 关卡事件图** 查看 [Ember Vault 事件图](Example/Dungeon/EmberVaultEncounter.asset)。进入 Play Mode 后，当前执行节点的标题会高亮。示例流程依次等待两名守卫被击败、打开门、等待玩家到达撤离点，然后进入结束节点。
+
+通过 **FrameWork → RPG → 新建关卡事件图** 创建模板。按 Space 插入步骤，选择操作类型，连到结束节点后点击 **检查连线** 和 **保存**。复制 Ember Vault 场景后，将图绑定到 `RpgDungeonDemo` 的 **Encounter Graph**，并在门控组件上关闭 **Open Automatically**，由图控制开门时机。
+
+要加入增援或补给，可在 **Encounter Events** 中配置一个 Key 和对应的 UnityEvent，例如激活一个预先停用的补给物体，然后插入使用该 Key 的 **Invoke Event** 步骤。若还需等场景反馈，再接一个 **Wait For Signal**，由场景事件调用 `RpgDungeonDemo.Signal(key)`。每个等待步骤消耗一次对应信号。
+
 ## 场景接入
 
 按 V 在俯视、第一人称和第三人称之间循环，也可调用 `FpsPlayer.SetViewMode(mode)`。俯视模式可以配置相机距离、俯角和水平朝向。第三人称可以配置肩后距离、镜头偏移、镜头碰撞层和角色模型。镜头碰撞层应排除玩家自己的 Collider。把武器挂点放在玩家根节点下，并绑定到 Weapon Aim Pivot，使武器跟随瞄准方向，同时保持在角色身上。
@@ -68,6 +76,30 @@
 3. 玩家接触拾取物后，库存有空间时拾取相应数量，剩余数量留在场景中。给 `FpsPlayer.Quick Item` 绑定快捷道具后可按 F 使用，也可由 UI 调用 `FpsInventory.TryUse(item)`。治疗只对有伤且存活的玩家起效。弹药包补给当前同弹种武器，达到上限时停止补给。武器道具在武器栏还有空槽且未拥有该枪型时入栏。效果生效后消耗一个道具。
 
 UI 可订阅 `FpsLoadout.EquippedChanged`、`FpsInventory.Changed`、`FpsWeapon.AmmoChanged` 和 `FpsHealth.HealthChanged`，并用 `GetCount(item)` 查询库存。命中效果可订阅 `FpsWeapon.Hit`，开火动画和音效可订阅 `FpsWeapon.Fired`。自定义道具可继承 `FpsItemDefinition`，自定义受击对象可实现 `IFpsDamageable`。
+
+## 技能系统
+
+在 **FrameWork → RPG → 架构编辑面板 → 资产配置 → 技能** 创建技能。配置名称、图标、解锁等级、冷却时间、目标类型和效果列表。目标可选自身、准星命中的角色或施法者周围可见的角色。效果可按顺序组合伤害、直接治疗、已有状态效果和自身冲刺。伤害沿用护甲结算，冲刺使用 CharacterController 的碰撞。
+
+给角色添加 `RpgSkillBar`，在 **Slots** 中指定技能和按键。目标层应包含可命中的角色和会阻挡技能的墙体。技能效果至少有一项生效才开始冷却，同一角色的多个槽位引用同一技能时共用冷却。自定义界面和 AI 可调用 `TryCast(skill, aim)`，界面可用 `GetCooldown(skill)` 查询冷却，用 `MeetsLevel(skill)` 查询等级要求，并通过 `Cast` 事件接入动画或音效。
+
+Ember Vault 示例 HUD 显示各技能的按键、冷却和等级要求。
+
+| 按键 | 技能 | 效果 |
+| --- | --- | --- |
+| Q | 强力射击 | 对瞄准目标造成伤害 |
+| E | 冲击波 | 对周围可见目标造成范围伤害 |
+| C | 持续治疗 | 为自己施加持续回血 |
+| X | 冲刺 | 沿瞄准方向水平移动，受场景碰撞限制 |
+| Z | 铁肤 | 2 级解锁，短时间提高护甲并降低移速 |
+
+## 护甲与状态效果
+
+在 `FpsHealth` 中设置 **Base Armor**。实际伤害为原始伤害乘以 `100 / (100 + 当前护甲)`，枪械、弹丸和近战通过同一个受击入口结算。Ember Vault 的两名守卫各有 50 点护甲，承受原始伤害的三分之二。
+
+在 RPG 架构面板选择 **资产配置 → 其他道具 → 新建道具 → 状态效果**，可配置持续时间、每秒治疗、护甲加成和移速倍率。将效果绑定到治疗包的 **Status Effect**，或调用 `FpsHealth.TryApplyStatus(effect, source)`。重复应用同一配置会刷新时间，不同配置的护甲加成相加、移速倍率相乘。死亡和重置生命时清除效果。
+
+在 Ember Vault 拾取治疗包并受伤后按 H，治疗包会在 5 秒内恢复最多 40 点生命。进入 Play Mode 后，在架构面板的场景组件列表选择玩家或守卫的 `FpsHealth`，可查看护甲、移速倍率、效果来源及剩余时间。
 
 ## 经验与等级
 

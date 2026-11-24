@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace FrameWork.FPS
@@ -15,6 +18,29 @@ namespace FrameWork.FPS
         [SerializeField] private RpgEncounterGate gate;
         [SerializeField] private Transform extraction;
         [SerializeField, Min(0.5f)] private float extractionRadius = 1.6f;
+        [SerializeField] private RpgEncounterGraph encounterGraph;
+        [SerializeField] private EncounterEvent[] encounterEvents = Array.Empty<EncounterEvent>();
+
+        [Serializable]
+        private sealed class EncounterEvent
+        {
+            public string key;
+            public UnityEvent action;
+        }
+
+        private readonly List<RpgEncounterNode> route = new List<RpgEncounterNode>();
+        private readonly Dictionary<string, int> signals = new Dictionary<string, int>(StringComparer.Ordinal);
+        private int stepIndex;
+
+        public RpgEncounterGraph EncounterGraph => encounterGraph;
+        public RpgEncounterNode CurrentNode => stepIndex < route.Count ? route[stepIndex] : null;
+
+        public void Signal(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return;
+            signals.TryGetValue(key, out int count);
+            signals[key] = count + 1;
+        }
 
         private enum MissionState { Combat, Extract, Complete, Defeated }
 
@@ -22,6 +48,30 @@ namespace FrameWork.FPS
         private GUIStyle titleStyle;
         private GUIStyle objectiveStyle;
         private GUIStyle resultStyle;
+
+        private void Start()
+        {
+            if (encounterGraph == null) return;
+            string error = encounterGraph.BuildRoute(route);
+            if (error == null)
+            {
+                foreach (var node in route)
+                {
+                    if (!(node is RpgEncounterStep step)) continue;
+                    if (step.operation == RpgEncounterOperation.WaitForSignal && string.IsNullOrWhiteSpace(step.key))
+                        error = "等待信号的步骤必须填写 Key。";
+                    if (step.operation == RpgEncounterOperation.InvokeEvent &&
+                        (string.IsNullOrWhiteSpace(step.key) ||
+                         Array.FindAll(encounterEvents, item => item != null && item.key == step.key).Length != 1))
+                        error = $"事件 {step.key} 必须在场景中绑定一次。";
+                    if (error != null) break;
+                }
+            }
+            if (error == null) return;
+            route.Clear();
+            Debug.LogError(error, this);
+            Finish(MissionState.Defeated);
+        }
 
         private void Update()
         {
@@ -40,12 +90,53 @@ namespace FrameWork.FPS
             if (Input.GetKeyDown(KeyCode.H) && (player.IsTopDown || Cursor.lockState == CursorLockMode.Locked))
                 inventory.TryUse(medkit);
 
-            if (!gate.IsOpen) return;
+            if (encounterGraph != null)
+            {
+                AdvanceEncounter();
+                return;
+            }
 
+            if (!gate.IsOpen) return;
             state = MissionState.Extract;
-            Vector3 offset = player.transform.position - extraction.position;
-            if (offset.sqrMagnitude <= extractionRadius * extractionRadius)
+            if (IsAtExtraction()) Finish(MissionState.Complete);
+        }
+
+        private bool IsAtExtraction() =>
+            (player.transform.position - extraction.position).sqrMagnitude <= extractionRadius * extractionRadius;
+
+        private void AdvanceEncounter()
+        {
+            if (CurrentNode is RpgEncounterEnd)
+            {
                 Finish(MissionState.Complete);
+                return;
+            }
+            if (CurrentNode is RpgEncounterStep step)
+            {
+                switch (step.operation)
+                {
+                    case RpgEncounterOperation.WaitForGuards:
+                        state = MissionState.Combat;
+                        if (gate.Remaining > 0) return;
+                        break;
+                    case RpgEncounterOperation.OpenGate:
+                        gate.Open();
+                        break;
+                    case RpgEncounterOperation.WaitForExtraction:
+                        state = MissionState.Extract;
+                        if (!IsAtExtraction()) return;
+                        break;
+                    case RpgEncounterOperation.WaitForSignal:
+                        if (!signals.TryGetValue(step.key, out int count)) return;
+                        if (count == 1) signals.Remove(step.key);
+                        else signals[step.key] = count - 1;
+                        break;
+                    case RpgEncounterOperation.InvokeEvent:
+                        Array.Find(encounterEvents, item => item != null && item.key == step.key).action?.Invoke();
+                        break;
+                }
+            }
+            stepIndex++;
         }
 
         private void Finish(MissionState result)
@@ -72,7 +163,8 @@ namespace FrameWork.FPS
         {
             InitializeStyles();
             float width = Mathf.Min(450f, Screen.width - 32f);
-            var header = new Rect(16f, 16f, width, 166f);
+            var skillBar = player.SkillBar;
+            var header = new Rect(16f, 16f, width, skillBar != null ? 215f : 166f);
             GUI.Box(header, GUIContent.none);
             GUI.Label(new Rect(header.x + 12f, header.y + 9f, width - 24f, 29f), "EMBER VAULT", titleStyle);
 
@@ -104,6 +196,23 @@ namespace FrameWork.FPS
                 "WASD Move   LMB Attack   1–3 Equip   R Reload");
             GUI.Label(new Rect(header.x + 12f, header.y + 140f, available, 18f),
                 "F Ammo   H Heal   V View   Esc Release Cursor");
+
+            if (skillBar != null)
+            {
+                int index = 0;
+                foreach (var slot in skillBar.Slots)
+                {
+                    if (slot?.skill == null) continue;
+                    float remaining = skillBar.GetCooldown(slot.skill);
+                    string status = !skillBar.MeetsLevel(slot.skill) ? $"Lv{slot.skill.RequiredLevel}"
+                        : remaining > 0f ? $"{remaining:0.0}s" : "Ready";
+                    float column = available / 3f;
+                    GUI.Label(new Rect(header.x + 12f + index % 3 * column,
+                        header.y + 167f + index / 3 * 19f, column, 19f),
+                        $"{slot.key} {slot.skill.DisplayName} {status}");
+                    if (++index == 6) break;
+                }
+            }
 
             if (state != MissionState.Complete && state != MissionState.Defeated)
             {

@@ -209,7 +209,7 @@ namespace FrameWork.FPS
             Vector3 offset = HorizontalOffset(transform.position, target.position);
             TurnTowards(offset, deltaTime);
             state = RpgEnemyState.Pursuing;
-            movement = offset.normalized * definition.MoveSpeed;
+            movement = offset.normalized * (definition.MoveSpeed * health.MovementMultiplier);
             return RpgBehaviorStatus.Running;
         }
 
@@ -224,7 +224,7 @@ namespace FrameWork.FPS
 
             TurnTowards(offset, deltaTime);
             state = RpgEnemyState.Returning;
-            movement = Vector3.ClampMagnitude(offset / deltaTime, definition.MoveSpeed);
+            movement = Vector3.ClampMagnitude(offset / deltaTime, definition.MoveSpeed * health.MovementMultiplier);
             return RpgBehaviorStatus.Running;
         }
 

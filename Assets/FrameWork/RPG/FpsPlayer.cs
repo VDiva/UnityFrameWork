@@ -30,6 +30,9 @@ namespace FrameWork.FPS
         [SerializeField] private Transform weaponAimPivot;
 
         private CharacterController controller;
+        private FpsHealth health;
+        private RpgSkillBar skillBar;
+        public RpgSkillBar SkillBar => skillBar;
         private float verticalSpeed;
         private float pitch;
         private bool ownsCursor;
@@ -46,6 +49,8 @@ namespace FrameWork.FPS
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
+            health = GetComponent<FpsHealth>();
+            skillBar = GetComponent<RpgSkillBar>();
             loadout = GetComponent<FpsLoadout>();
             inventory = GetComponent<FpsInventory>();
             if (viewCamera == null) viewCamera = GetComponentInChildren<Camera>();
@@ -114,7 +119,10 @@ namespace FrameWork.FPS
 
             Move(move, sprint, jump, Time.deltaTime);
             UpdateView(aimAtMouse: acceptsInput && IsTopDown);
-            if (acceptsInput) UpdateEquipment(click);
+            if (!acceptsInput) return;
+            UpdateEquipment(click);
+            if (skillBar != null && (!IsTopDown || viewCamera.pixelRect.Contains(Input.mousePosition)))
+                skillBar.ReadInput(GetAimRay());
         }
 
         public void SetQuickItem(FpsItemDefinition item) => quickItem = item;
@@ -142,16 +150,13 @@ namespace FrameWork.FPS
                 ? Input.GetMouseButton(0) || Input.GetButton("Fire1")
                 : Input.GetButtonDown("Fire1"));
             if (!fire) return;
-            if (IsTopDown)
-            {
-                if (!viewCamera.pixelRect.Contains(Input.mousePosition)) return;
-                equipped.TryFire(new Ray(transform.TransformPoint(eyePosition), transform.forward), gameObject);
-            }
-            else
-            {
-                equipped.TryFire(viewCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)), gameObject);
-            }
+            if (IsTopDown && !viewCamera.pixelRect.Contains(Input.mousePosition)) return;
+            equipped.TryFire(GetAimRay(), gameObject);
         }
+
+        private Ray GetAimRay() => IsTopDown
+            ? new Ray(transform.TransformPoint(eyePosition), transform.forward)
+            : viewCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
         private void Look(Vector2 look)
         {
@@ -249,7 +254,7 @@ namespace FrameWork.FPS
             input = Vector2.ClampMagnitude(input, 1f);
             Quaternion moveRotation = IsTopDown ? Quaternion.Euler(0f, topDownYaw, 0f) : transform.rotation;
             Vector3 movement = moveRotation * new Vector3(input.x, 0f, input.y) *
-                (sprint ? sprintSpeed : walkSpeed);
+                (sprint ? sprintSpeed : walkSpeed) * (health != null ? health.MovementMultiplier : 1f);
             movement.y = verticalSpeed;
             CollisionFlags collision = controller.Move(movement * deltaTime);
             if ((collision & CollisionFlags.Above) != 0 && verticalSpeed > 0f)
