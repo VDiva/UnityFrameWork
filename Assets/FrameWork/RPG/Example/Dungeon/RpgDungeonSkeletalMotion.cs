@@ -45,21 +45,27 @@ namespace FrameWork.FPS
 
         public static RpgDungeonSkeletalMotion Create(Transform body, string resource)
         {
+#if UNITY_EDITOR
             if (string.IsNullOrEmpty(resource)) return null;
 
-            var imported = Resources.LoadAll<AnimationClip>(resource);
-            var idle = Find(imported, "idle");
-            var walk = Find(imported, "walk");
+            var imported = System.Linq.Enumerable.OfType<AnimationClip>(
+                UnityEditor.AssetDatabase.LoadAllAssetsAtPath(RpgDungeonDressing.ArtPath + resource + ".fbx"));
+            var clips = System.Linq.Enumerable.ToArray(imported);
+            var idle = Find(clips, "idle");
+            var walk = Find(clips, "walk");
             if (idle == null || walk == null) return null;
 
             var animator = body.GetComponentInChildren<Animator>(true);
             if (animator == null) animator = body.GetChild(0).gameObject.AddComponent<Animator>();
             return new RpgDungeonSkeletalMotion(animator, new[]
             {
-                idle, walk, Find(imported, "sprint") ?? walk,
-                Find(imported, "holding-both-shoot"), Find(imported, "attack-melee-right"),
-                Find(imported, "pick-up"), Find(imported, "die")
+                idle, walk, Find(clips, "sprint") ?? walk,
+                Find(clips, "holding-both-shoot"), Find(clips, "attack-melee-right"),
+                Find(clips, "pick-up"), Find(clips, "die")
             });
+#else
+            return null;
+#endif
         }
 
         public bool HasDefeat => lengths[Defeat] > 0f;

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e306ba0441046aa813c650067e4ad02, type: 3}
   m_Name: PowerShot
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   displayName: Power Shot
   icon: {fileID: 0}
   requiredLevel: 1
@@ -22,3 +22,4 @@ MonoBehaviour:
   - kind: 0
     amount: 45
     status: {fileID: 0}
+  execution: {fileID: 0}

@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 821e194c4dafb8d3f09be8f8a3b49ef7, type: 3}
-  m_Name: Field Medkit
-  m_EditorClassIdentifier:
+  m_Name: FieldMedkit
+  m_EditorClassIdentifier: 
   displayName: Field Medkit
   icon: {fileID: 0}
   carryLimit: 3

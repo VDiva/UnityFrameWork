@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace FrameWork.FPS
@@ -5,7 +6,7 @@ namespace FrameWork.FPS
     [CreateAssetMenu(menuName = "FrameWork/FPS/Items/Weapon")]
     public sealed class FpsWeaponItem : FpsItemDefinition
     {
-        [SerializeField] private FpsWeapon weaponPrefab;
+        [LabelText("武器预制体")] [SerializeField] private FpsWeapon weaponPrefab;
 
         public FpsWeapon WeaponPrefab => weaponPrefab;
 

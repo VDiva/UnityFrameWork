@@ -5,6 +5,9 @@ namespace FrameWork.FPS
 {
     public sealed class RpgDungeonDressing : MonoBehaviour
     {
+#if UNITY_EDITOR
+        internal const string ArtPath = "Assets/FrameWork/RPG/Example/Dungeon/DemoArt/EmberVault/";
+#endif
         [SerializeField] private GameObject[] shellPlaceholders;
         [SerializeField] private GameObject playerVisual;
         [SerializeField] private GameObject[] guards;
@@ -20,12 +23,13 @@ namespace FrameWork.FPS
 
         private void Start()
         {
+#if UNITY_EDITOR
             var art = new GameObject("Dungeon Art").transform;
             art.SetParent(transform, false);
             var shader = Shader.Find("Standard");
             if (shader != null)
             {
-                var atlas = Resources.Load<Texture2D>("EmberVault/Textures/colormap");
+                var atlas = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(ArtPath + "Textures/colormap.png");
                 if (atlas != null)
                 {
                     atlasMaterial = new Material(shader) { mainTexture = atlas };
@@ -49,6 +53,7 @@ namespace FrameWork.FPS
             AddModel("chest", art, new Vector3(7.3f, 0f, 7.8f), Vector3.one * 1.6f, 35f);
             AddModel("banner", art, new Vector3(-8.1f, 1.15f, 2.5f), Vector3.one * 1.7f, 90f);
             AddModel("banner", art, new Vector3(8.1f, 1.15f, 2.5f), Vector3.one * 1.7f, -90f);
+#endif
         }
 
         private void BuildShell(Transform art)
@@ -150,7 +155,7 @@ namespace FrameWork.FPS
             pose.SetParent(parent, false);
             string asset = "actor-" + kind;
             var model = AddModel(asset, pose, Vector3.zero, Vector3.one);
-            motionResource = model != null ? "EmberVault/" + asset : null;
+            motionResource = model != null ? asset : null;
             if (model == null) model = AddModel("character-" + kind, pose, Vector3.zero, Vector3.one);
             if (model == null)
             {
@@ -173,7 +178,10 @@ namespace FrameWork.FPS
         {
             if (!models.TryGetValue(assetName, out var source))
             {
-                source = Resources.Load<GameObject>("EmberVault/" + assetName);
+#if UNITY_EDITOR
+                string extension = assetName.StartsWith("actor-", System.StringComparison.Ordinal) ? ".fbx" : ".obj";
+                source = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(ArtPath + assetName + extension);
+#endif
                 models.Add(assetName, source);
             }
             if (source == null) return null;

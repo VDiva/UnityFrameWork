@@ -374,10 +374,10 @@ namespace FrameWork
         {
             string assetName = AssetName(rowName);
             string script = Path.Combine(ExcelToolData.xlsxOutScriptPath, assetName + ".cs");
-            string source = "using System.Collections.Generic;\nusing UnityEngine;\n\n" +
+            string source = "using System.Collections.Generic;\nusing Sirenix.OdinInspector;\nusing UnityEngine;\n\n" +
                 "namespace Xlsx\n{\n" +
                 $"    public sealed class {assetName} : ScriptableObject\n    {{\n" +
-                $"        public List<{rowName}> Rows = new List<{rowName}>();\n" +
+                $"        [LabelText(\"配置表数据行\")] public List<{rowName}> Rows = new List<{rowName}>();\n" +
                 "    }\n}\n";
             if (!File.Exists(script) || File.ReadAllText(script) != source)
                 File.WriteAllText(script, source);

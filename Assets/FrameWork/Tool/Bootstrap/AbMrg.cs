@@ -10,6 +10,10 @@ namespace FrameWork
     /// <summary>保留框架原调用入口，资源后端使用 YooAsset。</summary>
     public static class ABMrg
     {
+        internal sealed class ResourceOperationException : InvalidOperationException
+        {
+            public ResourceOperationException(string message) : base(message) { }
+        }
         /// <summary>WebGL 资源加载与下载的并发上限，在初始化资源系统时生效。</summary>
         public static int WebGLMaxConcurrentRequests = 4;
 
@@ -190,7 +194,7 @@ namespace FrameWork
         {
             while (!operation.IsDone) await UniTask.Yield(PlayerLoopTiming.Update);
             if (operation.Status != EOperationStatus.Succeeded)
-                throw new InvalidOperationException(operation.Error);
+                throw new ResourceOperationException(operation.Error);
         }
 
         private static bool TryGetCachedHandle((string, Type) key, out AssetHandle handle)
@@ -333,7 +337,7 @@ namespace FrameWork
                     (float)download.CurrentDownloadBytes / download.TotalDownloadBytes);
                 await UniTask.Yield();
             }
-            if (download.Status != EOperationStatus.Succeeded) throw new InvalidOperationException(download.Error);
+            if (download.Status != EOperationStatus.Succeeded) throw new ResourceOperationException(download.Error);
             progress?.Invoke(1f);
         }
 

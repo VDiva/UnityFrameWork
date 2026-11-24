@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using GraphProcessor;
@@ -11,7 +12,7 @@ namespace FrameWork.InteractiveFilm
     [Serializable]
     public abstract class FilmNode : BaseNode
     {
-        [ShowAsDrawer] public string title;
+        [LabelText("标题")] [ShowAsDrawer] public string title;
         public string DisplayTitle => string.IsNullOrWhiteSpace(title) ? name : title;
         internal virtual int OutputCount => 0;
         internal virtual int GetOutputIndex(string field, string id) => -1;
@@ -21,7 +22,7 @@ namespace FrameWork.InteractiveFilm
     public abstract class FilmContentNode : FilmNode
     {
         [Input("进入", true), NonSerialized] public FilmLink previous;
-        [ShowAsDrawer, TextArea(2, 4)] public string caption;
+        [LabelText("字幕")] [ShowAsDrawer, TextArea(2, 4)] public string caption;
     }
 
     [Serializable, NodeMenuItem("影游/入口", typeof(FilmGraph))]
@@ -37,9 +38,9 @@ namespace FrameWork.InteractiveFilm
     [Serializable, NodeMenuItem("影游/视频片段", typeof(FilmGraph))]
     public sealed class FilmSegmentNode : FilmContentNode
     {
-        [ShowAsDrawer] public VideoClip video;
-        [ShowAsDrawer] public Texture2D poster;
-        [ShowAsDrawer] public bool autoAdvance = true;
+        [LabelText("视频片段")] [ShowAsDrawer] public VideoClip video;
+        [LabelText("封面图片")] [ShowAsDrawer] public Texture2D poster;
+        [LabelText("播放结束后自动前进")] [ShowAsDrawer] public bool autoAdvance = true;
         [Output("下一段", false), NonSerialized] public FilmLink next;
         public override string name => "视频片段";
         public override Color color => new Color(0.34f, 0.58f, 0.80f);
@@ -53,8 +54,8 @@ namespace FrameWork.InteractiveFilm
         [Serializable]
         private sealed class Option
         {
-            public string id;
-            public string label;
+            [LabelText("选项标识")] public string id;
+            [LabelText("选项文字")] public string label;
 
             public Option(string id, string label)
             {

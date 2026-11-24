@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using System;
 using GraphProcessor;
 using UnityEngine;
@@ -8,17 +9,17 @@ namespace FrameWork.FPS
     public enum RpgBehaviorLink { Flow }
     public enum RpgEnemyCondition
     {
-        [InspectorName("可追击")] CanPursue,
-        [InspectorName("可攻击")] CanAttack,
-        [InspectorName("离开出生点")] AwayFromHome
+        [LabelText("可追击"), InspectorName("可追击")] CanPursue,
+        [LabelText("可攻击"), InspectorName("可攻击")] CanAttack,
+        [LabelText("离开出生点"), InspectorName("离开出生点")] AwayFromHome
     }
 
     public enum RpgEnemyAction
     {
-        [InspectorName("追击目标")] Chase,
-        [InspectorName("攻击目标")] Attack,
-        [InspectorName("返回出生点")] ReturnHome,
-        [InspectorName("待机")] Idle
+        [LabelText("追击目标"), InspectorName("追击目标")] Chase,
+        [LabelText("攻击目标"), InspectorName("攻击目标")] Attack,
+        [LabelText("返回出生点"), InspectorName("返回出生点")] ReturnHome,
+        [LabelText("待机"), InspectorName("待机")] Idle
     }
 
     [Serializable]
@@ -132,7 +133,7 @@ namespace FrameWork.FPS
     [Serializable, NodeMenuItem("行为树/叶节点/条件", typeof(RpgBehaviorTree))]
     public sealed class RpgBehaviorConditionNode : RpgBehaviorChild
     {
-        [ShowAsDrawer] public RpgEnemyCondition condition;
+        [LabelText("执行条件"), InspectorName("执行条件")] [ShowAsDrawer] public RpgEnemyCondition condition;
         public override string name => "条件";
         public override Color color => new Color(0.80f, 0.57f, 0.30f);
 
@@ -143,7 +144,7 @@ namespace FrameWork.FPS
     [Serializable, NodeMenuItem("行为树/叶节点/动作", typeof(RpgBehaviorTree))]
     public sealed class RpgBehaviorActionNode : RpgBehaviorChild
     {
-        [ShowAsDrawer] public RpgEnemyAction action;
+        [LabelText("执行动作"), InspectorName("执行动作")] [ShowAsDrawer] public RpgEnemyAction action;
         public override string name => "动作";
         public override Color color => new Color(0.33f, 0.65f, 0.48f);
 

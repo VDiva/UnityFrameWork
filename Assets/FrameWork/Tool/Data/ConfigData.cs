@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace FrameWork
@@ -6,12 +7,12 @@ namespace FrameWork
     public class ConfigData : ScriptableObject
     {
         [Tooltip("业务版本，可随热更新配置发布；安装包兼容性由客户端基线独立管理。")]
-        public string versions = "1.0.0";
+        [LabelText("业务版本")] public string versions = "1.0.0";
         [Tooltip("非负整数服务器兼容版本，低于服务端要求时提示更新客户端。")]
-        public string serverVersion = "1008";
+        [LabelText("服务端兼容版本")] public string serverVersion = "1008";
         [Tooltip("正式服 WebSocket 地址。")]
-        public string serverIp = "ws://127.0.0.1:5100";
+        [LabelText("正式服地址")] public string serverIp = "ws://127.0.0.1:5100";
         [Tooltip("调试服 WebSocket 地址。")]
-        public string debugServerIp = "ws://127.0.0.1:5100";
+        [LabelText("调试服地址")] public string debugServerIp = "ws://127.0.0.1:5100";
     }
 }

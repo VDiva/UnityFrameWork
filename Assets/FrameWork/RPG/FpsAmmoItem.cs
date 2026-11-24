@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace FrameWork.FPS
@@ -5,8 +6,8 @@ namespace FrameWork.FPS
     [CreateAssetMenu(menuName = "FrameWork/FPS/Items/Ammo")]
     public sealed class FpsAmmoItem : FpsItemDefinition
     {
-        [SerializeField] private FpsAmmoType ammoType;
-        [SerializeField, Min(1)] private int rounds = 30;
+        [LabelText("弹药类型")] [SerializeField] private FpsAmmoType ammoType;
+        [LabelText("补充弹药数量")] [SerializeField, Min(1)] private int rounds = 30;
 
         public override bool TryApply(GameObject user)
         {

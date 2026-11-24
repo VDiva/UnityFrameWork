@@ -1,6 +1,8 @@
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using GraphProcessor;
+using UnityEngine;
 
 namespace FrameWork.FPS
 {
@@ -42,7 +44,7 @@ namespace FrameWork.FPS
     }
 
     public enum RpgEncounterLink { Flow }
-    public enum RpgEncounterOperation { WaitForGuards, OpenGate, WaitForExtraction, WaitForSignal, InvokeEvent }
+    public enum RpgEncounterOperation { [LabelText("等待守卫被击败"), InspectorName("等待守卫被击败")] WaitForGuards, [LabelText("开启关卡门"), InspectorName("开启关卡门")] OpenGate, [LabelText("等待撤离"), InspectorName("等待撤离")] WaitForExtraction, [LabelText("等待信号"), InspectorName("等待信号")] WaitForSignal, [LabelText("触发事件"), InspectorName("触发事件")] InvokeEvent }
 
     [Serializable]
     public abstract class RpgEncounterNode : BaseNode { }
@@ -59,8 +61,8 @@ namespace FrameWork.FPS
     {
         [Input("进入", false), NonSerialized] public RpgEncounterLink previous;
         [Output("下一步", false), NonSerialized] public RpgEncounterLink next;
-        [ShowAsDrawer] public RpgEncounterOperation operation;
-        [ShowAsDrawer] public string key;
+        [LabelText("步骤操作"), InspectorName("步骤操作")] [ShowAsDrawer] public RpgEncounterOperation operation;
+        [LabelText("步骤键"), InspectorName("步骤键")] [ShowAsDrawer] public string key;
         public override string name => "关卡步骤";
     }
 

@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using System.Collections.Generic;
 using UnityEngine;
 using Xlsx;
@@ -9,7 +10,7 @@ namespace Xlsx
 		/// <summary>
 		/// Key
 		/// </summary>
-		public string Key;
+		[LabelText("配置键")] public string Key;
 
 	}
 }

@@ -69,42 +69,54 @@ namespace FrameWork.FPS
 
         private bool ApplySkill(RpgSkillDefinition skill, Ray aim)
         {
+            Vector3 origin = controller != null ? transform.TransformPoint(controller.center) : transform.position;
+            var context = new RpgSkillContext(skill, health, aim, targetLayers, origin);
+            if (skill.Execution != null) return skill.Execution.Execute(context);
+
             switch (skill.Targeting)
             {
                 case RpgSkillTarget.Self:
                     return ApplyEffects(skill, health, aim.direction);
                 case RpgSkillTarget.Aim:
-                    var target = FirstHit(aim, skill.Range);
+                    var target = context.FindAimTarget(skill.Range);
                     return target != null && ApplyEffects(skill, target, aim.direction);
                 case RpgSkillTarget.Nearby:
-                    Vector3 origin = controller != null ? transform.TransformPoint(controller.center) : transform.position;
-                    var seen = new HashSet<FpsHealth>();
                     bool applied = false;
-                    foreach (var collider in Physics.OverlapSphere(origin, skill.Range, targetLayers, QueryTriggerInteraction.Ignore))
-                    {
-                        var nearby = collider.GetComponentInParent<FpsHealth>();
-                        if (nearby == null || nearby == health || !seen.Add(nearby)) continue;
-                        Vector3 offset = collider.bounds.center - origin;
-                        if (offset.sqrMagnitude > 0f && FirstHit(new Ray(origin, offset.normalized), offset.magnitude) != nearby)
-                        {
-                            seen.Remove(nearby);
-                            continue;
-                        }
+                    foreach (var nearby in context.FindAreaTargets(origin, skill.Range))
                         applied |= ApplyEffects(skill, nearby, aim.direction);
-                    }
                     return applied;
                 default:
                     return false;
             }
         }
 
-        private FpsHealth FirstHit(Ray ray, float distance)
+        internal static IReadOnlyList<FpsHealth> FindAreaTargets(Vector3 center, float radius, LayerMask layers, FpsHealth caster, bool requireLineOfSight)
         {
+            var targets = new List<FpsHealth>();
+            if (radius < 0f || float.IsNaN(radius) || float.IsInfinity(radius)) return targets;
+            var seen = new HashSet<FpsHealth>();
+            foreach (var collider in Physics.OverlapSphere(center, radius, layers, QueryTriggerInteraction.Ignore))
+            {
+                var target = collider.GetComponentInParent<FpsHealth>();
+                if (target == null || target == caster || target.IsDepleted || !target.isActiveAndEnabled || seen.Contains(target)) continue;
+                Vector3 offset = collider.bounds.center - center;
+                if (requireLineOfSight && offset.sqrMagnitude > 0f &&
+                    FirstHit(new Ray(center, offset.normalized), offset.magnitude, layers, caster.transform) != target)
+                    continue;
+                seen.Add(target);
+                targets.Add(target);
+            }
+            return targets;
+        }
+
+        internal static FpsHealth FirstHit(Ray ray, float distance, LayerMask layers, Transform caster)
+        {
+            if (!(distance > 0f)) return null;
             float nearest = distance;
             FpsHealth result = null;
-            foreach (var hit in Physics.RaycastAll(ray, distance, targetLayers, QueryTriggerInteraction.Ignore))
+            foreach (var hit in Physics.RaycastAll(ray, distance, layers, QueryTriggerInteraction.Ignore))
             {
-                if (hit.distance > nearest || hit.collider.transform.IsChildOf(transform)) continue;
+                if (hit.distance > nearest || hit.collider.transform.IsChildOf(caster)) continue;
                 nearest = hit.distance;
                 result = hit.collider.GetComponentInParent<FpsHealth>();
             }

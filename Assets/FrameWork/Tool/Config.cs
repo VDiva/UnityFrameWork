@@ -16,7 +16,11 @@ namespace FrameWork
 
         public static async UniTask InitializeAsync()
         {
-            _loaded = await ABMrg.LoadAsync<ConfigData>(AssetPath);
+            if (_loaded != null) return;
+            var config = await ABMrg.LoadAsync<ConfigData>(AssetPath);
+            if (config == null)
+                throw new InvalidOperationException("业务配置加载结果为空：" + AssetPath);
+            _loaded = config;
         }
         public static string ServerIp => _configData.serverIp;
         public static string DebugIp => _configData.debugServerIp;

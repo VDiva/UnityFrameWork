@@ -11,6 +11,19 @@ namespace FrameWork
     {
         private static readonly Dictionary<string, TimeData> TimeDic = new Dictionary<string, TimeData>();
 
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => CancelAllKeyedTimers();
+
+        /// <summary>取消所有带 key 的定时器，不触发结束回调；不影响未命名的定时器。</summary>
+        public static void CancelAllKeyedTimers()
+        {
+            if (TimeDic.Count == 0) return;
+            // Cancel 的任务清理可能同步回调 OnTimerFinished，先移除索引再取消。
+            var timers = new List<TimeData>(TimeDic.Values);
+            TimeDic.Clear();
+            foreach (var timer in timers) timer.Cancel();
+        }
+
         /// <summary>
         /// 提前取消并删除一个定时器。
         /// </summary>

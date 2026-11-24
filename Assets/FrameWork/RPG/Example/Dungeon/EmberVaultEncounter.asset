@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec3dd12d92a0431583a7e4a63fd3d202, type: 3}
   m_Name: EmberVaultEncounter
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializedNodes: []
   nodes:
   - rid: 2001
@@ -26,32 +26,32 @@ MonoBehaviour:
     outputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000001
     inputFieldName: previous
     outputFieldName: next
-    inputPortIdentifier:
-    outputPortIdentifier:
+    inputPortIdentifier: 
+    outputPortIdentifier: 
   - GUID: 13c21d3c-a45c-4ffd-a4ae-000000000002
     owner: {fileID: 11400000}
     inputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000003
     outputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000002
     inputFieldName: previous
     outputFieldName: next
-    inputPortIdentifier:
-    outputPortIdentifier:
+    inputPortIdentifier: 
+    outputPortIdentifier: 
   - GUID: 13c21d3c-a45c-4ffd-a4ae-000000000003
     owner: {fileID: 11400000}
     inputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000004
     outputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000003
     inputFieldName: previous
     outputFieldName: next
-    inputPortIdentifier:
-    outputPortIdentifier:
+    inputPortIdentifier: 
+    outputPortIdentifier: 
   - GUID: 13c21d3c-a45c-4ffd-a4ae-000000000004
     owner: {fileID: 11400000}
     inputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000005
     outputNodeGUID: 7b3d1281-9468-4cb0-9072-000000000004
     inputFieldName: previous
     outputFieldName: next
-    inputPortIdentifier:
-    outputPortIdentifier:
+    inputPortIdentifier: 
+    outputPortIdentifier: 
   groups: []
   stackNodes: []
   pinnedElements: []
@@ -59,49 +59,89 @@ MonoBehaviour:
   serializedParameterList: []
   stickyNotes: []
   nodeInspectorReference: {fileID: 0}
-  position: {x: 35, y: 70, z: 0}
-  scale: {x: 0.75, y: 0.75, z: 1}
+  position: {x: 17, y: 153, z: 0}
+  scale: {x: 1, y: 1, z: 1}
   references:
     version: 2
     RefIds:
     - rid: 2001
       type: {class: RpgEncounterStart, ns: FrameWork.FPS, asm: FrameWork.FPS}
       data:
+        nodeCustomName: 
         GUID: 7b3d1281-9468-4cb0-9072-000000000001
         computeOrder: 0
-        position: {serializedVersion: 2, x: 0, y: 80, width: 190, height: 125}
+        position:
+          serializedVersion: 2
+          x: 0
+          y: 80
+          width: 190
+          height: 125
         expanded: 1
+        debug: 0
+        nodeLock: 0
     - rid: 2002
       type: {class: RpgEncounterStep, ns: FrameWork.FPS, asm: FrameWork.FPS}
       data:
+        nodeCustomName: 
         GUID: 7b3d1281-9468-4cb0-9072-000000000002
         computeOrder: 1
-        position: {serializedVersion: 2, x: 225, y: 80, width: 190, height: 125}
+        position:
+          serializedVersion: 2
+          x: 142.33334
+          y: 209.33334
+          width: 240
+          height: 113
         expanded: 1
+        debug: 0
+        nodeLock: 0
         operation: 0
-        key:
+        key: 
     - rid: 2003
       type: {class: RpgEncounterStep, ns: FrameWork.FPS, asm: FrameWork.FPS}
       data:
+        nodeCustomName: 
         GUID: 7b3d1281-9468-4cb0-9072-000000000003
         computeOrder: 2
-        position: {serializedVersion: 2, x: 450, y: 80, width: 190, height: 125}
+        position:
+          serializedVersion: 2
+          x: 419.33334
+          y: -58.346695
+          width: 212
+          height: 113
         expanded: 1
+        debug: 0
+        nodeLock: 0
         operation: 1
-        key:
+        key: 
     - rid: 2004
       type: {class: RpgEncounterStep, ns: FrameWork.FPS, asm: FrameWork.FPS}
       data:
+        nodeCustomName: 
         GUID: 7b3d1281-9468-4cb0-9072-000000000004
         computeOrder: 3
-        position: {serializedVersion: 2, x: 675, y: 80, width: 190, height: 125}
+        position:
+          serializedVersion: 2
+          x: 731
+          y: -142.66666
+          width: 256
+          height: 113
         expanded: 1
+        debug: 0
+        nodeLock: 0
         operation: 2
-        key:
+        key: 
     - rid: 2005
       type: {class: RpgEncounterEnd, ns: FrameWork.FPS, asm: FrameWork.FPS}
       data:
+        nodeCustomName: 
         GUID: 7b3d1281-9468-4cb0-9072-000000000005
         computeOrder: 4
-        position: {serializedVersion: 2, x: 900, y: 80, width: 190, height: 125}
+        position:
+          serializedVersion: 2
+          x: 1104
+          y: 155.00002
+          width: 67
+          height: 75
         expanded: 1
+        debug: 0
+        nodeLock: 0

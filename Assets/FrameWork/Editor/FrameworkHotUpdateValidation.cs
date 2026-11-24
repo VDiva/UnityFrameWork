@@ -11,6 +11,70 @@ namespace FrameWork.Editor
     internal static class FrameworkHotUpdateValidation
     {
         private const string Root = "Library/FrameWork/Validation/";
+
+        [MenuItem("FrameWork/验证/检查项目资源")]
+        public static void ValidateResources()
+        {
+            int issues = 0;
+            void Report(string message, UnityEngine.Object asset = null)
+            {
+                issues++;
+                Debug.LogError(message, asset);
+            }
+
+            var boot = AssetDatabase.LoadAssetAtPath<FrameworkBootSettings>(FrameworkIntegrationEditor.BootSettingsPath);
+            var resource = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(YooResourceEditor.SettingsPath);
+            var bootScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(FrameworkIntegrationEditor.BootScenePath);
+            if (boot == null || string.IsNullOrWhiteSpace(boot.entryAssembly) || string.IsNullOrWhiteSpace(boot.entryType) ||
+                string.IsNullOrWhiteSpace(boot.entryMethod) || boot.hotUpdateDlls == null || !boot.hotUpdateDlls.Contains(boot.entryAssembly + ".dll"))
+                Report("启动配置缺失或入口程序集不在热更新 DLL 列表中。", boot);
+            if (bootScene == null || EditorBuildSettings.scenes.FirstOrDefault(scene => scene.enabled)?.path != FrameworkIntegrationEditor.BootScenePath)
+                Report("Boot 场景缺失，或未设为首个启用的构建场景。", bootScene);
+            else
+            {
+                try { FrameworkHotUpdateLayout.ValidateBootScene(); }
+                catch (Exception error) { Report(error.Message, bootScene); }
+            }
+
+            string root = ABEditor.abAssetPath;
+            if (!AssetDatabase.IsValidFolder(root)) Report("资源目录不存在：" + root);
+            else
+            {
+                foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { root }))
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    if (prefab == null) continue;
+                    foreach (var child in prefab.GetComponentsInChildren<Transform>(true))
+                        if (GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(child.gameObject) > 0)
+                            Report($"预制体有缺失脚本：{path}（节点 {child.name}）", prefab);
+                }
+            }
+
+            if (resource == null || string.IsNullOrWhiteSpace(resource.packageName))
+                Report("YooAsset 配置或资源包名称缺失。", resource);
+            else if (AssetDatabase.IsValidFolder(root))
+            {
+                try
+                {
+                    var collected = YooAsset.Editor.BundleCollectorSettingData.Setting.BeginCollect(resource.packageName, true, false, true);
+                    var mainAssets = collected.CollectAssets.Where(asset => asset.CollectorType == YooAsset.Editor.ECollectorType.MainAssetCollector).ToArray();
+                    foreach (var group in mainAssets.Where(asset => !string.IsNullOrEmpty(asset.Address)).GroupBy(asset => asset.Address).Where(group => group.Count() > 1))
+                        Report($"重复资源地址 {group.Key}：\n" + string.Join("\n", group.Select(asset => asset.AssetInfo.AssetPath)), resource);
+                    var paths = new HashSet<string>(mainAssets.Select(asset => asset.AssetInfo.AssetPath), StringComparer.Ordinal);
+                    foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { root }))
+                    {
+                        string path = AssetDatabase.GUIDToAssetPath(guid);
+                        if (!paths.Contains(path)) Report("场景未被收集为 YooAsset 主资源：" + path, AssetDatabase.LoadAssetAtPath<SceneAsset>(path));
+                    }
+                }
+                catch (Exception error) { Report("YooAsset 收集检查失败：" + error.Message, resource); }
+            }
+
+            if (issues == 0) Debug.Log("FRAMEWORK_RESOURCE_CHECK_OK：项目资源检查通过。");
+            else Debug.LogWarning($"项目资源检查发现 {issues} 项问题，详见上方 Console 日志。");
+            if (Application.isBatchMode) EditorApplication.Exit(issues == 0 ? 0 : 1);
+        }
         [Serializable] private sealed class Result
         {
             public bool success;
