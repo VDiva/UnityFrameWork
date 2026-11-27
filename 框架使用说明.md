@@ -17,6 +17,7 @@
 | UiManager | UI 根节点、窗口打开关闭、层级和提示接入 |
 | 配置表工具 | 从 XLSX 生成 C# 类型、查询代码及运行时数据 |
 | WebNet | WebSocket 连接、消息、房间、RPC、对象同步及语音 |
+| Pathfinding | 跨平台 2D/3D 地面与飞行通用寻路（非 Web 多线程 Burst Job，WebGL 主线程分帧） |
 | 编辑器发布工具 | 客户端基线检查、热更新 DLL 和资源发布 |
 
 当前资源后端是 **YooAsset**。`ABMrg` 名称作为原调用入口保留，并不表示仍在使用 Addressables。Game 项目中的旧 Addressables 包、配置及扩展已移除。
@@ -377,3 +378,4 @@ Game 项目的历史迁移说明见根目录 `FRAMEWORK_MIGRATION.md`，最近�
 
 - **编辑器依赖** 中，Odin（`Sirenix`）和 `NodeGraphProcessor` 位于 `Assets/FrameWork/Plugins`。复制模块时保留相应插件目录及其 `.meta`。
 - **WebRPC 代码生成** 通过 `Packages/manifest.json` 声明的 `com.unity.nuget.mono-cecil` 获取 Mono.Cecil。同步框架后若 `WebRpc.CodeGen` 找不到 Mono.Cecil，检查该包是否已解析。
+- **寻路模块 (`FrameWork.Pathfinding`)** 位于 `Assets/FrameWork/Plugins/Pathfinding`，属于 AOT 程序集并由 `HotUpdate.asmdef` 引用，依赖 `com.unity.burst`、`com.unity.collections`、`com.unity.mathematics`。详细 API 与基准测试入口见 `Assets/FrameWork/Plugins/Pathfinding/README.md`。

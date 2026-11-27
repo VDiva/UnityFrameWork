@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityWebSocket.Runtime", "U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Editor", "FrameWork.Editor.csproj", "{d3c8f46c-b406-968f-0924-7e219d8250f1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Pathfinding", "FrameWork.Pathfinding.csproj", "{a5365d4a-147a-e4e2-2281-51e30bdc1f23}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.NetRpc.CodeGen", "Unity.NetRpc.CodeGen.csproj", "{3f6af491-b289-8c26-1bae-f4f5d5414881}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Bootstrap", "FrameWork.Bootstrap.csproj", "{c79c75e7-7a57-7801-fed8-f2dfceadebad}"
@@ -46,6 +48,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sirenix.OdinInspector.Modules.UnityMathematics", "Sirenix.OdinInspector.Modules.UnityMathematics.csproj", "{a48906ce-fc98-ba7c-41f5-b6e46292d2aa}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityWebSocket.Editor", "UnityWebSocket.Editor.csproj", "{e1f8c667-8ada-87b2-8480-e5b2cd95cad4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Pathfinding.Editor", "FrameWork.Pathfinding.Editor.csproj", "{28851b4c-b8ad-c30a-1ef8-34791960ac62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +88,8 @@ Global
 		{8420c7c2-994f-5547-cd83-568d963c1488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{a5365d4a-147a-e4e2-2281-51e30bdc1f23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{a5365d4a-147a-e4e2-2281-51e30bdc1f23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3f6af491-b289-8c26-1bae-f4f5d5414881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3f6af491-b289-8c26-1bae-f4f5d5414881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{c79c75e7-7a57-7801-fed8-f2dfceadebad}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -98,6 +104,8 @@ Global
 		{a48906ce-fc98-ba7c-41f5-b6e46292d2aa}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{e1f8c667-8ada-87b2-8480-e5b2cd95cad4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{e1f8c667-8ada-87b2-8480-e5b2cd95cad4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28851b4c-b8ad-c30a-1ef8-34791960ac62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28851b4c-b8ad-c30a-1ef8-34791960ac62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

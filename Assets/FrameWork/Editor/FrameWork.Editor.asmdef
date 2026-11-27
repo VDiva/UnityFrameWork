@@ -14,6 +14,7 @@
     "UnityEditor.UI",
     "spine-csharp",
     "spine-unity",
+    "FrameWork.Pathfinding",
     "HotUpdate"
   ],
   "includePlatforms": [

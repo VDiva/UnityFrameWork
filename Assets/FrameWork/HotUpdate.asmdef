@@ -9,7 +9,7 @@
     "FancyScrollView",
     "spine-csharp",
     "spine-unity",
-    "AstarPathfindingProject",
+    "FrameWork.Pathfinding",
     "Unity.TextMeshPro",
     "UnityEngine.UI"
   ],
