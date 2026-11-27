@@ -1,6 +1,5 @@
 using System;
 using GameData;
-using Pathfinding;
 using UnityEngine;
 using FrameWork.Net;
 
@@ -89,7 +88,6 @@ namespace FrameWork.Net.Network
         Rigidbody2D body;
         RigidbodyType2D originalBodyType;
         RigidbodyInterpolation2D originalBodyInterpolation;
-        AILerp aiLerp;
         Vector3 renderVelocity;
         internal int tickIndex = -1;
         readonly SnapshotTimeline<RemoteSnapshot> remoteSnapshots =
@@ -111,7 +109,6 @@ namespace FrameWork.Net.Network
                 originalBodyType = body.bodyType;
                 originalBodyInterpolation = body.interpolation;
             }
-            aiLerp = GetComponent<AILerp>();
             targetPosition = transform.position;
             targetRotation = transform.rotation;
             targetScale = transform.localScale;
@@ -502,8 +499,6 @@ namespace FrameWork.Net.Network
                 return;
 
             ResetNetworkState();
-            if (HasAuthority && aiLerp != null)
-                aiLerp.Teleport(transform.position);
         }
 
         internal void ResetNetworkState()
@@ -529,8 +524,6 @@ namespace FrameWork.Net.Network
                 if (!HasAuthority)
                     body.velocity = Vector2.zero;
             }
-            if (aiLerp != null)
-                aiLerp.canMove = HasAuthority;
             // 同批生成的 AI 错开发送，避免每隔固定时间集中序列化大量快照。
             nextSendTime = Identity.IsAiObject && NetId != 0
                 ? Time.unscaledTime + (NetId % 10) * 0.01f : 0f;

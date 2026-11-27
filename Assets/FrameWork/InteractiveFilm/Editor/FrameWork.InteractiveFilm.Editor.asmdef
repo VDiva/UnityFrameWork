@@ -1,6 +1,0 @@
-{
-  "name": "FrameWork.InteractiveFilm.Editor",
-  "rootNamespace": "FrameWork.InteractiveFilm.Editor",
-  "references": ["FrameWork.InteractiveFilm", "com.alelievr.NodeGraphProcessor.Runtime", "com.alelievr.NodeGraphProcessor.Editor"],
-  "includePlatforms": ["Editor"]
-}

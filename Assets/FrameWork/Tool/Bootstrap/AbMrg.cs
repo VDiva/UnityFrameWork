@@ -127,7 +127,7 @@ namespace FrameWork
                     try
                     {
                         var destroy = _package.DestroyPackageAsync();
-                        while (!destroy.IsDone) await UniTask.Yield();
+                        await WaitOperation(destroy);
                         YooAssets.RemovePackage(name);
                     }
                     catch (Exception cleanupError) { Debug.LogException(cleanupError); }
@@ -224,9 +224,43 @@ namespace FrameWork
                     new[] { _primary + "/" + fileName, _fallback + "/" + fileName };
         }
 
+        private static UniTask WaitOperation(AsyncOperationBase operation)
+        {
+            if (operation == null || operation.IsDone)
+                return UniTask.CompletedTask;
+
+            var source = AutoResetUniTaskCompletionSource.Create();
+            Action<AsyncOperationBase> onCompleted = null;
+            onCompleted = op =>
+            {
+                op.Completed -= onCompleted;
+                source.TrySetResult();
+            };
+            operation.Completed += onCompleted;
+            return source.Task;
+        }
+
+        private static UniTask WaitAssetHandle(AssetHandle handle)
+        {
+            if (handle == null || !handle.IsValid || handle.IsDone)
+                return UniTask.CompletedTask;
+
+            var source = AutoResetUniTaskCompletionSource.Create();
+            Action<AssetHandle> onCompleted = null;
+            onCompleted = h =>
+            {
+                if (h != null && h.IsValid)
+                    h.Completed -= onCompleted;
+                source.TrySetResult();
+            };
+            handle.Completed += onCompleted;
+            return source.Task;
+        }
+
         private static async UniTask Wait(AsyncOperationBase operation)
         {
-            while (!operation.IsDone) await UniTask.Yield(PlayerLoopTiming.Update);
+            if (!operation.IsDone)
+                await WaitOperation(operation);
             if (operation.Status != EOperationStatus.Succeeded)
                 throw new ResourceOperationException(operation.Error);
         }
@@ -254,14 +288,16 @@ namespace FrameWork
 
         public static async UniTask<T> LoadAsync<T>(string name, bool isRelease = true)
         {
-            await Init();
+            if (!IsInitialized)
+                await Init();
             var key = (name, typeof(T));
             if (!TryGetCachedHandle(key, out var handle))
             {
                 handle = Package.LoadAssetAsync(name, typeof(T));
                 RegisterHandle(key, handle);
             }
-            while (handle.IsValid && !handle.IsDone) await UniTask.Yield(PlayerLoopTiming.Update);
+            if (handle.IsValid && !handle.IsDone)
+                await WaitAssetHandle(handle);
             if (!handle.IsValid) throw new InvalidOperationException("资源加载失败或句柄已释放：" + name);
             if (handle.Status != EOperationStatus.Succeeded)
             {
@@ -345,11 +381,13 @@ namespace FrameWork
 
         public static async UniTask<GameObject> InstantiateAsync(string name, Transform parent = null)
         {
-            await Init();
+            if (!IsInitialized)
+                await Init();
             var handle = Package.LoadAssetAsync<GameObject>(name);
             try
             {
-                while (handle.IsValid && !handle.IsDone) await UniTask.Yield();
+                if (handle.IsValid && !handle.IsDone)
+                    await WaitAssetHandle(handle);
                 if (!handle.IsValid) throw new InvalidOperationException("预制体句柄已失效：" + name);
                 if (handle.Status != EOperationStatus.Succeeded)
                     throw new InvalidOperationException($"预制体加载失败：{name}，{handle.Error}");

@@ -138,10 +138,11 @@ public static class ChatContentFilter
         }
 
         var nodeArray = nodes.ToArray();
-        if (rawList.Count > 0 && nodeArray[0].Edges != null)
+        var rootEdges = nodeArray[0].Edges;
+        if (rawList.Count > 0 && rootEdges != null)
         {
             var queue = new Queue<int>();
-            foreach (var pair in nodeArray[0].Edges)
+            foreach (var pair in rootEdges)
             {
                 nodeArray[pair.Value].Fail = 0;
                 queue.Enqueue(pair.Value);

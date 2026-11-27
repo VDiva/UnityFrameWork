@@ -140,6 +140,48 @@ static class Program
         Check(nearby.Contains(3),"finite extreme coordinates do not overflow neighbor iteration");
         spatial.Clear();Check(spatial.Count==0&&spatial.CellCount==0,"spatial clear releases cells");
 
+        Check(ChatContentFilter.TryFindForbiddenWord("今日优惠 代 * 充 秒到账", out var matchedWord) && matchedWord == "代充" &&
+              ChatContentFilter.TryFindForbiddenWord("免费【外—挂】分享", out matchedWord) && matchedWord == "外挂" &&
+              !ChatContentFilter.TryFindForbiddenWord("正常组队打副本刷BOSS", out _),
+              "Aho-Corasick chat filter catches obfuscated forbidden words in single pass");
+
+        {
+            _ = MongoDBMrg.IsConnected; // trigger static serializer registration
+            var richUser = new UserData
+            {
+                UserId = "u100",
+                ServerId = "s1",
+                UserAndServerId = "s1:u100",
+                Name = "Tester",
+                Avatar = "https://example.com/a.png",
+                RoleType = 2,
+                FightingCapacity = "99999",
+                LoginTime = 1700000000,
+                CreatedAt = 1690000000
+            };
+            richUser.Item["gold"] = 50000;
+            richUser.DataDic["Level"] = "80";
+            richUser.EquipData.Add(new EquipData { Id = "eq1" });
+
+            byte[] bsonBytes = MongoDB.Bson.BsonExtensionMethods.ToBson(richUser);
+            var docWithId = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<MongoDB.Bson.BsonDocument>(bsonBytes);
+            docWithId["_id"] = MongoDB.Bson.ObjectId.GenerateNewId();
+            docWithId[nameof(UserData.Name)] = "UpdatedViaPartial";
+            var roundTripped = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<UserData>(
+                MongoDB.Bson.BsonExtensionMethods.ToBson(docWithId));
+            Check(roundTripped.UserId == "u100" &&
+                  roundTripped.Name == "UpdatedViaPartial" &&
+                  roundTripped.Item["gold"] == 50000 &&
+                  roundTripped.EquipData.Count == 1 &&
+                  roundTripped.RoleType == 2,
+                  "streaming MongoUserDataSerializer preserves protobuf payload, skips _id and overlays scalars");
+
+            var rankSummary = GameDataMrg.CreateRankUserSummary(richUser);
+            Check(rankSummary.UserId == "u100" && rankSummary.Name == "Tester" &&
+                  rankSummary.Item.Count == 0 && rankSummary.EquipData.Count == 0 && rankSummary.DataDic.Count == 0,
+                  "rank user summary strips private inventory and data dictionary bloat");
+        }
+
         var manager=PlayerSessionManager.Instance;var players=new List<PlayerSession>();
         PlayerSession Player(string name,string server,out TestSocket socket)
         {

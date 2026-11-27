@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 
@@ -17,6 +18,9 @@ namespace FrameWork
         private static readonly Dictionary<int, Type> _typesDic = new Dictionary<int, Type>();
         private static readonly List<int> _uiList = new List<int>();
         private static readonly Dictionary<Type, UiModeAttribute> _modeCache = new Dictionary<Type, UiModeAttribute>();
+        private static readonly Dictionary<Type, Func<Transform, UiActor>> _factoryCache = new Dictionary<Type, Func<Transform, UiActor>>();
+        private static readonly Type[] _ctorParamTypes = { typeof(Transform) };
+        private static readonly object[] _ctorArgScratch = new object[1];
         private static UiActor _uiRoot;
         private static Camera _cachedCamera;
 
@@ -30,6 +34,8 @@ namespace FrameWork
             _layerDic.Clear();
             _loadingUi.Clear();
             _modeCache.Clear();
+            _factoryCache.Clear();
+            _ctorArgScratch[0] = null;
             _uiRoot = null;
             _cachedCamera = null;
             TipsHandler = null;
@@ -113,6 +119,40 @@ namespace FrameWork
         private static bool IsCurrentOpen(Type type, UniTaskCompletionSource<UiActor> completion) =>
             _loadingUi.TryGetValue(type, out var current) && ReferenceEquals(current, completion);
 
+        private static Func<Transform, UiActor> BuildUiFactory(Type type)
+        {
+            var ctor = type.GetConstructor(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                _ctorParamTypes,
+                null);
+            if (ctor == null)
+                throw new InvalidOperationException(type.Name + " 缺少接收 Transform 参数的构造函数。");
+
+            try
+            {
+                var param = Expression.Parameter(typeof(Transform), "parent");
+                var body = Expression.Convert(Expression.New(ctor, param), typeof(UiActor));
+                return Expression.Lambda<Func<Transform, UiActor>>(body, param).Compile();
+            }
+            catch
+            {
+                // AOT / 受限平台回退：复用已缓存的 ConstructorInfo 与单元素参数槽，仍免去每次反射查找构造函数与数组分配。
+                return parent =>
+                {
+                    _ctorArgScratch[0] = parent;
+                    try
+                    {
+                        return (UiActor)ctor.Invoke(_ctorArgScratch);
+                    }
+                    finally
+                    {
+                        _ctorArgScratch[0] = null;
+                    }
+                };
+            }
+        }
+
         private static UiActor GetLiveUi(Type type)
         {
             if (!_uiDic.TryGetValue(type, out var actor)) return null;
@@ -166,7 +206,12 @@ namespace FrameWork
                 }
                 if (mode == null)
                     throw new InvalidOperationException(type.Name + " 缺少 UiModeAttribute");
-                created = (UiActor)Activator.CreateInstance(type, new object[] { GetTransform(mode) });
+                if (!_factoryCache.TryGetValue(type, out var factory))
+                {
+                    factory = BuildUiFactory(type);
+                    _factoryCache[type] = factory;
+                }
+                created = factory(GetTransform(mode));
                 await created.Initialization;
                 if (!IsCurrentOpen(type, completion)) return;
                 if (!ReferenceEquals(root, _uiRoot) || root.GetGameObject() == null)

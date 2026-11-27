@@ -1,5 +1,0 @@
-{
-  "name": "FrameWork.InteractiveFilm",
-  "rootNamespace": "FrameWork.InteractiveFilm",
-  "references": ["com.alelievr.NodeGraphProcessor.Runtime"]
-}
