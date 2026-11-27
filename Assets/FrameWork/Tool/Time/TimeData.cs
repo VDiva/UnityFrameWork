@@ -1,11 +1,11 @@
 using System;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace FrameWork
 {
     /// <summary>
     /// UniTask 定时器句柄，可交给 Timer.DestroyTimer 提前取消。
+    /// 不使用 CancellationTokenSource.Dispose，避免微信小游戏 IL2CPP 签名异常与每定时器 CTS 分配。
     /// </summary>
     public sealed class TimeData
     {
@@ -14,7 +14,8 @@ namespace FrameWork
         private float _duration;
         private int _remainingCalls;
         private Action _action;
-        private CancellationTokenSource _cancellation;
+        private bool _cancelled;
+        internal bool Poolable;
 
         internal string Key { get; set; }
         internal Action Callback => _action;
@@ -37,9 +38,9 @@ namespace FrameWork
             _duration = duration;
             _remainingCalls = callCount;
             _action = action;
-            _cancellation = new CancellationTokenSource();
+            _cancelled = false;
             IsRunning = true;
-            RunAsync(_cancellation.Token).Forget();
+            RunAsync().Forget();
         }
 
         internal void Cancel()
@@ -48,38 +49,51 @@ namespace FrameWork
                 return;
 
             IsRunning = false;
-            _cancellation?.Cancel();
+            _cancelled = true;
+            _action = null;
         }
 
-        private async UniTaskVoid RunAsync(CancellationToken cancellationToken)
+        private async UniTaskVoid RunAsync()
         {
             try
             {
                 if (!_isInterval)
                 {
-                    await DelayAsync(_delay, cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!await WaitScaledAsync(_delay))
+                        return;
+                    if (_cancelled)
+                        return;
                     _action?.Invoke();
                     return;
                 }
 
                 float elapsed = 0f;
-                while (!cancellationToken.IsCancellationRequested)
+                while (!_cancelled)
                 {
                     if (_remainingCalls == 0)
                         break;
 
                     // 防止 0 秒循环在同一帧持续执行，至少等待到下一次 Update。
                     if (_delay <= 0f)
-                        await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                    {
+                        await UniTask.Yield(PlayerLoopTiming.Update);
+                        if (_cancelled)
+                            break;
+                        elapsed += UnityEngine.Time.deltaTime;
+                    }
                     else
-                        await DelayAsync(_delay, cancellationToken);
+                    {
+                        if (!await WaitScaledAsync(_delay))
+                            break;
+                        elapsed += _delay;
+                    }
 
-                    elapsed += _delay <= 0f ? UnityEngine.Time.deltaTime : _delay;
                     if (_duration >= 0f && elapsed > _duration)
                         break;
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (_cancelled)
+                        break;
+
                     _action?.Invoke();
 
                     if (_remainingCalls > 0)
@@ -97,20 +111,32 @@ namespace FrameWork
             finally
             {
                 IsRunning = false;
-                Timer.OnTimerFinished(this);
-                _cancellation?.Dispose();
-                _cancellation = null;
                 _action = null;
+                Timer.OnTimerFinished(this);
+                if (Poolable)
+                {
+                    Key = null;
+                    Poolable = false;
+                    Timer.ReturnPooled(this);
+                }
             }
         }
 
-        private static UniTask DelayAsync(float seconds, CancellationToken cancellationToken)
+        private async UniTask<bool> WaitScaledAsync(float seconds)
         {
-            return UniTask.Delay(
-                TimeSpan.FromSeconds(seconds),
-                DelayType.DeltaTime,
-                PlayerLoopTiming.Update,
-                cancellationToken);
+            if (seconds <= 0f)
+                return !_cancelled;
+
+            float remaining = seconds;
+            while (remaining > 0f)
+            {
+                await UniTask.Yield(PlayerLoopTiming.Update);
+                if (_cancelled)
+                    return false;
+                remaining -= UnityEngine.Time.deltaTime;
+            }
+
+            return !_cancelled;
         }
     }
 }

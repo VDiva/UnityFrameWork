@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using WebSocketDemo;
+using WebSocketDemo.Transport;
 
 var builder = WebApplication.CreateBuilder(args);
 WeChatLoginService.Configure(builder.Configuration);
@@ -13,6 +14,8 @@ builder.Services.AddHostedService<SessionCleanupService>();
 builder.Services.AddHostedService<ServerListService>();
 builder.Services.AddHostedService<GongGaoService>();
 builder.Services.AddHostedService<MongoBackupService>();
+builder.Services.AddHostedService<TcpServerService>();
+builder.Services.AddHostedService<KcpServerService>();
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -109,6 +112,12 @@ app.MapGet("/health", () => Results.Ok(new
 {
     status = "ok",
     online = PlayerSessionManager.Instance.OnlineCount,
+    transports = new
+    {
+        wsPort = ReadInt(builder.Configuration, "Server:HttpPort", "GAME_SERVER_HTTP_PORT", 5100),
+        tcpPort = ReadInt(builder.Configuration, "Server:TcpPort", "GAME_SERVER_TCP_PORT", 5101),
+        kcpPort = ReadInt(builder.Configuration, "Server:KcpPort", "GAME_SERVER_KCP_PORT", 5102)
+    },
     time = DateTimeOffset.UtcNow
 }));
 

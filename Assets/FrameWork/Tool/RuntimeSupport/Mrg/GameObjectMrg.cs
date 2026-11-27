@@ -4,7 +4,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using FrameWork;
 using FrameWork.Script.Role;
-using FrameWork.Script.WebNet;
+using FrameWork.Net.Network;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,9 +12,35 @@ namespace FrameWork.Script.Mrg
 {
     public class GameObjectMrg : SingletonAsMono<GameObjectMrg>
     {
-        Dictionary<string,ObjectPool<GameObject>>  _actorsPool=new Dictionary<string, ObjectPool<GameObject>>();
-        private List<GameObject> _goList = new List<GameObject>();
+        private static readonly List<Camera> _cameraScratch = new List<Camera>(4);
+        Dictionary<string, ObjectPool<GameObject>> _actorsPool = new Dictionary<string, ObjectPool<GameObject>>();
+        private readonly List<GameObject> _goList = new List<GameObject>();
+        private readonly Dictionary<GameObject, int> _goIndex = new Dictionary<GameObject, int>();
         private Transform _inactiveSpawnRoot;
+
+        private void TrackActiveObject(GameObject go)
+        {
+            if (go == null || _goIndex.ContainsKey(go))
+                return;
+            _goIndex[go] = _goList.Count;
+            _goList.Add(go);
+        }
+
+        private void UntrackActiveObject(GameObject go)
+        {
+            if (go == null || !_goIndex.TryGetValue(go, out int idx))
+                return;
+            int lastIdx = _goList.Count - 1;
+            if (idx != lastIdx)
+            {
+                GameObject moved = _goList[lastIdx];
+                _goList[idx] = moved;
+                if (moved != null)
+                    _goIndex[moved] = idx;
+            }
+            _goList.RemoveAt(lastIdx);
+            _goIndex.Remove(go);
+        }
 
         private async UniTask<GameObject> CreateInactive(string id)
         {
@@ -31,80 +57,55 @@ namespace FrameWork.Script.Mrg
             return instance;
         }
 
-        public async UniTask<GameObject> Dequeue(string id,RoleType type=RoleType.Other, bool activate = true)
+        public async UniTask<GameObject> Dequeue(string id, RoleType type = RoleType.Other, bool activate = true)
         {
-            if (!_actorsPool.ContainsKey(id))
+            if (!_actorsPool.TryGetValue(id, out ObjectPool<GameObject> pool))
             {
-                if (Application.isBatchMode)
-                {
-                    _actorsPool[id] =
-                        new ObjectPool<GameObject>(() => CreateInactive(id), 50);
-                }
-                else
-                {
-                    _actorsPool[id] = new ObjectPool<GameObject>(() => CreateInactive(id));
-                }
+                pool = Application.isBatchMode
+                    ? new ObjectPool<GameObject>(() => CreateInactive(id), 50)
+                    : new ObjectPool<GameObject>(() => CreateInactive(id));
+                _actorsPool[id] = pool;
             }
 
-            
-            var g = await _actorsPool[id].DeQueue();
-            if (g!=null)
+            var g = await pool.DeQueue();
+            if (g != null)
             {
-                if (!_goList.Contains(g))_goList.Add(g);
-                
+                TrackActiveObject(g);
                 if (!g.TryGetComponent<RoleId>(out var roleId))
-                {
-                    roleId=g.AddComponent<RoleId>();
-                }
+                    roleId = g.AddComponent<RoleId>();
                 g.transform.SetParent(null);
                 roleId.objectName = id;
                 roleId.roleType = type;
                 g.SetActiveAsCheck(activate);
                 return g;
             }
-            
+
             var go = await CreateInactive(id);
             if (!go.TryGetComponent<RoleId>(out var roleType))
-            {
-                roleType=go.AddComponent<RoleId>();
-            }
+                roleType = go.AddComponent<RoleId>();
             go.transform.SetParent(null);
             roleType.objectName = id;
             roleType.roleType = type;
             go.SetActiveAsCheck(activate);
-            if (!_goList.Contains(go))_goList.Add(go);
-            //var roleType=go.transform.getc
+            TrackActiveObject(go);
             return go;
         }
 
         public void Enqueue(GameObject go)
         {
-            
-            // if (go.TryGetComponent<NetworkIdentity>(out var identity))
-            // {
-            //     WebNetworkRoomManager.Instance..UnSpawn(go);
-            // }
-            if (go==null)return;
-            if (go.TryGetComponent<RoleId>(out var roleId) && roleId.roleType == RoleType.Player)
+            if (go == null) return;
+            bool hasRole = go.TryGetComponent<RoleId>(out var roleId);
+            if (hasRole && roleId.roleType == RoleType.Player)
                 DetachPlayerCameras(go);
             go.SetActiveAsCheck(false);
-            if (_goList.Contains(go))_goList.Remove(go);
-            if (go!=null&& go.TryGetComponent<RoleId>(out var roleType))
+            UntrackActiveObject(go);
+            if (hasRole && !string.IsNullOrEmpty(roleId.objectName) &&
+                _actorsPool.TryGetValue(roleId.objectName, out ObjectPool<GameObject> pool))
             {
-                if (_actorsPool.ContainsKey(roleType.objectName))
-                {
-                    go.transform.SetParent(transform);
-                    go.transform.localPosition = Vector3.zero;
-                    var isCan=_actorsPool[roleType.objectName].EnQueue(go);
-                    if (!isCan)
-                    {
-                        Destroy(go);
-                    }
-                }
-                else
-                {
+                go.transform.SetParent(transform);
+                go.transform.localPosition = Vector3.zero;
+                if (!pool.EnQueue(go))
                     Destroy(go);
-                }
             }
             else
             {
@@ -117,11 +118,16 @@ namespace FrameWork.Script.Mrg
         public static void DetachPlayerCameras(GameObject player)
         {
             if (player == null) return;
-            foreach (var camera in player.GetComponentsInChildren<Camera>(true))
+            _cameraScratch.Clear();
+            player.GetComponentsInChildren(true, _cameraScratch);
+            for (int i = 0; i < _cameraScratch.Count; i++)
             {
-                if (!camera.CompareTag("MainCamera") || camera.gameObject == player) continue;
+                Camera camera = _cameraScratch[i];
+                if (camera == null || !camera.CompareTag("MainCamera") || camera.gameObject == player)
+                    continue;
                 DetachSceneCamera(camera);
             }
+            _cameraScratch.Clear();
         }
 
         public static void DetachSceneCamera(Camera camera)

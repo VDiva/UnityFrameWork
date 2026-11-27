@@ -70,7 +70,7 @@ namespace FrameWork
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    return 0f;
+                    return 0d;
                 }
 
                 return double.Parse(value, CultureInfo.InvariantCulture);
@@ -125,12 +125,12 @@ namespace FrameWork
 
         public static string GetMd5(string path)
         {
-            using (FileStream fs = new FileStream(path, FileMode.Open))
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (MD5 md5 = MD5.Create())
             {
-                MD5 md5 = new MD5CryptoServiceProvider();
                 byte[] md5Info = md5.ComputeHash(fs);
 
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder(md5Info.Length * 2);
                 for (int i = 0; i < md5Info.Length; i++)
                     sb.Append(md5Info[i].ToString("x2"));
                 return sb.ToString();
@@ -141,12 +141,6 @@ namespace FrameWork
         public static string GetMd5AsString(string key)
         {
             return GetShortIdentity(key);
-            // MD5 md5 = new MD5CryptoServiceProvider();
-            // byte[] md5Info = md5.ComputeHash(Encoding.UTF8.GetBytes(key));
-            // StringBuilder sb = new StringBuilder();
-            // for (int i = 0; i < md5Info.Length; i++)
-            //     sb.Append(md5Info[i].ToString("x2"));
-            // return sb.ToString();
         }
 
         public static string GetShortIdentity(string key)
@@ -155,12 +149,16 @@ namespace FrameWork
             {
                 byte[] hashBytes = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(key));
 
-                // 只取前 8 个字节 (64 bit)
+                // 只取前 8 个字节 (64 bit)，兼容 long.MinValue 避免 OverflowException
                 long lowPart = BitConverter.ToInt64(hashBytes, 0);
-                ulong value = (ulong)Math.Abs(lowPart);
+                ulong value = lowPart == long.MinValue
+                    ? (ulong)long.MaxValue + 1UL
+                    : (ulong)Math.Abs(lowPart);
+
+                if (value == 0) return "0";
 
                 // Base62 编码
-                string alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                const string alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 char[] chars = new char[11]; // 64位在Base62下最多11位
                 int index = 0;
                 while (value > 0)
@@ -177,8 +175,6 @@ namespace FrameWork
         public static long ConvertDateTimep(DateTime time)
         {
             return ((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
-            //等价于：
-            //return ((time.ToUniversalTime().Ticks - new DateTime(1970, 1, 1, 0, 0, 0, 0).Ticks) / 10000000) * 1000;
         }
 
 
@@ -190,15 +186,17 @@ namespace FrameWork
         /// <returns></returns>
         public static byte[] Encrypt(byte[] toEncryptArray, string key)
         {
-            //byte[] keyArray = UTF8Encoding.UTF8.GetBytes(key);        
             byte[] keyArray = Convert.FromBase64String(key);
-            RijndaelManaged rDel = new RijndaelManaged();
-            rDel.Key = keyArray;
-            rDel.Mode = CipherMode.ECB;
-            rDel.Padding = PaddingMode.PKCS7;
-            ICryptoTransform cTransform = rDel.CreateEncryptor();
-            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
-            return resultArray;
+            using (var rDel = Aes.Create())
+            {
+                rDel.Key = keyArray;
+                rDel.Mode = CipherMode.ECB;
+                rDel.Padding = PaddingMode.PKCS7;
+                using (ICryptoTransform cTransform = rDel.CreateEncryptor())
+                {
+                    return cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                }
+            }
         }
 
 
@@ -212,32 +210,34 @@ namespace FrameWork
         public static byte[] Decrypt(byte[] toEncryptArray, string key)
         {
             byte[] keyArray = Convert.FromBase64String(key);
-            RijndaelManaged rDel = new RijndaelManaged();
-            rDel.Key = keyArray;
-            rDel.Mode = CipherMode.ECB;
-            rDel.Padding = PaddingMode.PKCS7;
-            ICryptoTransform cTransform = rDel.CreateDecryptor();
-            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
-            return resultArray;
+            using (var rDel = Aes.Create())
+            {
+                rDel.Key = keyArray;
+                rDel.Mode = CipherMode.ECB;
+                rDel.Padding = PaddingMode.PKCS7;
+                using (ICryptoTransform cTransform = rDel.CreateDecryptor())
+                {
+                    return cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                }
+            }
         }
 
 
 
         public static string GetPathMd5(string value)
         {
-            var dir = Path.GetDirectoryName(value);
+            var dir = Path.GetDirectoryName(value) ?? string.Empty;
             var fileName = GetMd5AsString(Path.GetFileName(value));
 
-            var dirNameList = dir.Split("\\").Where((s => !string.IsNullOrEmpty(s))).Select(GetMd5AsString).ToList();
-            var path = "";
-            for (int i = 0; i < dirNameList.Count; i++)
+            var segments = dir.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var sb = new StringBuilder();
+            for (int i = 0; i < segments.Length; i++)
             {
-                path += "/" + dirNameList[i];
+                sb.Append('/').Append(GetMd5AsString(segments[i]));
             }
 
-            path += "/" + fileName;
-
-            return path;
+            sb.Append('/').Append(fileName);
+            return sb.ToString();
         }
 
         public static string GetVideoPath(string videoName, bool isNor = true)
@@ -459,12 +459,8 @@ namespace FrameWork
         
         public static string GetTime(long time)
         {
-            System.DateTime startTime =
-                System.TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0)); //获取时间戳
-            System.DateTime dt = startTime.AddSeconds(time / 1000f);
-            string t = dt.ToString("yyyy/MM/dd HH:mm"); //转化为日期时间
-
-            return t;
+            DateTime dt = DateTimeOffset.FromUnixTimeMilliseconds(time).LocalDateTime;
+            return dt.ToString("yyyy/MM/dd HH:mm");
         }
 
         public static ByteString ToByteString(this object obj)
@@ -600,15 +596,8 @@ namespace FrameWork
 
         public static void CheckAdd(this Dictionary<string, int> dict, string key, int value)
         {
-            if (!dict.ContainsKey(key))
-            {
-                dict.Add(key, value);
-            }
-            else
-            {
-                var v = dict[key];
-                dict[key]= (v+value);
-            }
+            dict.TryGetValue(key, out int existing);
+            dict[key] = existing + value;
         }
         
         
@@ -661,30 +650,15 @@ namespace FrameWork
         public static T GetListIndex<T>(this List<T> list, int index)
         {
             if (list == null || list.Count == 0) return default(T);
-            if (index>=list.Count)
-            {
-                return list.Last();
-            }
-            else
-            {
-                return list[index];
-            }
+            if (index < 0) return list[0];
+            return index >= list.Count ? list[list.Count - 1] : list[index];
         }
         
         public static T GetListIndex<T>(this T[] list, int index)
         {
-            if (list == null || list.Length<=0)
-            {
-                return default(T);
-            }
-            if (index>=list.Length)
-            {
-                return list.Last();
-            }
-            else
-            {
-                return list[index];
-            }
+            if (list == null || list.Length <= 0) return default(T);
+            if (index < 0) return list[0];
+            return index >= list.Length ? list[list.Length - 1] : list[index];
         }
 
         public static string ToBfb(this float v,bool e=true)
@@ -707,14 +681,16 @@ namespace FrameWork
             if (ABMrg.Package.IsLocationValid("AllXlsxAssets"))
             {
                 var manifest = await ABMrg.LoadAsync<TextAsset>("AllXlsxAssets");
-                foreach (var address in JsonMapper.ToObject<List<string>>(manifest.text))
-                    await ABMrg.LoadAsync<ScriptableObject>(address);
+                var addresses = JsonMapper.ToObject<List<string>>(manifest.text);
+                if (addresses != null && addresses.Count > 0)
+                    await ABMrg.PreloadAsync<ScriptableObject>(addresses);
             }
             if (ABMrg.Package.IsLocationValid("AllXlsx"))
             {
                 var manifest = await ABMrg.LoadAsync<TextAsset>("AllXlsx");
-                foreach (var address in JsonMapper.ToObject<List<string>>(manifest.text))
-                    await ABMrg.LoadAsync<TextAsset>(address);
+                var addresses = JsonMapper.ToObject<List<string>>(manifest.text);
+                if (addresses != null && addresses.Count > 0)
+                    await ABMrg.PreloadAsync<TextAsset>(addresses);
             }
         }
 

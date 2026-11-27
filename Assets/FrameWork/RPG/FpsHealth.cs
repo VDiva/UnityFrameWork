@@ -39,16 +39,34 @@ namespace FrameWork.FPS
         }
 
         private readonly List<ActiveEffect> effects = new List<ActiveEffect>();
+        private float cachedArmor;
+        private float cachedMovementMultiplier = 1f;
+        private bool statsDirty = true;
         public IReadOnlyList<ActiveEffect> ActiveEffects => effects;
+
+        private void RecalculateStatsIfNeeded()
+        {
+            if (!statsDirty) return;
+            float armor = baseArmor;
+            float moveMul = 1f;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                var def = effects[i].Definition;
+                if (def == null) continue;
+                armor += def.ArmorBonus;
+                moveMul *= def.MovementMultiplier;
+            }
+            cachedArmor = Mathf.Max(0f, armor);
+            cachedMovementMultiplier = moveMul;
+            statsDirty = false;
+        }
 
         public float Armor
         {
             get
             {
-                float value = baseArmor;
-                foreach (var effect in effects)
-                    if (effect.Definition != null) value += effect.Definition.ArmorBonus;
-                return Mathf.Max(0f, value);
+                RecalculateStatsIfNeeded();
+                return cachedArmor;
             }
         }
 
@@ -56,10 +74,8 @@ namespace FrameWork.FPS
         {
             get
             {
-                float value = 1f;
-                foreach (var effect in effects)
-                    if (effect.Definition != null) value *= effect.Definition.MovementMultiplier;
-                return value;
+                RecalculateStatsIfNeeded();
+                return cachedMovementMultiplier;
             }
         }
 
@@ -77,6 +93,7 @@ namespace FrameWork.FPS
         public void ResetHealth()
         {
             effects.Clear();
+            statsDirty = true;
             CurrentHealth = maxHealth;
             HealthChanged?.Invoke(CurrentHealth, maxHealth);
         }
@@ -87,7 +104,11 @@ namespace FrameWork.FPS
 
             CurrentHealth = Mathf.Max(0f, CurrentHealth - amount * (100f / (100f + Armor)));
             bool depleted = IsDepleted;
-            if (depleted) effects.Clear();
+            if (depleted)
+            {
+                effects.Clear();
+                statsDirty = true;
+            }
             HealthChanged?.Invoke(CurrentHealth, maxHealth);
             if (depleted)
             {
@@ -99,26 +120,34 @@ namespace FrameWork.FPS
         public bool TryApplyStatus(RpgStatusEffect definition, GameObject source = null)
         {
             if (!isActiveAndEnabled || IsDepleted || definition == null) return false;
-            foreach (var effect in effects)
+            for (int i = 0; i < effects.Count; i++)
             {
-                if (effect.Definition != definition) continue;
-                effect.Refresh(source);
+                if (effects[i].Definition != definition) continue;
+                effects[i].Refresh(source);
                 return true;
             }
             effects.Add(new ActiveEffect(definition, source));
+            statsDirty = true;
             return true;
         }
 
         private void Update()
         {
+            if (effects.Count == 0) return;
             float healing = 0f;
+            bool removed = false;
             for (int i = effects.Count - 1; i >= 0; i--)
             {
                 var effect = effects[i];
                 if (effect.Definition != null)
                     healing += effect.Advance(Time.deltaTime) * effect.Definition.HealingPerSecond;
-                if (effect.Definition == null || effect.Remaining <= 0f) effects.RemoveAt(i);
+                if (effect.Definition == null || effect.Remaining <= 0f)
+                {
+                    effects.RemoveAt(i);
+                    removed = true;
+                }
             }
+            if (removed) statsDirty = true;
             if (healing > 0f) TryHeal(healing);
         }
 

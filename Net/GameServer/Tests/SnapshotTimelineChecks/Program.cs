@@ -1,4 +1,4 @@
-using FrameWork.Script.WebNet;
+using FrameWork.Net.Network;
 
 static void Check(bool condition, string name)
 {

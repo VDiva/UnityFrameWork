@@ -181,3 +181,33 @@ await commandFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
 commands.Complete(); await commands.Completion;
 Check(commandOrder.SequenceEqual(new[] { 1, 2 }) && !commands.HasPendingWorldMutation,
     "business commands retain order and release world barrier");
+
+var voiceGateStarted = Signal(); var voiceGateRelease = Signal(); var voiceGateDone = Signal();
+var voiceBatchDone = Signal();
+var voiceOut = new ConcurrentQueue<(byte Value, bool Realtime)>();
+var voiceQueue = new SessionSendQueue(async (data, type, isRealtime, token) =>
+{
+    if (data[0] == 0) { voiceGateStarted.TrySetResult(true); await voiceGateRelease.Task.WaitAsync(token); }
+    voiceOut.Enqueue((data[0], isRealtime));
+    if (data[0] == 88) voiceGateDone.TrySetResult(true);
+    if (data[0] == 77) voiceBatchDone.TrySetResult(true);
+}, error => { voiceGateDone.TrySetException(error); voiceBatchDone.TrySetException(error); },
+maxPackets: 3, maxBytes: 100, realtimeInterval: TimeSpan.FromMilliseconds(30));
+voiceQueue.Enqueue(new byte[] { 0 }, WebSocketMessageType.Binary);
+await voiceGateStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+// 入队 3 条非覆写语音帧填满队列，再用可靠消息挤出最早的语音帧，验证计数归零且后续窗口合批不被破坏
+voiceQueue.Enqueue(new byte[] { 10 }, WebSocketMessageType.Binary, preferRealtime: true);
+voiceQueue.Enqueue(new byte[] { 11 }, WebSocketMessageType.Binary, preferRealtime: true);
+voiceQueue.Enqueue(new byte[] { 12 }, WebSocketMessageType.Binary, preferRealtime: true);
+Check(voiceQueue.Enqueue(new byte[] { 88 }, WebSocketMessageType.Binary), "reliable packet evicts preferRealtime stream packet");
+voiceGateRelease.TrySetResult(true);
+await voiceGateDone.Task.WaitAsync(TimeSpan.FromSeconds(2));
+var snapshot = voiceOut.ToArray();
+Check(snapshot.SequenceEqual(new (byte, bool)[] { (0, false), (11, true), (12, true), (88, false) }),
+    "preferRealtime routes via realtime flag and evicts oldest frame on congestion");
+// 验证淘汰和排空后 _reliablePackets 计数已归零，后续带 key 的快照合批仍能正常工作
+voiceQueue.Enqueue(new byte[] { 76 }, WebSocketMessageType.Binary, key: 5);
+voiceQueue.Enqueue(new byte[] { 77 }, WebSocketMessageType.Binary, key: 5);
+await voiceBatchDone.Task.WaitAsync(TimeSpan.FromSeconds(2));
+Check(voiceQueue.CoalescedPackets >= 1, "realtime window coalescing still works after preferRealtime eviction");
+voiceQueue.Stop(); await voiceQueue.Completion;

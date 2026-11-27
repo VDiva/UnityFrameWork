@@ -181,6 +181,70 @@ static class Program
             states.Clear();sync.AppendObjectStates(first.NetworkRoomId,first.NetworkObjectId,states);
             Check(states.Count==3 && states.Sum(x=>x.CalculateSize())<=NetworkSyncVarManager.MaxObjectBytes,"sync serialized byte budget enforced");
             sync.RemoveObject(first.NetworkObjectId);
+            var batchVars = new Google.Protobuf.Collections.RepeatedField<NetworkSyncVarData>
+            {
+                new NetworkSyncVarData { ObjectId=first.NetworkObjectId, BehaviourId=7, FieldId=1, Sequence=1, ValueType=6, Value=ByteString.CopyFrom(BitConverter.GetBytes(42)) },
+                new NetworkSyncVarData { ObjectId=first.NetworkObjectId, BehaviourId=7, FieldId=2, Sequence=1, ValueType=12, Value=ByteString.CopyFromUtf8("hero") }
+            };
+            await sync.RelayBatchAsync(first, batchVars);
+            states.Clear(); sync.AppendObjectStates(first.NetworkRoomId, first.NetworkObjectId, states);
+            Check(states.Count==2, "batch SyncVar relay stores multiple fields atomically");
+            await Until(()=>Messages(secondSocket,ServerMsgType.NetworkSyncVarUpdate).Any(m=>m.NetworkSyncVars.Count==2));
+            Check(true, "batch SyncVar broadcasts single combined NetworkSyncVars packet");
+            sync.RemoveObject(first.NetworkObjectId);
+
+            // 验证 CompactTransformCodec 精度与带宽压缩率（40 个移动怪物应压缩 >60% 且单包 <1160B 可直走 0x11 UDP）
+            var sampleBatch = new List<NetworkTransformData>(40);
+            var legacyBatchMsg = new Msg { MsgType = ProtobufMsgType.Game, GameMsgType = GameMsgType.UploadNetworkTransform };
+            for (uint m = 1; m <= 40; m++)
+            {
+                float angleRad = m * 0.15f;
+                float qy = MathF.Sin(angleRad * 0.5f), qw = MathF.Cos(angleRad * 0.5f);
+                var item = new NetworkTransformData
+                {
+                    ObjectId = m, RoomId = 7, SceneEpoch = 2, Sequence = 10 + m,
+                    PositionX = m * 3.25f, PositionY = 1.5f, PositionZ = -m * 2.1f,
+                    RotationX = 0f, RotationY = qy, RotationZ = 0f, RotationW = qw,
+                    ScaleX = 1f, ScaleY = 1f, ScaleZ = 1f, HasScale = true,
+                    VelocityX = 4.5f, VelocityY = 0f, VelocityZ = -2.25f, HasVelocity = true,
+                    SentTime = 100.25
+                };
+                sampleBatch.Add(item);
+                legacyBatchMsg.NetworkTransforms.Add(item);
+            }
+            int protoBytes = legacyBatchMsg.CalculateSize();
+            ByteString compactPayload = CompactTransformCodec.EncodeBatch(sampleBatch);
+            var decodedBatch = new List<NetworkTransformData>();
+            Check(CompactTransformCodec.TryDecode(compactPayload, decodedBatch) && decodedBatch.Count == 40,
+                "CompactTransformCodec round-trips 40 snapshots");
+            Check(compactPayload.Length < protoBytes * 0.45 && compactPayload.Length <= WebSocketDemo.Transport.TransportProtocol.SafeUnreliablePayloadBytes,
+                $"CompactTransformCodec saves >55% bandwidth ({compactPayload.Length}B vs {protoBytes}B) and fits single MTU");
+            float dot = MathF.Abs(decodedBatch[15].RotationY * sampleBatch[15].RotationY + decodedBatch[15].RotationW * sampleBatch[15].RotationW);
+            Check(dot > 0.9999f && MathF.Abs(decodedBatch[15].PositionX - sampleBatch[15].PositionX) < 0.0001f &&
+                  MathF.Abs(decodedBatch[15].VelocityX - 4.5f) < 0.02f,
+                "Smallest-Three quaternion and FP16 velocity preserve high precision");
+
+            // 验证服务端速率包络风控与房间距离 LOD 分频
+            float burst = NetworkStateValidation.MaxBurstAllowance;
+            var t0 = new NetworkTransformData { RoomId = 5, SceneEpoch = 1, PositionX = 0, SentTime = 10.0 };
+            var tNormal = new NetworkTransformData { RoomId = 5, SceneEpoch = 1, PositionX = 1.2f, SentTime = 10.1 };
+            var tDash = new NetworkTransformData { RoomId = 5, SceneEpoch = 1, PositionX = 30f, SentTime = 10.2 };
+            var tHack = new NetworkTransformData { RoomId = 5, SceneEpoch = 1, PositionX = 5000f, SentTime = 10.3 };
+            Check(NetworkStateValidation.IsWithinSpeedEnvelope(t0, tNormal, ref burst), "normal move passes speed envelope");
+            Check(NetworkStateValidation.IsWithinSpeedEnvelope(tNormal, tDash, ref burst), "legitimate dash within burst budget passes");
+            Check(!NetworkStateValidation.IsWithinSpeedEnvelope(tDash, tHack, ref burst), "extreme teleport hack rejected by speed envelope");
+
+            var obsPos = new NetworkTransformData { PositionX = 0, PositionY = 0, PositionZ = 0 };
+            int nearKept = 0, midKept = 0, farKept = 0;
+            for (ulong seq = 10; seq < 18; seq++)
+            {
+                if (NetworkStateValidation.ShouldForwardByDistanceLod(obsPos, new NetworkTransformData { PositionX = 10f, Sequence = seq, HasVelocity = true, VelocityX = 3f })) nearKept++;
+                if (NetworkStateValidation.ShouldForwardByDistanceLod(obsPos, new NetworkTransformData { PositionX = 28f, Sequence = seq, HasVelocity = true, VelocityX = 3f })) midKept++;
+                if (NetworkStateValidation.ShouldForwardByDistanceLod(obsPos, new NetworkTransformData { PositionX = 65f, Sequence = seq, HasVelocity = true, VelocityX = 3f })) farKept++;
+            }
+            Check(nearKept == 8 && midKept == 4 && farKept == 2, "distance LOD scales near=1/1, mid=1/2, far=1/4");
+            Check(NetworkStateValidation.ShouldForwardByDistanceLod(obsPos, new NetworkTransformData { PositionX = 65f, Sequence = 11, HasVelocity = true, VelocityX = 0f }),
+                "stop keyframe bypasses far LOD decimation immediately");
             Task Move(PlayerSession player,float x,ulong sequence)=>manager.RelayNetworkTransformAsync(player,new NetworkTransformData{ObjectId=player.NetworkObjectId,RoomId=NetworkRoomManager.LobbyRoomId,PositionX=x,RotationW=1,Sequence=sequence});
             await Move(first,0,1);await Move(second,5,1);await Move(far,200,1);await Move(otherScope,5,1);
             await Until(()=>Messages(firstSocket,ServerMsgType.NetworkObjectSpawn).Length>=1&&Messages(secondSocket,ServerMsgType.NetworkObjectSpawn).Length>=1);

@@ -182,7 +182,7 @@ public class Downloader
     {
         bool fullResponse = _request.responseCode == 200;
         long prefix = fullResponse ? 0 : _attemptStart;
-        if (long.TryParse(_request.GetResponseHeader("Content-Length"), out var length) && length >= 0)
+        if (TotalSize <= 0 && long.TryParse(_request.GetResponseHeader("Content-Length"), out var length) && length >= 0)
             TotalSize = prefix + length;
         DownloadedSize = prefix + (long)_request.downloadedBytes;
         Progress = TotalSize > 0 ? Mathf.Clamp01((float)DownloadedSize / TotalSize) : 0f;
@@ -304,6 +304,9 @@ public class Downloader
 public class DownloadManager : MonoBehaviour
 {
     private static DownloadManager _instance;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => _instance = null;
     public static DownloadManager Instance
     {
         get

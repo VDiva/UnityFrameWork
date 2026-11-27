@@ -14,8 +14,16 @@ public static class WeChatLoginService
 {
     public const string SessionTokenKey = "__wechat_session";
     public const string SessionInvalidKey = "__wechat_session_invalid";
-    // 仅保存在服务进程中；重启后旧凭证失效，客户端自动回退到微信登录。
-    private static readonly byte[] SessionSigningKey = RandomNumberGenerator.GetBytes(32);
+    // 可通过环境变量 WECHAT_SESSION_SIGNING_KEY 配置多节点共享密钥；未配置时仅在当前进程内存随机生成。
+    private static readonly byte[] SessionSigningKey = InitializeSigningKey();
+
+    private static byte[] InitializeSigningKey()
+    {
+        string? configured = Environment.GetEnvironmentVariable("WECHAT_SESSION_SIGNING_KEY")?.Trim();
+        if (!string.IsNullOrEmpty(configured))
+            return SHA256.HashData(Encoding.UTF8.GetBytes(configured));
+        return RandomNumberGenerator.GetBytes(32);
+    }
 
     public static string CreateSessionToken(string openId)
     {
@@ -47,7 +55,10 @@ public static class WeChatLoginService
         catch (FormatException) { return invalid; }
     }
 
-    private static readonly HttpClient HttpClient = new()
+    private static readonly HttpClient HttpClient = new(new SocketsHttpHandler
+    {
+        PooledConnectionLifetime = TimeSpan.FromMinutes(2)
+    })
     {
         Timeout = TimeSpan.FromSeconds(10)
     };

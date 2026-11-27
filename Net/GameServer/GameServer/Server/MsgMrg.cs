@@ -116,6 +116,44 @@ public static class MsgMrg
                     await DeleteRequestedEquips(player, msg);
                     break;
                 case GameMsgType.UploadNetworkTransform:
+                    if (msg.CompactTransforms != null && msg.CompactTransforms.Length > 0)
+                    {
+                        player.SupportsCompactTransforms = true;
+                        var decoded = new List<NetworkTransformData>(16);
+                        if (!CompactTransformCodec.TryDecode(msg.CompactTransforms, decoded) || decoded.Count == 0)
+                            break;
+                        if (decoded.Count == 1)
+                        {
+                            await RelayNetworkTransform(decoded[0], player);
+                            break;
+                        }
+                        if (player.NetworkObjectId == 0 || player.NetworkRoomId == 0 ||
+                            string.IsNullOrWhiteSpace(player.UserId)) break;
+                        int compactCount = Math.Min(decoded.Count, 128);
+                        uint cRoomId = player.NetworkRoomId;
+                        uint cEpoch = NetworkRoomManager.Instance.GetSceneEpoch(cRoomId);
+                        var cBatchedAi = new List<NetworkTransformData>(compactCount);
+                        for (int i = 0; i < compactCount; i++)
+                        {
+                            NetworkTransformData snapshot = decoded[i];
+                            if (!IsValidNetworkTransform(snapshot) || snapshot.RoomId != cRoomId ||
+                                snapshot.SceneEpoch != cEpoch)
+                                continue;
+                            if (snapshot.ObjectId != 0 && snapshot.ObjectId != player.NetworkObjectId)
+                            {
+                                if (NetworkRoomObjectManager.Instance.TryApplyTransform(player, snapshot))
+                                    cBatchedAi.Add(snapshot);
+                            }
+                            else
+                                await RelayNetworkTransform(snapshot, player);
+                            if (player.NetworkRoomId == cRoomId) continue;
+                            cBatchedAi.Clear();
+                            break;
+                        }
+                        if (player.NetworkRoomId == cRoomId)
+                            NetworkRoomObjectManager.Instance.BroadcastTransformBatch(player, cBatchedAi);
+                        break;
+                    }
                     if (msg.NetworkTransforms.Count > 0)
                     {
                         if (player.NetworkObjectId == 0 || player.NetworkRoomId == 0 ||
@@ -191,7 +229,7 @@ public static class MsgMrg
                     await SendRoomList(player);
                     break;
                 case GameMsgType.UploadNetworkVoice:
-                    await RelayNetworkVoice(msg.Id, player);
+                    await RelayNetworkVoice(msg.VoiceData, msg.VoiceSequence, msg.Id, player);
                     break;
                 case GameMsgType.SetNetworkVoiceOptions:
                     await SetVoiceOptions(
@@ -215,7 +253,10 @@ public static class MsgMrg
                     await NetworkRoomObjectManager.Instance.DestroyAsync(player, msg.NetworkObject?.ObjectId ?? 0);
                     break;
                 case GameMsgType.UploadNetworkSyncVar:
-                    await NetworkSyncVarManager.Instance.RelayAsync(player, msg.NetworkSyncVar);
+                    if (msg.NetworkSyncVars.Count > 0)
+                        await NetworkSyncVarManager.Instance.RelayBatchAsync(player, msg.NetworkSyncVars);
+                    if (msg.NetworkSyncVar != null)
+                        await NetworkSyncVarManager.Instance.RelayAsync(player, msg.NetworkSyncVar);
                     break;
                 case GameMsgType.UploadNetworkRpc:
                     await NetworkRpcManager.Instance.RelayAsync(player, msg.NetworkRpc);
@@ -355,6 +396,7 @@ public static class MsgMrg
                 }
             }
 
+            bool rewardsGranted = false;
             if (equipDatas.Count > 0 || itemDic.Count > 0)
             {
                 await playerSession.MutateAndSaveUserDataSnapshotAsync(data =>
@@ -369,14 +411,24 @@ public static class MsgMrg
                         data.Item[key] = data.Item.GetValueOrDefault(key, 0) + item.Value;
                     }
                 });
+                rewardsGranted = true;
             }
 
-            await GameDataMrg.UpdateEmailStates(emailData.Select(data => data.Id).ToArray(), 1);
-            await GameDataMrg.CompleteGlobalEmailClaims(
-                userId, serverId, emailData.Select(data => data.Id), true);
-            if (RedisMrg.IsConnected)
+            try
             {
-                await GameDataMrg.RefreshEmailCache(userId, serverId);
+                await GameDataMrg.UpdateEmailStates(emailData.Select(data => data.Id).ToArray(), 1);
+                await GameDataMrg.CompleteGlobalEmailClaims(
+                    userId, serverId, emailData.Select(data => data.Id), true);
+                if (RedisMrg.IsConnected)
+                {
+                    await GameDataMrg.RefreshEmailCache(userId, serverId);
+                }
+            }
+            catch (Exception finalizeEx) when (rewardsGranted)
+            {
+                // 奖励已经发放到玩家存档，绝不能把邮件状态回滚为未领取，避免重复刷奖。
+                Console.WriteLine($"Finalize claimed emails failed after granting rewards: user={userId}, error={finalizeEx.Message}");
+                throw;
             }
         }
         catch
@@ -791,7 +843,7 @@ public static class MsgMrg
         // 全员收到 Load 后统一清理旧场景，无需为每个旧对象逐条发送 Despawn。
         await NetworkRoomObjectManager.Instance.DestroyRoomObjectsAsync(room.RoomId, notifyClients: false);
 
-        // WebNetworkTransform 在新场景会从序列号 1 重新开始。
+        // NetworkTransform 在新场景会从序列号 1 重新开始。
         // 如果保留旧地图的高序列号快照，新客户端会先应用旧快照，并把新地图的首批
         // 位置包误判为过期数据，直到序列号追上旧值后才开始同步。
         foreach (PlayerSession member in members)
@@ -948,33 +1000,40 @@ public static class MsgMrg
 
     /// <summary>
     /// 转发 Opus 语音包。服务端不做音频解码，只校验包大小并执行房间、队伍和 AOI 过滤。
+    /// 优先使用二进制 VoiceData 零转换透传，同时兼容旧版 Base64 Id。
     /// </summary>
-    private static async Task RelayNetworkVoice(string? base64Opus, PlayerSession player)
+    private static Task RelayNetworkVoice(ByteString? voiceData, uint voiceSequence, string? base64Opus, PlayerSession player)
     {
         const float voiceRange = 25f;
         const int maxVoiceFrameBytes = 1275;
 
         if (player.NetworkRoomId <= NetworkRoomManager.LobbyRoomId ||
-            player.NetworkObjectId == 0 ||
-            string.IsNullOrWhiteSpace(base64Opus))
-            return;
+            player.NetworkObjectId == 0)
+            return Task.CompletedTask;
 
-        byte[] opusPacket;
-        try
+        ByteString opusPayload;
+        if (voiceData != null && voiceData.Length > 0)
         {
-            opusPacket = Convert.FromBase64String(base64Opus);
+            if (voiceData.Length > maxVoiceFrameBytes)
+                return Task.CompletedTask;
+            opusPayload = voiceData;
         }
-        catch (FormatException)
+        else
         {
-            return;
+            if (string.IsNullOrWhiteSpace(base64Opus) || base64Opus.Length > 1704)
+                return Task.CompletedTask;
+
+            Span<byte> decodeCheck = stackalloc byte[maxVoiceFrameBytes];
+            if (!Convert.TryFromBase64String(base64Opus, decodeCheck, out int bytesWritten) ||
+                bytesWritten == 0 || bytesWritten > maxVoiceFrameBytes)
+                return Task.CompletedTask;
+            opusPayload = ByteString.CopyFrom(decodeCheck.Slice(0, bytesWritten));
         }
 
-        if (opusPacket.Length == 0 || opusPacket.Length > maxVoiceFrameBytes)
-            return;
-
-        var sends = new List<Task>();
+        byte[]? packetWithAoi = null;
+        byte[]? packetWithoutAoi = null;
         foreach (PlayerSession receiver in
-                 PlayerSessionManager.Instance.GetRoomSessions(player.NetworkRoomId))
+                 PlayerSessionManager.Instance.SessionsForRoom(player.NetworkRoomId))
         {
             if (receiver == player ||
                 !NetworkRoomManager.Instance.CanReceiveVoice(
@@ -997,18 +1056,39 @@ public static class MsgMrg
                     continue;
             }
 
-            byte[] packet = new Msg
+            // 按 useAoi 仅序列化一次 protobuf，复用到全部收听者。
+            byte[] packet;
+            if (useAoi)
             {
-                MsgType = ProtobufMsgType.Server,
-                ServerMsgType = ServerMsgType.NetworkVoiceFrame,
-                NetworkObjectId = player.NetworkObjectId,
-                Id = base64Opus,
-                NetworkRoomRequest = new NetworkRoomRequest { Ready = useAoi }
-            }.ToByteArray();
-            sends.Add(receiver.SendBinaryAsync(packet));
+                packetWithAoi ??= new Msg
+                {
+                    MsgType = ProtobufMsgType.Server,
+                    ServerMsgType = ServerMsgType.NetworkVoiceFrame,
+                    NetworkObjectId = player.NetworkObjectId,
+                    VoiceSequence = voiceSequence,
+                    VoiceData = opusPayload,
+                    NetworkRoomRequest = new NetworkRoomRequest { Ready = true }
+                }.ToByteArray();
+                packet = packetWithAoi;
+            }
+            else
+            {
+                packetWithoutAoi ??= new Msg
+                {
+                    MsgType = ProtobufMsgType.Server,
+                    ServerMsgType = ServerMsgType.NetworkVoiceFrame,
+                    NetworkObjectId = player.NetworkObjectId,
+                    VoiceSequence = voiceSequence,
+                    VoiceData = opusPayload,
+                    NetworkRoomRequest = new NetworkRoomRequest { Ready = false }
+                }.ToByteArray();
+                packet = packetWithoutAoi;
+            }
+
+            receiver.QueueRealtimeBinary(packet, maxAgeMs: 150);
         }
 
-        await Task.WhenAll(sends);
+        return Task.CompletedTask;
     }
 
     /// <summary>处理房主发来的房间语音路由设置。</summary>
@@ -1362,6 +1442,11 @@ public static class MsgMrg
             await player.ReplyErrorAsync(request, "INVALID_MESSAGE_CONTENT", "消息内容不能为空且不能超过 500 个字符。");
             return;
         }
+        if (ChatContentFilter.TryFindForbiddenWord(content, out _))
+        {
+            await player.ReplyErrorAsync(request, "FORBIDDEN_CHAT_CONTENT", "消息内容包含违禁词，请修改后再发送。");
+            return;
+        }
 
         if (!await GameDataMrg.AreFriends(player.UserId, receiverUserId, player.ServerId))
         {
@@ -1687,16 +1772,8 @@ public static class MsgMrg
         {
             return;
         }
-        var ranks = await GameDataMrg.GetRankTopData(data.RankName, player.ServerId);
-        var msg = new Msg
-        {
-            MsgType = ProtobufMsgType.Server,
-            ServerMsgType = ServerMsgType.GetRankSuc,
-            ServerId = player.ServerId
-        };
-        msg.RankData.AddRange(ranks);
-
-        await player.SendBinaryAsync(msg.ToByteArray());
+        byte[] packet = await GameDataMrg.GetRankTopPacketAsync(data.RankName, player.ServerId);
+        await player.SendBinaryAsync(packet);
     }
 
     private static async Task UpdateRank(PlayerSession player, Msg data)
@@ -1715,13 +1792,13 @@ public static class MsgMrg
         rankData.UserId = player.UserId;
         rankData.ServerId = player.ServerId;
 
-        UserData? userData = player.UserDataSnapshot?.Clone();
+        UserData? userData = player.UserDataSnapshot;
         if (userData == null)
             userData = await GameDataMrg.GetUser(player.UserId, player.ServerId);
 
         if (userData != null)
         {
-            rankData.UserData = userData;
+            rankData.UserData = GameDataMrg.CreateRankUserSummary(userData);
             rankData.RoleType = userData.RoleType;
         }
 

@@ -5,12 +5,22 @@ namespace FrameWork
     public class SingletonAsMono<T> : MonoBehaviour where T : Component
     {
         private static T _instance;
+        private static bool _isQuitting;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _instance = null;
+            _isQuitting = false;
+        }
+
         public static T Instance
         {
             get
             {
                 if (_instance == null)
                 {
+                    if (_isQuitting) return null;
                     _instance = FindObjectOfType<T>();
                     if (_instance == null) _instance = new GameObject(typeof(T).Name).AddComponent<T>();
                     if (Application.isPlaying) DontDestroyOnLoad(_instance);
@@ -18,7 +28,27 @@ namespace FrameWork
                 return _instance;
             }
         }
-        protected virtual void Awake() { }
-        protected virtual void OnDestroy() { }
+
+        protected virtual void Awake()
+        {
+            if (_instance == null)
+            {
+                _instance = this as T;
+            }
+            else if (_instance != this)
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        protected virtual void OnApplicationQuit()
+        {
+            _isQuitting = true;
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (_instance == this) _instance = null;
+        }
     }
 }

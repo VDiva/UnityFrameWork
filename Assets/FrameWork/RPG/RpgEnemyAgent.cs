@@ -58,7 +58,7 @@ namespace FrameWork.FPS
         {
             if (target == null && findPlayerOnStart)
             {
-                var player = FindObjectOfType<FpsPlayer>();
+                var player = FpsPlayer.ActivePlayer ?? FindObjectOfType<FpsPlayer>();
                 if (player != null) target = player.transform;
             }
             SetTarget(target);
@@ -194,10 +194,13 @@ namespace FrameWork.FPS
             Vector3 offset = HorizontalOffset(transform.position, target.position);
             TurnTowards(offset, deltaTime);
             state = RpgEnemyState.Attacking;
-            if (Vector3.Dot(transform.forward, offset.normalized) >= 0.94f)
+            bool facingTarget = offset.sqrMagnitude <= 0.0001f || Vector3.Dot(transform.forward, offset.normalized) >= 0.94f;
+            if (facingTarget)
             {
                 Vector3 origin = weapon.transform.position;
-                weapon.TryFire(new Ray(origin, (TargetAimPoint() - origin).normalized), gameObject);
+                Vector3 toTarget = TargetAimPoint() - origin;
+                Vector3 fireDir = toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : transform.forward;
+                weapon.TryFire(new Ray(origin, fireDir), gameObject);
             }
             return RpgBehaviorStatus.Running;
         }
@@ -232,6 +235,7 @@ namespace FrameWork.FPS
 
         private bool CanPursue()
         {
+            if (canPursueThisTick.HasValue) return canPursueThisTick.Value;
             bool result = CanPursueCore();
             canPursueThisTick = result;
             return result;
@@ -256,8 +260,7 @@ namespace FrameWork.FPS
         private bool HasLineOfSight(Vector3 origin, Vector3 aim)
         {
             float distance = aim.magnitude;
-            if (!Physics.Raycast(origin, aim / distance, out var hit, distance, sightLayers,
-                QueryTriggerInteraction.Ignore))
+            if (!FpsWeapon.TryRaycastExcluding(new Ray(origin, aim / distance), distance, sightLayers, transform, out var hit))
                 return true;
 
             return hit.transform.IsChildOf(target) ||

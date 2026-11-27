@@ -25,9 +25,13 @@ namespace FrameWork
         public static Func<YooResourceSettings, InitializePackageOptions> InitializeOptionsFactory;
 
         private static readonly Dictionary<(string, Type), AssetHandle> Assets = new();
+        private static readonly Dictionary<AssetHandle, (string, Type)> HandleKeys = new();
         private static UniTaskCompletionSource _initialization;
         private static ResourcePackage _package;
         private static SceneHandle _scene;
+        private static int _sceneLoadVersion;
+        private static YooResourceSettings _cachedResourceSettings;
+        private static FrameworkBootSettings _cachedBootSettings;
         public static bool IsInitialized { get; private set; }
         public static ResourcePackage Package => IsInitialized ? _package :
             throw new InvalidOperationException("请先 await ABMrg.Init()。");
@@ -36,15 +40,45 @@ namespace FrameWork
         private static void ResetStatics()
         {
             Assets.Clear();
+            HandleKeys.Clear();
             _initialization = null;
             _package = null;
             _scene = null;
+            _sceneLoadVersion = 0;
+            _cachedResourceSettings = null;
+            _cachedBootSettings = null;
             IsInitialized = false;
             InitializeOptionsFactory = null;
             SceneLoading = null;
             BeforeSceneLoading = null;
             SceneLoaded = null;
             SceneLoadingFinished = null;
+        }
+
+        private static YooResourceSettings GetResourceSettings()
+        {
+            if (_cachedResourceSettings == null)
+                _cachedResourceSettings = Resources.Load<YooResourceSettings>("YooResourceSettings");
+            return _cachedResourceSettings;
+        }
+
+        private static FrameworkBootSettings GetBootSettings()
+        {
+            if (_cachedBootSettings == null)
+                _cachedBootSettings = Resources.Load<FrameworkBootSettings>("FrameworkBootSettings");
+            return _cachedBootSettings;
+        }
+
+        private static void RegisterHandle((string, Type) key, AssetHandle handle)
+        {
+            Assets[key] = handle;
+            HandleKeys[handle] = key;
+        }
+
+        private static void UnregisterHandle((string, Type) key, AssetHandle handle)
+        {
+            Assets.Remove(key);
+            if (handle != null) HandleKeys.Remove(handle);
         }
 
         public static UniTask Init()
@@ -60,7 +94,7 @@ namespace FrameWork
         {
             try
             {
-                var settings = Resources.Load<YooResourceSettings>("YooResourceSettings");
+                var settings = GetResourceSettings();
                 if (settings == null || string.IsNullOrWhiteSpace(settings.packageName))
                     throw new InvalidOperationException("缺少 YooResourceSettings，请执行 FrameWork/初始化抽离框架。");
                 if (!YooAssets.IsInitialized) YooAssets.Initialize();
@@ -158,7 +192,7 @@ namespace FrameWork
         private static string ExpandRemote(string url, string package)
         {
             if (string.IsNullOrWhiteSpace(url)) return url;
-            var boot = Resources.Load<FrameworkBootSettings>("FrameworkBootSettings");
+            var boot = GetBootSettings();
             string platform;
 #if UNITY_EDITOR
             platform = UnityEditor.EditorUserBuildSettings.activeBuildTarget.ToString();
@@ -201,7 +235,7 @@ namespace FrameWork
         {
             if (!Assets.TryGetValue(key, out handle)) return false;
             if (handle.IsValid) return true;
-            Assets.Remove(key);
+            UnregisterHandle(key, handle);
             handle = null;
             return false;
         }
@@ -225,7 +259,7 @@ namespace FrameWork
             if (!TryGetCachedHandle(key, out var handle))
             {
                 handle = Package.LoadAssetAsync(name, typeof(T));
-                Assets.Add(key, handle);
+                RegisterHandle(key, handle);
             }
             while (handle.IsValid && !handle.IsDone) await UniTask.Yield(PlayerLoopTiming.Update);
             if (!handle.IsValid) throw new InvalidOperationException("资源加载失败或句柄已释放：" + name);
@@ -233,7 +267,7 @@ namespace FrameWork
             {
                 string error = handle.Error;
                 if (Assets.TryGetValue(key, out var current) && ReferenceEquals(current, handle))
-                    Assets.Remove(key);
+                    UnregisterHandle(key, handle);
                 if (handle.IsValid) handle.Release();
                 throw new InvalidOperationException($"资源加载失败：{name}，{error}");
             }
@@ -249,7 +283,8 @@ namespace FrameWork
 #if UNITY_WEBGL && !UNITY_EDITOR
             throw new InvalidOperationException("WebGL 不阻塞主线程，请先 await ABMrg.LoadAsync 或 PreloadAsync：" + name);
 #else
-            if (Assets.ContainsKey((name, typeof(T))))
+            var key = (name, typeof(T));
+            if (Assets.ContainsKey(key))
                 throw new InvalidOperationException("该资源正在异步加载，请等待 LoadAsync 完成：" + name);
             var handle = Package.LoadAssetSync(name, typeof(T));
             if (handle.Status != EOperationStatus.Succeeded)
@@ -258,14 +293,36 @@ namespace FrameWork
                 handle.Release();
                 throw new InvalidOperationException($"资源加载失败：{name}，{error}");
             }
-            Assets.Add((name, typeof(T)), handle);
+            RegisterHandle(key, handle);
             return (T)(object)handle.AssetObject;
 #endif
         }
 
         public static async UniTask PreloadAsync<T>(IEnumerable<string> names)
         {
-            foreach (string name in names) await LoadAsync<T>(name);
+            if (names == null) return;
+            await Init();
+            int maxConcurrency = Math.Max(1,
+#if UNITY_WEBGL && !UNITY_EDITOR
+                Mathf.Clamp(WebGLMaxConcurrentRequests, 1, 4)
+#else
+                8
+#endif
+            );
+
+            var batch = new List<UniTask>(maxConcurrency);
+            foreach (string name in names)
+            {
+                if (string.IsNullOrEmpty(name)) continue;
+                batch.Add(LoadAsync<T>(name));
+                if (batch.Count >= maxConcurrency)
+                {
+                    await UniTask.WhenAll(batch);
+                    batch.Clear();
+                }
+            }
+            if (batch.Count > 0)
+                await UniTask.WhenAll(batch);
         }
 
         public static bool ReleaseAsset<T>(string name)
@@ -273,7 +330,7 @@ namespace FrameWork
             var key = (name, typeof(T));
             if (!TryGetCachedHandle(key, out var handle)) return false;
             if (!handle.IsDone) throw new InvalidOperationException("资源仍在加载：" + name);
-            Assets.Remove(key);
+            UnregisterHandle(key, handle);
             handle.Release();
             return true;
         }
@@ -281,14 +338,8 @@ namespace FrameWork
         public static void Release(AssetHandle handle)
         {
             if (handle == null) return;
-            (string, Type)? key = null;
-            foreach (var entry in Assets)
-            {
-                if (!ReferenceEquals(entry.Value, handle)) continue;
-                key = entry.Key;
-                break;
-            }
-            if (key.HasValue) Assets.Remove(key.Value);
+            if (HandleKeys.TryGetValue(handle, out var key))
+                UnregisterHandle(key, handle);
             if (handle.IsValid) handle.Release();
         }
 
@@ -327,7 +378,7 @@ namespace FrameWork
         private static async UniTask DownloadResourcesAsync(string[] tags, Action<float> progress)
         {
             await Init();
-            var settings = Resources.Load<YooResourceSettings>("YooResourceSettings");
+            var settings = GetResourceSettings();
             var download = Package.CreateResourceDownloader(new ResourceDownloaderOptions(
                 tags, settings.downloadConcurrency, settings.downloadRetryCount));
             download.StartDownload();
@@ -344,11 +395,12 @@ namespace FrameWork
         public static void LoadSceneAsync(string name, Action<float> progress = null,
             Action call = null, Action<Exception> failure = null)
         {
-            LoadSceneWithCallbacks(name, progress, call, failure).Forget(Debug.LogException);
+            int version = ++_sceneLoadVersion;
+            LoadSceneWithCallbacks(name, version, progress, call, failure).Forget(Debug.LogException);
         }
         public static void LoadScene(string name) => LoadSceneAsync(name);
 
-        private static async UniTask LoadSceneWithCallbacks(string name, Action<float> progress,
+        private static async UniTask LoadSceneWithCallbacks(string name, int version, Action<float> progress,
             Action call, Action<Exception> failure)
         {
             SceneHandle loading = null;
@@ -356,13 +408,21 @@ namespace FrameWork
             try
             {
                 await Init();
+                if (version != _sceneLoadVersion) return;
                 BeforeSceneLoading?.Invoke();
                 if (SceneLoading != null) await SceneLoading(name);
+                if (version != _sceneLoadVersion) return;
                 loading = Package.LoadSceneAsync(name);
                 while (!loading.IsDone)
                 {
-                    ReportProgress(progress, loading.Progress);
+                    if (version == _sceneLoadVersion)
+                        ReportProgress(progress, loading.Progress);
                     await UniTask.Yield();
+                }
+                if (version != _sceneLoadVersion)
+                {
+                    if (loading.IsValid) loading.Release();
+                    return;
                 }
                 if (loading.Status != EOperationStatus.Succeeded)
                     throw new InvalidOperationException($"场景加载失败：{name}，{loading.Error}");
@@ -381,8 +441,11 @@ namespace FrameWork
             }
             finally
             {
-                try { SceneLoadingFinished?.Invoke(name); }
-                catch (Exception error) { Debug.LogException(error); }
+                if (version == _sceneLoadVersion)
+                {
+                    try { SceneLoadingFinished?.Invoke(name); }
+                    catch (Exception error) { Debug.LogException(error); }
+                }
             }
         }
 

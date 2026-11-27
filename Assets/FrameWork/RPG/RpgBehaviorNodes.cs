@@ -87,9 +87,10 @@ namespace FrameWork.FPS
         internal RpgBehaviorStatus TickChildren(RpgBehaviorProgram tree, RpgEnemyAgent agent, float deltaTime,
             RpgBehaviorStatus continueOn)
         {
-            for (int i = 0; i < SlotCount; i++)
+            var children = tree.GetChildren(this);
+            for (int i = 0; i < children.Length; i++)
             {
-                var child = tree.GetChild(this, i);
+                var child = children[i];
                 if (child == null) continue;
                 var result = tree.TickNode(child, this, agent, deltaTime);
                 if (result != continueOn) return result;

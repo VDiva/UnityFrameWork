@@ -16,11 +16,15 @@ namespace FrameWork.InteractiveFilm
         private FilmRoute route;
         private bool preparing;
         private bool advanceQueued;
+        private int enterGeneration;
+        private int preparedGeneration;
         private Vector2 choiceScroll;
         private GUIStyle titleStyle;
         private GUIStyle captionStyle;
         private GUIStyle buttonStyle;
         private Font generatedFont;
+        private static readonly GUILayoutOption[] ScrollMaxHeightOption = { GUILayout.MaxHeight(145f) };
+        private static readonly GUILayoutOption[] ButtonHeightOption = { GUILayout.Height(30f) };
 
         public FilmContentNode CurrentNode { get; private set; }
         public string PlaybackError { get; private set; }
@@ -67,16 +71,26 @@ namespace FrameWork.InteractiveFilm
 
         private void OnDisable()
         {
-            video.prepareCompleted -= OnPrepared;
-            video.loopPointReached -= OnFinished;
-            video.errorReceived -= OnVideoError;
+            if (video != null)
+            {
+                video.prepareCompleted -= OnPrepared;
+                video.loopPointReached -= OnFinished;
+                video.errorReceived -= OnVideoError;
+                video.Stop();
+                video.clip = null;
+            }
             advanceQueued = false;
             preparing = false;
-            video.Stop();
+            enterGeneration++;
         }
 
         private void OnDestroy()
         {
+            if (video != null)
+            {
+                video.Stop();
+                video.clip = null;
+            }
             if (generatedFont != null) Destroy(generatedFont);
         }
 
@@ -117,6 +131,7 @@ namespace FrameWork.InteractiveFilm
 
         private void Enter(FilmContentNode node)
         {
+            enterGeneration++;
             video.Stop();
             video.clip = null;
             advanceQueued = false;
@@ -128,6 +143,7 @@ namespace FrameWork.InteractiveFilm
             {
                 video.clip = segment.video;
                 preparing = true;
+                preparedGeneration = enterGeneration;
                 video.Prepare();
             }
             NodeChanged?.Invoke(node);
@@ -135,20 +151,23 @@ namespace FrameWork.InteractiveFilm
 
         private void OnPrepared(VideoPlayer source)
         {
-            if (!(CurrentNode is FilmSegmentNode segment) || source.clip != segment.video) return;
+            if (preparedGeneration != enterGeneration ||
+                !(CurrentNode is FilmSegmentNode segment) || source.clip != segment.video) return;
             preparing = false;
             source.Play();
         }
 
         private void OnFinished(VideoPlayer source)
         {
-            if (CurrentNode is FilmSegmentNode segment && segment.autoAdvance && source.clip == segment.video)
+            if (preparedGeneration == enterGeneration &&
+                CurrentNode is FilmSegmentNode segment && segment.autoAdvance && source.clip == segment.video)
                 advanceQueued = true;
         }
 
         private void OnVideoError(VideoPlayer source, string message)
         {
-            if (!(CurrentNode is FilmSegmentNode segment) || segment.video == null || source.clip != segment.video)
+            if (preparedGeneration != enterGeneration ||
+                !(CurrentNode is FilmSegmentNode segment) || segment.video == null || source.clip != segment.video)
                 return;
             preparing = false;
             PlaybackError = message;
@@ -184,12 +203,12 @@ namespace FrameWork.InteractiveFilm
                 GUILayout.FlexibleSpace();
                 if (CurrentNode is FilmChoiceNode choice)
                 {
-                    using var scroll = new GUILayout.ScrollViewScope(choiceScroll, GUILayout.MaxHeight(145f));
+                    using var scroll = new GUILayout.ScrollViewScope(choiceScroll, ScrollMaxHeightOption);
                     choiceScroll = scroll.scrollPosition;
                     for (int i = 0; i < choice.OptionCount; i++)
                     {
                         string label = choice.GetLabel(i);
-                        if (route.GetNext(choice, i) != null && GUILayout.Button(label, buttonStyle, GUILayout.Height(30f)))
+                        if (route.GetNext(choice, i) != null && GUILayout.Button(label, buttonStyle, ButtonHeightOption))
                         {
                             Choose(i);
                             break;
@@ -198,10 +217,10 @@ namespace FrameWork.InteractiveFilm
                 }
                 else if (CurrentNode is FilmEndingNode)
                 {
-                    if (GUILayout.Button("重新开始", buttonStyle, GUILayout.Height(30f))) Restart();
+                    if (GUILayout.Button("重新开始", buttonStyle, ButtonHeightOption)) Restart();
                 }
                 else if (CurrentNode is FilmSegmentNode segment &&
-                    GUILayout.Button(segment.video == null ? "继续" : "下一段", buttonStyle, GUILayout.Height(30f)))
+                    GUILayout.Button(segment.video == null ? "继续" : "下一段", buttonStyle, ButtonHeightOption))
                 {
                     Advance();
                 }

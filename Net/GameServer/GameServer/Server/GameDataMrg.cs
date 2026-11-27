@@ -1,5 +1,7 @@
 using GameData;
+using System.Collections.Concurrent;
 using System.Threading;
+using Google.Protobuf;
 using Google.Protobuf.Collections;
 
 namespace WebSocketDemo;
@@ -21,10 +23,44 @@ internal enum AddFriendResult
 public static class GameDataMrg
 {
     private const int SaveAllConcurrency = 16;
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim>
-        UserSaveLocks = new();
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim>
-        RankSaveLocks = new();
+    private const int DirtyBatchChunkSize = 32;
+    private const long RankLocalCacheTtlMs = 2000;
+    private static readonly AccountLoginGate UserSaveLocks = new();
+    private static readonly AccountLoginGate RankSaveLocks = new();
+    private static readonly ConcurrentDictionary<string, RankCacheEntry> RankTopCache = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, Task<RankCacheEntry>> RankInflightLoads = new(StringComparer.Ordinal);
+
+    private sealed record RankCacheEntry(RankData[] Ranks, byte[] SerializedGetRankPacket, long ExpireAtTick);
+
+    /// <summary>提取排行榜公开展示所需的轻量玩家摘要，剥离背包道具、装备列表与大体积扩展字典。</summary>
+    public static UserData CreateRankUserSummary(UserData source)
+    {
+        return new UserData
+        {
+            UserId = source.UserId ?? string.Empty,
+            ServerId = source.ServerId ?? string.Empty,
+            Server = source.Server ?? string.Empty,
+            Name = source.Name ?? string.Empty,
+            Avatar = source.Avatar ?? string.Empty,
+            RoleType = source.RoleType,
+            FightingCapacity = source.FightingCapacity ?? string.Empty,
+            LoginTime = source.LoginTime,
+            CreatedAt = source.CreatedAt
+        };
+    }
+
+    private static string GetRankCacheKey(string serverId, string rankName, int count) =>
+        $"{ServerScope.Normalize(serverId)}:{BattleRankPolicy.CacheName(rankName)}:{Math.Clamp(count, 1, 1000)}";
+
+    private static void InvalidateRankCache(string serverId, string rankName)
+    {
+        string prefix = $"{ServerScope.Normalize(serverId)}:{BattleRankPolicy.CacheName(rankName)}:";
+        foreach (string key in RankTopCache.Keys)
+        {
+            if (key.StartsWith(prefix, StringComparison.Ordinal))
+                RankTopCache.TryRemove(key, out _);
+        }
+    }
     private const int WeeklyRankRewardLimit = 100;
     private const string WeeklyRankRewardItemId = "weekly_rank_reward";
 
@@ -118,17 +154,14 @@ public static class GameDataMrg
         userData.UserId = userId;
         userData.ServerId = serverId;
         string userKey = ServerScope.UserKey(serverId, userId);
-        SemaphoreSlim saveLock = UserSaveLocks.GetOrAdd(userKey, _ => new SemaphoreSlim(1, 1));
         bool saved;
-        await saveLock.WaitAsync();
-        try
+        using (await UserSaveLocks.AcquireAsync(userKey))
         {
             if (RedisMrg.IsConnected)
             {
-                var cacheSaved = await RedisMrg.SetUserData(userId, serverId, userData);
+                var cacheSaved = await RedisMrg.SaveUserDataAndMarkDirty(userId, serverId, userData);
                 if (cacheSaved)
                 {
-                    await RedisMrg.MarkUserDirty(userId, serverId);
                     saved = true;
                 }
                 else
@@ -140,10 +173,6 @@ public static class GameDataMrg
             {
                 saved = await MongoDBMrg.UpdateUserData(userId, serverId, userData);
             }
-        }
-        finally
-        {
-            saveLock.Release();
         }
 
         // if (saved && updateRank)
@@ -208,7 +237,7 @@ public static class GameDataMrg
             return await UpdateRankData("fightingCapacity", serverId, new RankData
             {
                 Id = userId,
-                UserData = userData.Clone(),
+                UserData = CreateRankUserSummary(userData),
                 RoleType = userData.RoleType,
                 Level = Math.Max(0, level)
             });
@@ -230,9 +259,7 @@ public static class GameDataMrg
     {
         serverId = ServerScope.Normalize(serverId);
         string userKey = ServerScope.UserKey(serverId, userId);
-        SemaphoreSlim saveLock = UserSaveLocks.GetOrAdd(userKey, _ => new SemaphoreSlim(1, 1));
-        await saveLock.WaitAsync();
-        try
+        using (await UserSaveLocks.AcquireAsync(userKey))
         {
             var userData = RedisMrg.IsConnected
                 ? await RedisMrg.GetUserData(userId, serverId)
@@ -247,10 +274,6 @@ public static class GameDataMrg
                 await RedisMrg.ClearUserDirty(userId, serverId);
             return saved;
         }
-        finally
-        {
-            saveLock.Release();
-        }
     }
 
     /// <summary>
@@ -259,7 +282,7 @@ public static class GameDataMrg
     /// </summary>
     public static async Task<int> SaveAllDirtyUsersToMongo()
     {
-        if (!RedisMrg.IsConnected)
+        if (!RedisMrg.IsConnected || !MongoDBMrg.IsConnected)
         {
             return 0;
         }
@@ -270,30 +293,68 @@ public static class GameDataMrg
             return 0;
         }
 
-        var savedCount = 0;
-        using var concurrency = new SemaphoreSlim(SaveAllConcurrency, SaveAllConcurrency);
-        var tasks = userIds.Select(async userKey =>
+        // 按字典序排序后分块加锁，杜绝与单用户 SaveUserData 死锁，同时将 Redis MGET、Mongo BulkWrite、Redis 清理全部管线化。
+        userIds.Sort(StringComparer.Ordinal);
+        var parsedEntries = new List<(string UserKey, string ServerId, string UserId)>(userIds.Count);
+        foreach (string rawKey in userIds)
         {
-            await concurrency.WaitAsync();
+            if (ServerScope.TryParseUserKey(rawKey, out string serverId, out string userId))
+            {
+                string normalizedServer = ServerScope.Normalize(serverId);
+                parsedEntries.Add((ServerScope.UserKey(normalizedServer, userId), normalizedServer, userId));
+            }
+        }
+
+        int savedCount = 0;
+        var heldLocks = new List<IDisposable>(DirtyBatchChunkSize);
+        for (int offset = 0; offset < parsedEntries.Count; offset += DirtyBatchChunkSize)
+        {
+            int count = Math.Min(DirtyBatchChunkSize, parsedEntries.Count - offset);
+            var chunk = parsedEntries.GetRange(offset, count);
+            heldLocks.Clear();
             try
             {
-                if (ServerScope.TryParseUserKey(userKey, out var serverId, out var userId) &&
-                    await SaveUserDataToMongo(userId, serverId))
+                for (int i = 0; i < chunk.Count; i++)
+                    heldLocks.Add(await UserSaveLocks.AcquireAsync(chunk[i].UserKey));
+
+                var batchData = await RedisMrg.GetUsersDataBatch(chunk);
+                var writeBatch = new List<(string UserId, string ServerId, UserData Data)>(chunk.Count);
+                var clearBatch = new List<(string UserKey, string ServerId, string UserId)>(chunk.Count);
+
+                for (int i = 0; i < chunk.Count; i++)
                 {
-                    Interlocked.Increment(ref savedCount);
+                    var entry = chunk[i];
+                    if (batchData.TryGetValue(entry.UserKey, out var userData))
+                    {
+                        writeBatch.Add((entry.UserId, entry.ServerId, userData));
+                        clearBatch.Add(entry);
+                    }
+                    else
+                    {
+                        // Redis 中缓存已不存在，若 MongoDB 中已有存档则直接清理陈旧脏标记。
+                        clearBatch.Add(entry);
+                    }
+                }
+
+                bool ok = writeBatch.Count == 0 || await MongoDBMrg.BulkUpdateUsersAsync(writeBatch);
+                if (ok)
+                {
+                    if (clearBatch.Count > 0)
+                        await RedisMrg.ClearUsersDirtyBatch(clearBatch);
+                    savedCount += writeBatch.Count;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Save dirty user {userKey} failed: {ex.Message}");
+                Console.WriteLine($"Batch save dirty users chunk failed (offset={offset}): {ex.Message}");
             }
             finally
             {
-                concurrency.Release();
+                for (int i = heldLocks.Count - 1; i >= 0; i--)
+                    heldLocks[i].Dispose();
             }
-        });
+        }
 
-        await Task.WhenAll(tasks);
         return savedCount;
     }
 
@@ -513,15 +574,18 @@ public static class GameDataMrg
     {
         if (rankName == BattleRankPolicy.RankName)
             BattleRankPolicy.Validate(rankData);
+        if (rankData.UserData != null && (rankData.UserData.EquipData.Count > 0 || rankData.UserData.Item.Count > 0 || rankData.UserData.DataDic.Count > 0))
+            rankData.UserData = CreateRankUserSummary(rankData.UserData);
         rankData.UpdatedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         string rankUserId = string.IsNullOrWhiteSpace(rankData.Id) ? rankData.UserData?.UserId ?? "" : rankData.Id;
-        var saveLock = RankSaveLocks.GetOrAdd($"{ServerScope.Normalize(serverId)}:{rankName}:{rankUserId}", _ => new SemaphoreSlim(1, 1));
-        await saveLock.WaitAsync();
-        try
+        bool saved;
+        using (await RankSaveLocks.AcquireAsync($"{ServerScope.Normalize(serverId)}:{rankName}:{rankUserId}"))
         {
-            return await SaveRankData(rankName, serverId, rankData);
+            saved = await SaveRankData(rankName, serverId, rankData);
         }
-        finally { saveLock.Release(); }
+        if (saved)
+            InvalidateRankCache(serverId, rankName);
+        return saved;
     }
 
     private static async Task<bool> SaveRankData(string rankName, string serverId, RankData rankData)
@@ -542,26 +606,76 @@ public static class GameDataMrg
     }
 
     /// <summary>
-    /// 获取排行榜。
-    /// 返回完整 RankData，并按 Level 降序、LevelTime 升序排序。
+    /// 获取排行榜。带 2 秒本地内存缓存与并发 Single-Flight 合并，消除刷榜峰值下的重复拉取与反序列化。
     /// </summary>
     public static async Task<List<RankData>> GetRankTopData(string rankName, string serverId, int count = 100)
     {
-        if (RedisMrg.IsConnected)
+        var entry = await GetOrLoadRankCacheAsync(rankName, serverId, count);
+        return new List<RankData>(entry.Ranks);
+    }
+
+    /// <summary>
+    /// 获取预序列化的排行榜响应二进制包，供高频榜单查询零拷贝直接下发。
+    /// </summary>
+    public static async Task<byte[]> GetRankTopPacketAsync(string rankName, string serverId, int count = 100)
+    {
+        var entry = await GetOrLoadRankCacheAsync(rankName, serverId, count);
+        return entry.SerializedGetRankPacket;
+    }
+
+    private static async Task<RankCacheEntry> GetOrLoadRankCacheAsync(string rankName, string serverId, int count)
+    {
+        string normalizedServer = ServerScope.Normalize(serverId);
+        int safeCount = Math.Clamp(count, 1, 1000);
+        string cacheKey = GetRankCacheKey(normalizedServer, rankName, safeCount);
+        long nowTick = Environment.TickCount64;
+
+        if (RankTopCache.TryGetValue(cacheKey, out var cached) && nowTick < cached.ExpireAtTick)
+            return cached;
+
+        Task<RankCacheEntry> loadTask = RankInflightLoads.GetOrAdd(
+            cacheKey,
+            _ => LoadAndBuildRankCacheAsync(cacheKey, rankName, normalizedServer, safeCount));
+        return await loadTask;
+    }
+
+    private static async Task<RankCacheEntry> LoadAndBuildRankCacheAsync(
+        string cacheKey, string rankName, string serverId, int count)
+    {
+        try
         {
-            var redisRanks = await RedisMrg.GetRankTopData(rankName, serverId, count);
-            if (redisRanks.Count > 0)
+            List<RankData>? loaded = null;
+            if (RedisMrg.IsConnected)
             {
-                return redisRanks;
+                var redisRanks = await RedisMrg.GetRankTopData(rankName, serverId, count);
+                if (redisRanks.Count > 0)
+                    loaded = redisRanks;
             }
-        }
 
-        if (MongoDBMrg.IsConnected)
+            if (loaded == null && MongoDBMrg.IsConnected)
+                loaded = await MongoDBMrg.GetRankData(rankName, serverId, count);
+
+            var array = loaded != null && loaded.Count > 0 ? loaded.ToArray() : Array.Empty<RankData>();
+            var responseMsg = new Msg
+            {
+                MsgType = ProtobufMsgType.Server,
+                ServerMsgType = ServerMsgType.GetRankSuc,
+                ServerId = serverId
+            };
+            if (array.Length > 0)
+                responseMsg.RankData.AddRange(array);
+
+            var entry = new RankCacheEntry(
+                array,
+                responseMsg.ToByteArray(),
+                Environment.TickCount64 + RankLocalCacheTtlMs);
+            RankTopCache[cacheKey] = entry;
+            return entry;
+        }
+        finally
         {
-            return await MongoDBMrg.GetRankData(rankName, serverId, count);
+            RankInflightLoads.TryRemove(cacheKey, out _);
         }
-
-        return new List<RankData>();
     }
 
     /// <summary>
@@ -569,6 +683,7 @@ public static class GameDataMrg
     /// </summary>
     public static async Task ClearRankData(string rankName, string serverId)
     {
+        InvalidateRankCache(serverId, rankName);
         if (MongoDBMrg.IsConnected)
         {
             var deletedCount = await MongoDBMrg.ClearRankData(rankName, serverId);
@@ -580,6 +695,7 @@ public static class GameDataMrg
             await RedisMrg.ClearRankData(rankName, serverId);
             Console.WriteLine($"Redis rank data cleared: {rankName}");
         }
+        InvalidateRankCache(serverId, rankName);
     }
 
     /// <summary>
@@ -587,6 +703,7 @@ public static class GameDataMrg
     /// </summary>
     public static async Task ClearAllRankData()
     {
+        RankTopCache.Clear();
         if (MongoDBMrg.IsConnected)
         {
             var deletedCount = await MongoDBMrg.ClearAllRankData();
@@ -598,6 +715,7 @@ public static class GameDataMrg
             await RedisMrg.ClearAllRankData();
             Console.WriteLine("All Redis rank data cleared.");
         }
+        RankTopCache.Clear();
     }
 
     /// <summary>
@@ -684,8 +802,16 @@ public static class GameDataMrg
     {
         try
         {
-            if (!RedisMrg.IsConnected || !MongoDBMrg.IsConnected) return new ServerDataList();
-            return await RedisMrg.GetServers();
+            if (RedisMrg.IsConnected)
+            {
+                var cached = await RedisMrg.GetServers();
+                if (cached.List.Count > 0) return cached;
+            }
+            if (!MongoDBMrg.IsConnected) return new ServerDataList();
+            var servers = await MongoDBMrg.GetServers();
+            var list = new ServerDataList();
+            list.List.AddRange(servers);
+            return list;
         }
         catch (Exception exception)
         {
@@ -701,9 +827,14 @@ public static class GameDataMrg
     /// <param name="serverId"></param>
     public static async Task DeleteUseEmail(string userId, string serverId)
     {
-        var allEmail =await GetEmail(userId, serverId);
-        var useEmail = allEmail.Where((data => data.State != 0)).Select((data =>data.Id)).ToArray();
+        var allEmail = await GetEmail(userId, serverId);
+        var useEmail = allEmail.Where(data => data.State != 0).Select(data => data.Id).ToArray();
+        if (useEmail.Length == 0) return;
         await DeleteEmails(useEmail);
+        if (RedisMrg.IsConnected)
+        {
+            await RedisMrg.ClearEmail(userId, serverId);
+        }
     }
     
     
@@ -809,22 +940,39 @@ public static class GameDataMrg
     public static async Task<FriendListData> GetFriendList(string userId, string serverId)
     {
         List<string> friendIds = await MongoDBMrg.GetFriendUserIds(userId, serverId);
+        if (friendIds.Count == 0)
+            return new FriendListData();
+
+        // 批量检查 Redis 在线状态（单次 MGET），避免 200 次独立 KeyExistsAsync。
+        HashSet<string> redisOnline = RedisMrg.IsConnected
+            ? await RedisMrg.GetOnlineUsersSet(friendIds, serverId)
+            : new HashSet<string>(StringComparer.Ordinal);
+
+        using var throttle = new SemaphoreSlim(SaveAllConcurrency, SaveAllConcurrency);
         FriendData?[] friends = await Task.WhenAll(friendIds.Select(async friendId =>
         {
-            UserData? userData = await GetUser(friendId, serverId);
-            if (userData == null)
-                return null;
-
-            bool online = PlayerSessionManager.Instance.HasOnlineUser(friendId, serverId) ||
-                          (RedisMrg.IsConnected && await RedisMrg.IsPlayerOnline(friendId, serverId));
-            return new FriendData
+            await throttle.WaitAsync();
+            try
             {
-                UserId = userData.UserId,
-                Name = userData.Name,
-                Avatar = userData.Avatar,
-                RoleType = userData.RoleType,
-                Online = online
-            };
+                UserData? userData = await GetUser(friendId, serverId);
+                if (userData == null)
+                    return null;
+
+                bool online = PlayerSessionManager.Instance.HasOnlineUser(friendId, serverId) ||
+                              redisOnline.Contains(friendId);
+                return new FriendData
+                {
+                    UserId = userData.UserId,
+                    Name = userData.Name,
+                    Avatar = userData.Avatar,
+                    RoleType = userData.RoleType,
+                    Online = online
+                };
+            }
+            finally
+            {
+                throttle.Release();
+            }
         }));
 
         var result = new FriendListData();
@@ -843,7 +991,12 @@ public static class GameDataMrg
     /// <returns></returns>
     public static async Task<string> GetGongGao()
     {
-        return await RedisMrg.GetGongGao();
+        if (RedisMrg.IsConnected)
+        {
+            string cached = await RedisMrg.GetGongGao();
+            if (!string.IsNullOrEmpty(cached)) return cached;
+        }
+        return MongoDBMrg.IsConnected ? await MongoDBMrg.GetGongGao() : string.Empty;
     }
 
     public static async Task AddGongGao(string gongGao)

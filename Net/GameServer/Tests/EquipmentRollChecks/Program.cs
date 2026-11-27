@@ -113,6 +113,8 @@ namespace WebSocketDemo
         public uint NetworkRoomId { get; set; } = room;
         public uint NetworkObjectId => (uint)(id.GetHashCode() & int.MaxValue) + 1;
         public bool IsConnected { get; set; } = true;
+        public bool SupportsCompactTransforms { get; set; }
+        public NetworkTransformData? LastNetworkTransform { get; set; }
         public UserData Data { get; } = new() { Name = id };
         public UserData UserDataSnapshot => Data;
         public bool FailSave;

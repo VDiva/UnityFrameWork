@@ -143,11 +143,15 @@ namespace FrameWork.FPS
         }
 
         public RpgBehaviorNode GetChild(RpgBehaviorNode node, int index) => branches[node][index];
+        public RpgBehaviorNode[] GetChildren(RpgBehaviorNode node) => branches[node];
 
         public void Tick(RpgEnemyAgent agent, float deltaTime) => TickNode(root, null, agent, deltaTime);
 
         public RpgBehaviorStatus TickNode(RpgBehaviorNode node, RpgBehaviorNode parent, RpgEnemyAgent agent, float deltaTime)
         {
+            if (!agent.IsTracingBehavior)
+                return node.Tick(this, agent, deltaTime);
+
             int step = agent.BeginBehaviorTraceStep(node, parent);
             var result = node.Tick(this, agent, deltaTime);
             agent.EndBehaviorTraceStep(step, result);

@@ -4,7 +4,7 @@ namespace UnityWebSocket
 {
     public class OpenEventArgs : EventArgs
     {
-        internal OpenEventArgs()
+        public OpenEventArgs()
         {
         }
     }

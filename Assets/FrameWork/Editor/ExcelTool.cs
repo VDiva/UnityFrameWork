@@ -36,7 +36,6 @@ namespace FrameWork
         //public static ConfigData ConfigData;
         public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
         {
-            MyLog.LogWarning("导入");
             if (!Directory.Exists(ExcelToolData.xlsxPath))
             {
                 Directory.CreateDirectory(ExcelToolData.xlsxPath);
@@ -94,7 +93,7 @@ namespace FrameWork
                 var path = file.FullName;
                 var fileName = Path.GetFileNameWithoutExtension(path);
                 if (fileName.StartsWith("~$")) continue;
-                if (Path.GetExtension(path)!=".xlsx")continue;
+                if (!string.Equals(Path.GetExtension(path), ".xlsx", StringComparison.OrdinalIgnoreCase)) continue;
                 ExcelTool.paths.Add(path); //添加到待转换列表里 等待资源加载完成后转换   
             }
             if (ExcelTool.paths == null
@@ -192,6 +191,13 @@ namespace FrameWork
             return errors;
         }
 
+        private static void WriteScriptIfChanged(string filePath, string content)
+        {
+            if (File.Exists(filePath) && File.ReadAllText(filePath) == content)
+                return;
+            File.WriteAllText(filePath, content);
+        }
+
         private static void SpawnKey(string fileName,DataRowCollection coll)
         {
             var xlsxName = fileName.Substring("Xlsx_".Length);
@@ -206,37 +212,27 @@ namespace FrameWork
                 Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw = new StreamWriter(Path.Combine(outPath, xlsxKeyName + ".cs"), false))
+            var sw = new System.Text.StringBuilder();
+            sw.AppendLine("namespace Xlsx");
+            sw.AppendLine("{");
+            sw.AppendLine("\tpublic enum "+xlsxKeyName);
+            sw.AppendLine("\t{");
+            for (int i = 3; i < coll.Count; i++)
             {
-                sw.WriteLine("namespace Xlsx");
-                sw.WriteLine("{");
-                sw.WriteLine("\tpublic enum "+xlsxKeyName);
-                sw.WriteLine("\t{");
-                for (int i = 3; i < coll.Count; i++)
-                {
-                    if (!key.Contains(coll[i].ItemArray[0].ToString()))
-                    {
-                        sw.WriteLine($"\t\t{coll[i].ItemArray[0]},");
-                        key.Add(coll[i].ItemArray[0].ToString());
-                    }
-                    
-                }
-                
-                sw.WriteLine("\n");
-                sw.WriteLine("\t}");
-                
-                sw.WriteLine("\tpublic enum "+xlsxTypeName);
-                sw.WriteLine("\t{");
-                var row = coll[2].ItemArray;
-                for (int i = 0; i < row.Length; i++)
-                {
-                    sw.WriteLine($"\t\t{row[i]},");
-                }
-                
-                sw.WriteLine("\t}");
-                sw.WriteLine("}");
-                
+                var cell = coll[i].ItemArray[0].ToString();
+                if (key.Add(cell))
+                    sw.AppendLine($"\t\t{cell},");
             }
+            sw.AppendLine("\n");
+            sw.AppendLine("\t}");
+            sw.AppendLine("\tpublic enum "+xlsxTypeName);
+            sw.AppendLine("\t{");
+            var row = coll[2].ItemArray;
+            for (int i = 0; i < row.Length; i++)
+                sw.AppendLine($"\t\t{row[i]},");
+            sw.AppendLine("\t}");
+            sw.AppendLine("}");
+            WriteScriptIfChanged(Path.Combine(outPath, xlsxKeyName + ".cs"), sw.ToString());
         }
 
         public static void SpawnQueryClass(string fileName,List<object> row,List<object> row2)
@@ -251,47 +247,31 @@ namespace FrameWork
                 Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw = new StreamWriter(Path.Combine(outPath, xlsxQueryName + ".cs"), false))
-            {
-                // sw.WriteLine("using System.Collections.Generic;");
-                // sw.WriteLine("using UnityEngine;");
-                // sw.WriteLine("using FrameWork;");
-
-                for (int i = 0; i < ExcelToolData.xlsxSpawnUse.Length; i++)
-                {
-                    sw.WriteLine("using "+ExcelToolData.xlsxSpawnUse[i]+";");
-                }
-                
-                sw.WriteLine("namespace Xlsx");
-                sw.WriteLine("{");
-                sw.WriteLine("\tpublic static class "+xlsxQueryName);
-                sw.WriteLine("\t{");
-                sw.WriteLine($"\t\tpublic static List<{fileName}> data=new List<{fileName}>();");
-                sw.WriteLine($"\t\tpublic static XlsxData<{row[0]},{fileName}> XlsxDataAsOneKey;");
-                if (row.Count>=2)
-                {
-                    sw.WriteLine($"\t\tpublic static XlsxData<{row[0]},{row[1]},{fileName}> XlsxDataAsTowKey;");
-                }
-                sw.WriteLine("\t\tstatic "+xlsxQueryName+"()");
-                sw.WriteLine("\t\t{");
-                sw.WriteLine("\t\t\tUpdate();");
-                sw.WriteLine("\t\t}");
-                
-                sw.WriteLine("\t\tpublic static void Update()");
-                sw.WriteLine("\t\t{");
-                sw.WriteLine($"\t\t\tvar nextData = Tool.LoadXlsxAsset<{assetName}>(\"{assetName}\").Rows;");
-                sw.WriteLine($"\t\t\tvar nextIndex = new XlsxData<{row[0]},{fileName}>(\"{row2[0]}\", nextData);");
-                sw.WriteLine("\t\t\tdata = nextData;");
-                sw.WriteLine("\t\t\tXlsxDataAsOneKey = nextIndex;");
-                // if (row.Count>=2)
-                // {
-                //     sw.WriteLine($"\t\t\tXlsxDataAsTowKey = new XlsxData<{row[0]},{row[1]},{fileName}>(\"{row2[0]}\",\"{row2[1]}\", data);");
-                // }
-                sw.WriteLine("\t\t}");
-                sw.WriteLine("\t}");
-                sw.WriteLine("}");
-                
-            }
+            var sw = new System.Text.StringBuilder();
+            for (int i = 0; i < ExcelToolData.xlsxSpawnUse.Length; i++)
+                sw.AppendLine("using "+ExcelToolData.xlsxSpawnUse[i]+";");
+            sw.AppendLine("namespace Xlsx");
+            sw.AppendLine("{");
+            sw.AppendLine("\tpublic static class "+xlsxQueryName);
+            sw.AppendLine("\t{");
+            sw.AppendLine($"\t\tpublic static List<{fileName}> data=new List<{fileName}>();");
+            sw.AppendLine($"\t\tpublic static XlsxData<{row[0]},{fileName}> XlsxDataAsOneKey;");
+            if (row.Count>=2)
+                sw.AppendLine($"\t\tpublic static XlsxData<{row[0]},{row[1]},{fileName}> XlsxDataAsTowKey;");
+            sw.AppendLine("\t\tstatic "+xlsxQueryName+"()");
+            sw.AppendLine("\t\t{");
+            sw.AppendLine("\t\t\tUpdate();");
+            sw.AppendLine("\t\t}");
+            sw.AppendLine("\t\tpublic static void Update()");
+            sw.AppendLine("\t\t{");
+            sw.AppendLine($"\t\t\tvar nextData = Tool.LoadXlsxAsset<{assetName}>(\"{assetName}\").Rows;");
+            sw.AppendLine($"\t\t\tvar nextIndex = new XlsxData<{row[0]},{fileName}>(\"{row2[0]}\", nextData);");
+            sw.AppendLine("\t\t\tdata = nextData;");
+            sw.AppendLine("\t\t\tXlsxDataAsOneKey = nextIndex;");
+            sw.AppendLine("\t\t}");
+            sw.AppendLine("\t}");
+            sw.AppendLine("}");
+            WriteScriptIfChanged(Path.Combine(outPath, xlsxQueryName + ".cs"), sw.ToString());
         }
         
 
@@ -304,34 +284,25 @@ namespace FrameWork
                 Directory.CreateDirectory(outPath);
             }
             
-            using (StreamWriter sw = new StreamWriter(Path.Combine(outPath, fileName + ".cs"), false))
+            var sw = new System.Text.StringBuilder();
+            for (int i = 0; i < ExcelToolData.xlsxSpawnUse.Length; i++)
+                sw.AppendLine("using "+ExcelToolData.xlsxSpawnUse[i]+";");
+            sw.AppendLine("namespace Xlsx");
+            sw.AppendLine("{");
+            sw.AppendLine("\tpublic class " + fileName + " : ScriptableObject");
+            sw.AppendLine("\t{");
+            for (int i = 0; i < book[0].Count; i++)
             {
-                // sw.WriteLine("using System.Collections.Generic;");
-                // sw.WriteLine("using UnityEngine;");
-                
-                for (int i = 0; i < ExcelToolData.xlsxSpawnUse.Length; i++)
-                {
-                    sw.WriteLine("using "+ExcelToolData.xlsxSpawnUse[i]+";");
-                }
-                
-                sw.WriteLine("namespace Xlsx");
-                sw.WriteLine("{");
-                sw.WriteLine("\tpublic class " + fileName + " : ScriptableObject");
-                sw.WriteLine("\t{");
-                
-                for (int i = 0; i < book[0].Count; i++)
-                {
-                    sw.WriteLine("\t\t/// <summary>");
-                    foreach (var line in book[0][i].ToString().Replace("\r", "").Split('\n'))
-                        sw.WriteLine("\t\t/// " + System.Security.SecurityElement.Escape(line));
-                    sw.WriteLine("\t\t/// </summary>");
-                    sw.WriteLine("\t\tpublic "+book[1][i]+" "+book[2][i]+";");
-                    sw.WriteLine("");
-                    
-                }
-                sw.WriteLine("\t}");
-                sw.WriteLine("}");
+                sw.AppendLine("\t\t/// <summary>");
+                foreach (var line in book[0][i].ToString().Replace("\r", "").Split('\n'))
+                    sw.AppendLine("\t\t/// " + System.Security.SecurityElement.Escape(line));
+                sw.AppendLine("\t\t/// </summary>");
+                sw.AppendLine("\t\tpublic "+book[1][i]+" "+book[2][i]+";");
+                sw.AppendLine("");
             }
+            sw.AppendLine("\t}");
+            sw.AppendLine("}");
+            WriteScriptIfChanged(Path.Combine(outPath, fileName + ".cs"), sw.ToString());
         }
         
         public static DataSet GetTabelData(string path)
@@ -409,9 +380,8 @@ namespace FrameWork
                 return;
             }
 
-            SessionState.EraseString(PendingKey);
             Directory.CreateDirectory(ExcelToolData.xlsxOutPath);
-            AssetDatabase.Refresh();
+            var remaining = new List<string>();
             foreach (var path in paths)
             {
                 try
@@ -428,11 +398,21 @@ namespace FrameWork
                     string rowName = "Xlsx_" + Path.GetFileNameWithoutExtension(path);
                     SaveTable(rowName, table);
                 }
+                catch (TypeLoadException)
+                {
+                    // 新生成脚本尚未完成编译时保留在待生成队列，等待域重载后自动重试。
+                    remaining.Add(path);
+                }
                 catch (Exception error)
                 {
                     Debug.LogError($"[配置表] {path}：{error}");
                 }
             }
+
+            if (remaining.Count > 0)
+                SessionState.SetString(PendingKey, JsonMapper.ToJson(remaining));
+            else
+                SessionState.EraseString(PendingKey);
 
             AssetDatabase.SaveAssets();
             var addresses = Directory.GetFiles(ExcelToolData.xlsxOutPath, "XlsxAsset_*.asset")

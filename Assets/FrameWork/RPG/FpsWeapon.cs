@@ -64,6 +64,8 @@ namespace FrameWork.FPS
             TryCancelReload(reloadRequestId);
         }
 
+        private static readonly RaycastHit[] CastBuffer = new RaycastHit[16];
+
         public bool TryFire(Ray aim, GameObject instigator)
         {
             if (!isActiveAndEnabled || Time.timeScale <= 0f || IsReloading)
@@ -83,13 +85,14 @@ namespace FrameWork.FPS
             float maxDistance = definition != null ? definition.Range : range;
             float hitDamage = definition != null ? definition.Damage : damage;
             var projectilePrefab = definition != null ? definition.ProjectilePrefab : null;
-            Ray shot = GetShotRay(aim, maxDistance);
+            Transform ignoredRoot = instigator != null ? instigator.transform : transform.root;
+            Ray shot = GetShotRay(aim, maxDistance, ignoredRoot);
             if (projectilePrefab != null)
             {
-                var projectile = Instantiate(projectilePrefab, shot.origin, Quaternion.LookRotation(shot.direction));
+                var projectile = FpsProjectile.Spawn(projectilePrefab, shot.origin, Quaternion.LookRotation(shot.direction));
                 projectile.Launch(definition.ProjectileSpeed, maxDistance, hitDamage, hitLayers, instigator, this);
             }
-            else if (Physics.Raycast(shot, out var hit, maxDistance, hitLayers, QueryTriggerInteraction.Ignore))
+            else if (TryRaycastExcluding(shot, maxDistance, hitLayers, ignoredRoot, out var hit))
                 ResolveHit(hit, hitDamage, instigator, this);
 
             AmmoChanged?.Invoke();
@@ -100,6 +103,8 @@ namespace FrameWork.FPS
 
         internal static void ResolveHit(RaycastHit hit, float damage, GameObject instigator, FpsWeapon weapon)
         {
+            if (instigator != null && hit.collider != null && hit.collider.transform.IsChildOf(instigator.transform))
+                return;
             hit.collider.GetComponentInParent<IFpsDamageable>()?.ApplyDamage(damage, instigator);
             if (weapon != null) weapon.Hit?.Invoke(hit);
         }
@@ -111,29 +116,71 @@ namespace FrameWork.FPS
 
             // Reach starts at the character even when the camera is behind them.
             Vector3 origin = muzzle != null ? muzzle.position : transform.position;
+            Transform ignoredRoot = instigator != null ? instigator.transform : transform.root;
             float aimDistance = definition.Range + Vector3.Distance(aim.origin, origin);
-            Vector3 direction = GetShotRay(aim, aimDistance, origin).direction;
-            if (Physics.SphereCast(origin, definition.MeleeRadius, direction, out var hit,
-                definition.Range, hitLayers, QueryTriggerInteraction.Ignore))
+            Vector3 direction = GetShotRay(aim, aimDistance, origin, ignoredRoot).direction;
+            if (TrySphereCastExcluding(origin, definition.MeleeRadius, direction, definition.Range, hitLayers, ignoredRoot, out var hit))
                 ResolveHit(hit, definition.Damage, instigator, this);
 
             MeleeSwung?.Invoke();
             return true;
         }
 
-        private Ray GetShotRay(Ray aim, float maxDistance)
+        private Ray GetShotRay(Ray aim, float maxDistance, Transform ignoredRoot)
         {
             if (muzzle == null) return aim;
-            return GetShotRay(aim, maxDistance, muzzle.position);
+            return GetShotRay(aim, maxDistance, muzzle.position, ignoredRoot);
         }
 
-        private Ray GetShotRay(Ray aim, float maxDistance, Vector3 origin)
+        private Ray GetShotRay(Ray aim, float maxDistance, Vector3 origin, Transform ignoredRoot)
         {
-            Vector3 target = Physics.Raycast(aim, out var aimHit, maxDistance, hitLayers,
-                QueryTriggerInteraction.Ignore) ? aimHit.point : aim.GetPoint(maxDistance);
+            Vector3 target = TryRaycastExcluding(aim, maxDistance, hitLayers, ignoredRoot, out var aimHit)
+                ? aimHit.point : aim.GetPoint(maxDistance);
             Vector3 offset = target - origin;
             Vector3 direction = Vector3.Dot(offset, aim.direction) > 0f ? offset.normalized : aim.direction;
             return new Ray(origin, direction);
+        }
+
+        internal static bool TryRaycastExcluding(Ray ray, float maxDistance, LayerMask layers, Transform ignoredRoot, out RaycastHit bestHit)
+        {
+            bestHit = default;
+            int count = Physics.RaycastNonAlloc(ray, CastBuffer, maxDistance, layers, QueryTriggerInteraction.Ignore);
+            float nearest = float.MaxValue;
+            bool found = false;
+            for (int i = 0; i < count; i++)
+            {
+                var hit = CastBuffer[i];
+                if (hit.collider == null || (ignoredRoot != null && hit.collider.transform.IsChildOf(ignoredRoot)))
+                    continue;
+                if (hit.distance < nearest)
+                {
+                    nearest = hit.distance;
+                    bestHit = hit;
+                    found = true;
+                }
+            }
+            return found;
+        }
+
+        private static bool TrySphereCastExcluding(Vector3 origin, float radius, Vector3 direction, float maxDistance, LayerMask layers, Transform ignoredRoot, out RaycastHit bestHit)
+        {
+            bestHit = default;
+            int count = Physics.SphereCastNonAlloc(origin, radius, direction, CastBuffer, maxDistance, layers, QueryTriggerInteraction.Ignore);
+            float nearest = float.MaxValue;
+            bool found = false;
+            for (int i = 0; i < count; i++)
+            {
+                var hit = CastBuffer[i];
+                if (hit.collider == null || (ignoredRoot != null && hit.collider.transform.IsChildOf(ignoredRoot)))
+                    continue;
+                if (hit.distance < nearest)
+                {
+                    nearest = hit.distance;
+                    bestHit = hit;
+                    found = true;
+                }
+            }
+            return found;
         }
 
         public bool TryReload()

@@ -90,13 +90,20 @@ namespace FrameWork.FPS
             }
         }
 
+        private static readonly Collider[] OverlapBuffer = new Collider[64];
+        private static readonly RaycastHit[] RaycastBuffer = new RaycastHit[32];
+
         internal static IReadOnlyList<FpsHealth> FindAreaTargets(Vector3 center, float radius, LayerMask layers, FpsHealth caster, bool requireLineOfSight)
         {
             var targets = new List<FpsHealth>();
             if (radius < 0f || float.IsNaN(radius) || float.IsInfinity(radius)) return targets;
             var seen = new HashSet<FpsHealth>();
-            foreach (var collider in Physics.OverlapSphere(center, radius, layers, QueryTriggerInteraction.Ignore))
+            int hitCount = Physics.OverlapSphereNonAlloc(center, radius, OverlapBuffer, layers, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hitCount; i++)
             {
+                var collider = OverlapBuffer[i];
+                OverlapBuffer[i] = null;
+                if (collider == null) continue;
                 var target = collider.GetComponentInParent<FpsHealth>();
                 if (target == null || target == caster || target.IsDepleted || !target.isActiveAndEnabled || seen.Contains(target)) continue;
                 Vector3 offset = collider.bounds.center - center;
@@ -113,14 +120,17 @@ namespace FrameWork.FPS
         {
             if (!(distance > 0f)) return null;
             float nearest = distance;
-            FpsHealth result = null;
-            foreach (var hit in Physics.RaycastAll(ray, distance, layers, QueryTriggerInteraction.Ignore))
+            Collider nearestCollider = null;
+            int hitCount = Physics.RaycastNonAlloc(ray, RaycastBuffer, distance, layers, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hitCount; i++)
             {
-                if (hit.distance > nearest || hit.collider.transform.IsChildOf(caster)) continue;
+                var hit = RaycastBuffer[i];
+                if (hit.distance > nearest || hit.collider == null || (caster != null && hit.collider.transform.IsChildOf(caster)))
+                    continue;
                 nearest = hit.distance;
-                result = hit.collider.GetComponentInParent<FpsHealth>();
+                nearestCollider = hit.collider;
             }
-            return result;
+            return nearestCollider != null ? nearestCollider.GetComponentInParent<FpsHealth>() : null;
         }
 
         private bool ApplyEffects(RpgSkillDefinition skill, FpsHealth target, Vector3 direction)

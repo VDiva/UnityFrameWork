@@ -94,7 +94,6 @@ namespace UnityWebSocket
 
         public void SendAsync(string text)
         {
-            ClearRealtime();
             Log($"Send, type: {Opcode.Text}, size: {text.Length}");
             int code = WebSocketManager.WebSocketSendStr(instanceId, text);
             if (code < 0) HandleOnError(GetErrorMessageFromCode(code));
@@ -102,7 +101,6 @@ namespace UnityWebSocket
 
         public void SendAsync(byte[] data)
         {
-            ClearRealtime();
             SendRawBinary(data);
         }
 

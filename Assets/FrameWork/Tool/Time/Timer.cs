@@ -9,10 +9,22 @@ namespace FrameWork
     /// </summary>
     public static class Timer
     {
+        private const int MaxPooledTimers = 128;
         private static readonly Dictionary<string, TimeData> TimeDic = new Dictionary<string, TimeData>();
+        private static readonly Stack<TimeData> Pool = new Stack<TimeData>(32);
 
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => CancelAllKeyedTimers();
+        private static void ResetStatics()
+        {
+            CancelAllKeyedTimers();
+            Pool.Clear();
+        }
+
+        internal static void ReturnPooled(TimeData data)
+        {
+            if (data != null && Pool.Count < MaxPooledTimers)
+                Pool.Push(data);
+        }
 
         /// <summary>取消所有带 key 的定时器，不触发结束回调；不影响未命名的定时器。</summary>
         public static void CancelAllKeyedTimers()
@@ -122,7 +134,9 @@ namespace FrameWork
             if (key == null) throw new ArgumentNullException(nameof(key));
             // 旧回调可能重入并创建同 key 任务；本次替换也必须取消它。
             CancelKeyTimer(key, false);
-            var data = new TimeData { Key = key };
+            var data = Pool.Count > 0 ? Pool.Pop() : new TimeData();
+            data.Key = key;
+            data.Poolable = true;
             TimeDic[key] = data;
             data.Init(interval, time, -1f, call, count);
         }

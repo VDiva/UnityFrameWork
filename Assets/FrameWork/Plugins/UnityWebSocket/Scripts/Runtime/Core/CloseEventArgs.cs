@@ -37,7 +37,7 @@ namespace UnityWebSocket
         {
         }
 
-        internal CloseEventArgs(ushort code, string reason)
+        public CloseEventArgs(ushort code, string reason)
         {
             Code = code;
             Reason = reason;

@@ -1,5 +1,6 @@
 using GameData;
 using System.Collections.Concurrent;
+using System.Text;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -8,7 +9,7 @@ namespace WebSocketDemo;
 
 public static class MongoDBMrg
 {
-    private static readonly ConcurrentDictionary<string, SemaphoreSlim> UserMutationLocks = new();
+    private static readonly AccountLoginGate UserMutationLocks = new();
 
     static MongoDBMrg()
     {
@@ -36,11 +37,15 @@ public static class MongoDBMrg
 
     private static MongoClient? _mongoClient;
     private static IMongoDatabase? _database;
+    private static int _indexesEnsured;
+    private static volatile string _cachedGongGao = string.Empty;
+    private static long _cachedGongGaoUntilTick;
 
     public static bool IsConnected => _database != null;
 
     /// <summary>
     /// 初始化 MongoDB 客户端、测试连接，并创建常用索引。
+    /// 若启动瞬间 MongoDB 尚未就绪，保留客户端实例由内置连接池自动重连并在后续操作补建索引。
     /// </summary>
     public static void Connect()
     {
@@ -56,15 +61,39 @@ public static class MongoDBMrg
 
             _mongoClient = new MongoClient(settings);
             _database = _mongoClient.GetDatabase(DatabaseName);
-            _database.RunCommand<BsonDocument>(new BsonDocument("ping", 1));
-            EnsureIndexes();
-            Console.WriteLine("MongoDB connected.");
         }
         catch (Exception ex)
         {
             _mongoClient = null;
             _database = null;
-            Console.WriteLine($"MongoDB connect failed: {ex.Message}");
+            Console.WriteLine($"MongoDB client configuration failed: {ex.Message}");
+            return;
+        }
+
+        try
+        {
+            _database.RunCommand<BsonDocument>(new BsonDocument("ping", 1));
+            EnsureIndexesOnce();
+            Console.WriteLine("MongoDB connected.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"MongoDB initial ping failed (will auto-retry via driver pool): {ex.Message}");
+        }
+    }
+
+    private static void EnsureIndexesOnce()
+    {
+        if (Volatile.Read(ref _indexesEnsured) != 0 || _database == null)
+            return;
+        try
+        {
+            EnsureIndexes();
+            Interlocked.Exchange(ref _indexesEnsured, 1);
+        }
+        catch
+        {
+            // 下次数据库恢复后自动重试建索引
         }
     }
 
@@ -252,6 +281,39 @@ public static class MongoDBMrg
     }
 
     /// <summary>
+    /// 批量替换多名玩家的 UserData，将多次 ReplaceOne 网络往返合并为单次无序 BulkWrite。
+    /// </summary>
+    public static async Task<bool> BulkUpdateUsersAsync(IReadOnlyList<(string UserId, string ServerId, UserData Data)> items)
+    {
+        if (items.Count == 0)
+            return true;
+
+        long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var models = new List<WriteModel<UserData>>(items.Count);
+        for (int i = 0; i < items.Count; i++)
+        {
+            var (userId, rawServerId, userData) = items[i];
+            string serverId = ServerScope.Normalize(rawServerId);
+            userData.UserId = userId;
+            userData.ServerId = serverId;
+            userData.UserAndServerId = ServerScope.UserKey(serverId, userId);
+            if (userData.CreatedAt <= 0)
+                userData.CreatedAt = nowMs;
+
+            var filter = Builders<UserData>.Filter.Eq(x => x.UserAndServerId, userData.UserAndServerId);
+            models.Add(new ReplaceOneModel<UserData>(filter, userData) { IsUpsert = true });
+        }
+
+        using var timeoutCts = CreateTimeoutToken();
+        var collection = GetCollection<UserData>(UserCollectionName);
+        var result = await collection.BulkWriteAsync(
+            models,
+            new BulkWriteOptions { IsOrdered = false },
+            timeoutCts.Token);
+        return result.IsAcknowledged;
+    }
+
+    /// <summary>
     /// 只更新玩家登录时间，比保存完整 UserData 更轻。
     /// </summary>
     public static async Task<bool> UpdateUserLoginTime(string userId, string serverId)
@@ -268,19 +330,34 @@ public static class MongoDBMrg
 
     public static async Task<string> GetGongGao()
     {
-        var collection=GetCollection<GongGaoData>(GongGaoCollectionName);
-        var filter = Builders<GongGaoData>.Filter.Empty;
-        
-        // 使用 Find 方法查询，并用 ToListAsync() 将所有结果加载到内存
-        var all=await collection.Find(filter).ToListAsync();
-        string srt = "";
-        all.Sort(((data, gaoData) =>-data.CreateTime.CompareTo(gaoData.CreateTime) ));
-        for (int i = 0; i < MathF.Min(all.Count,10); i++)
+        long nowTick = Environment.TickCount64;
+        if (nowTick < Volatile.Read(ref _cachedGongGaoUntilTick))
+            return _cachedGongGao;
+
+        using var timeoutCts = CreateTimeoutToken();
+        var collection = GetCollection<GongGaoData>(GongGaoCollectionName);
+        var latest = await collection
+            .Find(Builders<GongGaoData>.Filter.Empty)
+            .SortByDescending(x => x.CreateTime)
+            .Limit(10)
+            .ToListAsync(timeoutCts.Token);
+
+        if (latest.Count == 0)
         {
-            srt += all[i].Info;
-            srt += "\n\n\n";
+            _cachedGongGao = string.Empty;
+            Volatile.Write(ref _cachedGongGaoUntilTick, nowTick + 5000);
+            return string.Empty;
         }
-        return srt;
+
+        var sb = new StringBuilder(latest.Count * 64);
+        for (int i = 0; i < latest.Count; i++)
+        {
+            sb.Append(latest[i].Info).Append("\n\n\n");
+        }
+        string formatted = sb.ToString();
+        _cachedGongGao = formatted;
+        Volatile.Write(ref _cachedGongGaoUntilTick, nowTick + 5000);
+        return formatted;
     }
 
     /// <summary>
@@ -289,14 +366,16 @@ public static class MongoDBMrg
     /// <param name="gongGao"></param>
     public static async Task AddGongGao(string gongGao)
     {
-        var collection=GetCollection<GongGaoData>(GongGaoCollectionName);
+        using var timeoutCts = CreateTimeoutToken();
+        var collection = GetCollection<GongGaoData>(GongGaoCollectionName);
         var data = new GongGaoData()
         {
             Id = Guid.NewGuid().ToString(),
             Info = gongGao,
-            CreateTime =  DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            CreateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
-        await collection.InsertOneAsync(data);
+        await collection.InsertOneAsync(data, cancellationToken: timeoutCts.Token);
+        Volatile.Write(ref _cachedGongGaoUntilTick, 0);
     }
 
     /// <summary>
@@ -508,22 +587,55 @@ public static class MongoDBMrg
         var wanted = ids.Where(x => x.StartsWith("global:", StringComparison.Ordinal))
             .Select(x => x[7..]).Distinct(StringComparer.Ordinal).Take(1000).ToArray();
         var result = new List<EmailData>();
+        if (wanted.Length == 0) return result;
+
+        // 仅查询一次可领全局邮件并建表，避免循环内 2N 次 MongoDB 查库。
+        var available = await GetAvailableGlobalEmails(userId, serverId, 1000);
+        var availableById = new Dictionary<string, EmailData>(available.Count, StringComparer.Ordinal);
+        foreach (var item in available)
+            availableById[item.Id] = item;
+
+        var receiptsToInsert = new List<GlobalEmailReceipt>(wanted.Length);
+        var candidateEmails = new List<EmailData>(wanted.Length);
         foreach (string id in wanted)
         {
-            var available = await GetAvailableGlobalEmails(userId, serverId, 1000);
-            var email = available.FirstOrDefault(x => x.Id == "global:" + id);
-            if (email == null) continue;
-            try
+            if (!availableById.TryGetValue("global:" + id, out var email)) continue;
+            receiptsToInsert.Add(new GlobalEmailReceipt
             {
-                await GetCollection<GlobalEmailReceipt>(GlobalEmailReceiptCollectionName).InsertOneAsync(
-                    new GlobalEmailReceipt
-                    {
-                        Id = GlobalReceiptId(serverId, userId, id), EmailId = id,
-                        UserId = userId, ServerId = serverId, State = 2
-                    });
-                result.Add(email);
+                Id = GlobalReceiptId(serverId, userId, id),
+                EmailId = id,
+                UserId = userId,
+                ServerId = serverId,
+                State = 2
+            });
+            candidateEmails.Add(email);
+        }
+        if (receiptsToInsert.Count == 0) return result;
+
+        var receiptCollection = GetCollection<GlobalEmailReceipt>(GlobalEmailReceiptCollectionName);
+        using var timeoutCts = CreateTimeoutToken();
+        try
+        {
+            await receiptCollection.InsertManyAsync(
+                receiptsToInsert,
+                new InsertManyOptions { IsOrdered = false },
+                timeoutCts.Token);
+            result.AddRange(candidateEmails);
+        }
+        catch (MongoBulkWriteException<GlobalEmailReceipt> ex)
+        {
+            var failedIndices = new HashSet<int>();
+            foreach (var writeErr in ex.WriteErrors)
+            {
+                if (writeErr.Category != ServerErrorCategory.DuplicateKey)
+                    throw;
+                failedIndices.Add(writeErr.Index);
             }
-            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey) { }
+            for (int i = 0; i < candidateEmails.Count; i++)
+            {
+                if (!failedIndices.Contains(i))
+                    result.Add(candidateEmails[i]);
+            }
         }
         return result;
     }
@@ -537,11 +649,13 @@ public static class MongoDBMrg
         var receiptIds = globalIds.Select(x => GlobalReceiptId(serverId, userId, x)).ToArray();
         var collection = GetCollection<GlobalEmailReceipt>(GlobalEmailReceiptCollectionName);
         var filter = Builders<GlobalEmailReceipt>.Filter.In(x => x.Id, receiptIds);
+        using var timeoutCts = CreateTimeoutToken();
         if (success)
             await collection.UpdateManyAsync(filter, Builders<GlobalEmailReceipt>.Update
-                .Set(x => x.State, 1).Set(x => x.ClaimTime, DateTimeOffset.UtcNow.ToUnixTimeSeconds()));
+                .Set(x => x.State, 1).Set(x => x.ClaimTime, DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+                cancellationToken: timeoutCts.Token);
         else
-            await collection.DeleteManyAsync(filter);
+            await collection.DeleteManyAsync(filter, timeoutCts.Token);
     }
 
     private static string GlobalReceiptId(string serverId, string userId, string emailId) =>
@@ -748,11 +862,25 @@ public static class MongoDBMrg
         friendCollection.Indexes.CreateOne(new CreateIndexModel<FriendRelationRecord>(
             Builders<FriendRelationRecord>.IndexKeys
                 .Ascending(x => x.ServerId)
-                .Ascending(x => x.UserAId)));
+                .Ascending(x => x.UserAId)
+                .Ascending(x => x.CreatedAt)));
         friendCollection.Indexes.CreateOne(new CreateIndexModel<FriendRelationRecord>(
             Builders<FriendRelationRecord>.IndexKeys
                 .Ascending(x => x.ServerId)
-                .Ascending(x => x.UserBId)));
+                .Ascending(x => x.UserBId)
+                .Ascending(x => x.CreatedAt)));
+
+        var globalEmailCollection = database.GetCollection<GlobalEmailRecord>(GlobalEmailCollectionName);
+        globalEmailCollection.Indexes.CreateOne(new CreateIndexModel<GlobalEmailRecord>(
+            Builders<GlobalEmailRecord>.IndexKeys
+                .Ascending(x => x.Enabled)
+                .Ascending(x => x.Scope)
+                .Ascending(x => x.ServerId)
+                .Descending(x => x.CreateTime)));
+
+        var gongGaoCollection = database.GetCollection<GongGaoData>(GongGaoCollectionName);
+        gongGaoCollection.Indexes.CreateOne(new CreateIndexModel<GongGaoData>(
+            Builders<GongGaoData>.IndexKeys.Descending(x => x.CreateTime)));
 
     }
 
@@ -761,6 +889,7 @@ public static class MongoDBMrg
     /// </summary>
     private static IMongoCollection<T> GetCollection<T>(string collectionName)
     {
+        EnsureIndexesOnce();
         return GetDatabase().GetCollection<T>(collectionName);
     }
 
@@ -798,10 +927,10 @@ public static class MongoDBMrg
 
     public static async Task<List<ServerData>> GetServers()
     {
-        var serverData=GetCollection<ServerData>(ServerCollectionName);
+        using var timeoutCts = CreateTimeoutToken();
+        var serverData = GetCollection<ServerData>(ServerCollectionName);
         var filter = Builders<ServerData>.Filter.Empty;
-        var allDocuments = await serverData.Find(filter).ToListAsync();
-        return allDocuments.ToList();
+        return await serverData.Find(filter).ToListAsync(timeoutCts.Token);
     }
 
     public static async Task AddServer(ServerData serverData)
@@ -984,18 +1113,12 @@ public static class MongoDBMrg
     {
         serverId = ServerScope.Normalize(serverId);
         var documentId = ServerScope.UserKey(serverId, userId);
-        var mutationLock = UserMutationLocks.GetOrAdd(documentId, _ => new SemaphoreSlim(1, 1));
-        await mutationLock.WaitAsync();
-        try
+        using (await UserMutationLocks.AcquireAsync(documentId))
         {
             var data = await GetUserAsCreate(userId, serverId);
             mutation(data);
             if (!await UpdateUserData(userId, serverId, data))
                 throw new InvalidOperationException($"Failed to save user data: {documentId}");
-        }
-        finally
-        {
-            mutationLock.Release();
         }
     }
 }

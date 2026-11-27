@@ -5,6 +5,10 @@ namespace FrameWork.InteractiveFilm
 {
     public sealed class FilmGraph : BaseGraph
     {
+        private FilmRoute cachedRoute;
+        private string cachedError;
+        private bool built;
+
         protected override void OnEnable()
         {
             bool hasLegacyEdges = false;
@@ -22,15 +26,43 @@ namespace FrameWork.InteractiveFilm
                 if (node is FilmChoiceNode choice) choice.MigrateLegacyOptions(hasLegacyEdges);
 
             base.OnEnable();
+            onGraphChanges += OnGraphChanged;
+            built = false;
         }
+
+        protected override void OnDisable()
+        {
+            onGraphChanges -= OnGraphChanged;
+            built = false;
+            cachedRoute = null;
+            base.OnDisable();
+        }
+
+        private void OnGraphChanged(GraphChanges changes) => built = false;
 
         public string ValidateGraph()
         {
+            built = false;
             TryBuild(out _, out var error);
             return error;
         }
 
         internal bool TryBuild(out FilmRoute route, out string error)
+        {
+            if (built)
+            {
+                route = cachedRoute;
+                error = cachedError;
+                return route != null;
+            }
+            bool ok = BuildCore(out cachedRoute, out cachedError);
+            built = true;
+            route = cachedRoute;
+            error = cachedError;
+            return ok;
+        }
+
+        private bool BuildCore(out FilmRoute route, out string error)
         {
             route = null;
             error = null;

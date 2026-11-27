@@ -82,11 +82,20 @@ public sealed class NetworkRoomObjectManager
         public AiOwnerLoad(Dictionary<string, int> counts) => Counts = counts;
     }
 
+    private const int MaxObjectsPerRoom = 512;
+
     public async Task SpawnAsync(PlayerSession owner, NetworkObjectData? request, NetworkTransformData? transform)
     {
         if (owner.NetworkRoomId == 0 || owner.NetworkRoomId == NetworkRoomManager.LobbyRoomId ||
             request == null || string.IsNullOrWhiteSpace(request.PrefabId) || request.PrefabId.Length > MaxPrefabIdLength)
             return;
+
+        lock (_objectIndexGate)
+        {
+            if (_objectsByRoom.TryGetValue(owner.NetworkRoomId, out var existingRoom) &&
+                existingRoom.Count >= MaxObjectsPerRoom)
+                return;
+        }
 
         if (transform != null && !NetworkStateValidation.IsValid(transform)) return;
         uint objectId = PlayerSessionManager.Instance.AllocateNetworkObjectId();
@@ -413,7 +422,7 @@ public sealed class NetworkRoomObjectManager
             return Task.FromResult(true);
         PlayerSessionManager.Instance.BroadcastLatestBinary(
             PlayerSessionManager.CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate, state.ObjectId),
-            new DeferredMessagePacket(new Msg { MsgType = ProtobufMsgType.Server,
+            DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
             ServerMsgType = ServerMsgType.NetworkTransformUpdate, NetworkTransform = state }),
             sender.PlayerId, sender.NetworkRoomId, maxAgeMs: 250);
         return Task.FromResult(true);
@@ -438,27 +447,72 @@ public sealed class NetworkRoomObjectManager
         uint roomId = sender.NetworkRoomId;
         if (roomId == 0 || roomId == NetworkRoomManager.LobbyRoomId) return;
         if (!PlayerSessionManager.Instance.HasRoomObserver(roomId, sender.PlayerId)) return;
-        var groups = new Dictionary<uint, Msg>();
+        var groups = new Dictionary<uint, List<NetworkTransformData>>();
         foreach (NetworkTransformData snapshot in snapshots)
         {
             uint groupId = snapshot.ObjectId >> 7;
-            if (!groups.TryGetValue(groupId, out Msg? group))
+            if (!groups.TryGetValue(groupId, out List<NetworkTransformData>? group))
             {
-                group = new Msg { MsgType = ProtobufMsgType.Server,
-                    ServerMsgType = ServerMsgType.NetworkTransformUpdate };
+                group = new List<NetworkTransformData>(Math.Min(snapshots.Count, 128));
                 groups.Add(groupId, group);
             }
-            group.NetworkTransforms.Add(snapshot);
+            group.Add(snapshot);
         }
-        var packets = groups.Select(pair => (Key: ((ulong)pair.Key << 32) | 0x40000000UL,
-            Payload: new TransformBatchPacket(pair.Value.NetworkTransforms))).ToArray();
+
+        (ulong Key, TransformBatchPacket Payload)[]? sharedLegacy = null;
+        (ulong Key, TransformBatchPacket Payload)[]? sharedCompact = null;
+
         foreach (PlayerSession receiver in PlayerSessionManager.Instance.SessionsForRoom(roomId))
         {
             if (!receiver.IsConnected || receiver.NetworkRoomId != roomId ||
                 receiver.PlayerId == sender.PlayerId || string.IsNullOrWhiteSpace(receiver.UserId) ||
                 receiver.ServerId != sender.ServerId) continue;
-            foreach (var packet in packets)
-                receiver.QueueLatestTransformBatch(packet.Key, packet.Payload);
+
+            bool compact = receiver.SupportsCompactTransforms;
+            NetworkTransformData? observerPos = receiver.LastNetworkTransform;
+            if (observerPos == null)
+            {
+                var packets = compact
+                    ? (sharedCompact ??= groups.Select(p => (Key: ((ulong)p.Key << 32) | 0x40000000UL, Payload: new TransformBatchPacket(p.Value, true))).ToArray())
+                    : (sharedLegacy ??= groups.Select(p => (Key: ((ulong)p.Key << 32) | 0x40000000UL, Payload: new TransformBatchPacket(p.Value, false))).ToArray());
+                foreach (var packet in packets)
+                    receiver.QueueLatestTransformBatch(packet.Key, packet.Payload);
+                continue;
+            }
+
+            foreach (var pair in groups)
+            {
+                List<NetworkTransformData> all = pair.Value;
+                List<NetworkTransformData>? filtered = null;
+                bool allKept = true;
+                for (int i = 0; i < all.Count; i++)
+                {
+                    if (!NetworkStateValidation.ShouldForwardByDistanceLod(observerPos, all[i]))
+                    {
+                        if (allKept)
+                        {
+                            allKept = false;
+                            filtered = new List<NetworkTransformData>(all.Count);
+                            for (int j = 0; j < i; j++) filtered.Add(all[j]);
+                        }
+                    }
+                    else if (!allKept)
+                    {
+                        filtered!.Add(all[i]);
+                    }
+                }
+
+                if (allKept)
+                {
+                    ulong key = ((ulong)pair.Key << 32) | 0x40000000UL;
+                    receiver.QueueLatestTransformBatch(key, new TransformBatchPacket(all, compact));
+                }
+                else if (filtered != null && filtered.Count > 0)
+                {
+                    ulong key = ((ulong)pair.Key << 32) | 0x40000000UL;
+                    receiver.QueueLatestTransformBatch(key, new TransformBatchPacket(filtered, compact));
+                }
+            }
         }
     }
 

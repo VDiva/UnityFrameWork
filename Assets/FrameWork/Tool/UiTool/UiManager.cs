@@ -16,7 +16,26 @@ namespace FrameWork
         private static readonly Dictionary<Type, UiActor> _uiDic = new Dictionary<Type, UiActor>();
         private static readonly Dictionary<int, Type> _typesDic = new Dictionary<int, Type>();
         private static readonly List<int> _uiList = new List<int>();
+        private static readonly Dictionary<Type, UiModeAttribute> _modeCache = new Dictionary<Type, UiModeAttribute>();
         private static UiActor _uiRoot;
+        private static Camera _cachedCamera;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _index = 0;
+            _uiDic.Clear();
+            _typesDic.Clear();
+            _uiList.Clear();
+            _layerDic.Clear();
+            _loadingUi.Clear();
+            _modeCache.Clear();
+            _uiRoot = null;
+            _cachedCamera = null;
+            TipsHandler = null;
+            UiFxHandler = null;
+        }
+
         public static void Init()
         {
             if (_uiDic.Count == 0) _index = 0;
@@ -26,7 +45,8 @@ namespace FrameWork
         public static void Init(UiActor root)
         {
             if (root == null) throw new ArgumentNullException(nameof(root));
-            ABMrg.BeforeSceneLoading = HideAllUi;
+            ABMrg.BeforeSceneLoading -= HideAllUi;
+            ABMrg.BeforeSceneLoading += HideAllUi;
             if (_uiRoot != null && !ReferenceEquals(_uiRoot, root))
             {
                 _loadingUi.Clear();
@@ -37,6 +57,7 @@ namespace FrameWork
                 }
             }
             _uiRoot = root;
+            _cachedCamera = null;
             _layerDic.Clear();
             Init();
             CheckUiRoot().Forget(Debug.LogException);
@@ -58,7 +79,9 @@ namespace FrameWork
 
         public static Camera GetCamera()
         {
-            return _uiRoot?.GetGameObject()?.GetComponentInChildren<Camera>(true);
+            if (_cachedCamera != null) return _cachedCamera;
+            _cachedCamera = _uiRoot?.GetGameObject()?.GetComponentInChildren<Camera>(true);
+            return _cachedCamera;
         }
         
         
@@ -136,7 +159,12 @@ namespace FrameWork
                     result = existing;
                     return;
                 }
-                var mode = type.GetCustomAttribute<UiModeAttribute>() ??
+                if (!_modeCache.TryGetValue(type, out var mode))
+                {
+                    mode = type.GetCustomAttribute<UiModeAttribute>();
+                    if (mode != null) _modeCache[type] = mode;
+                }
+                if (mode == null)
                     throw new InvalidOperationException(type.Name + " 缺少 UiModeAttribute");
                 created = (UiActor)Activator.CreateInstance(type, new object[] { GetTransform(mode) });
                 await created.Initialization;
@@ -226,7 +254,7 @@ namespace FrameWork
         public static void HideAllUi()
         {
             _loadingUi.Clear();
-            EventMrg.Trigger(MessageType.UiMessage,UiMessageType.Hide,-1);
+            EventMrg.Trigger((int)MessageType.UiMessage, (int)UiMessageType.Hide, -1);
         }
 
         public static void RemoveUi<T>() where T: UiActor
@@ -270,10 +298,11 @@ namespace FrameWork
         }
 
         private static readonly Dictionary<Mode, Transform> _layerDic = new Dictionary<Mode, Transform>();
-        public static Transform GetTransform(UiModeAttribute uiModeAttribute)
-        {
+        public static Transform GetTransform(UiModeAttribute uiModeAttribute) =>
+            GetTransform(uiModeAttribute.Mode);
 
-            var mode = uiModeAttribute.Mode;
+        public static Transform GetTransform(Mode mode)
+        {
             if (_layerDic.TryGetValue(mode, out var layer) && layer != null)
                 return layer;
 
@@ -297,7 +326,7 @@ namespace FrameWork
         
         public static bool IsCanPlay()
         {
-            var nor=GetTransform(new UiModeAttribute(Mode.Normal));
+            var nor = GetTransform(Mode.Normal);
             var count = 0;
             for (int i = 0; i < nor.childCount; i++)
             {

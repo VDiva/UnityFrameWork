@@ -1,4 +1,4 @@
-﻿using FrameWork.Script.WebNet;
+﻿using FrameWork.Net.Network;
 
 namespace FrameWork.Script.Role
 {
@@ -13,11 +13,11 @@ namespace FrameWork.Script.Role
         Box
     }
     
-    public class RoleId : WebNetworkBehaviour
+    public class RoleId : NetworkBehaviour
     {
-        [WebSyncVar(1)] 
+        [SyncVar(1)] 
         public string objectName;
-        [WebSyncVar(2)] 
+        [SyncVar(2)] 
         public RoleType roleType;
     }
 }

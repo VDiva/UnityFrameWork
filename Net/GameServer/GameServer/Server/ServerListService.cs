@@ -11,11 +11,24 @@ public class ServerListService:BackgroundService
             try
             {
                 await GameDataMrg.RefreshGameServerCaches();
-                await timer.WaitForNextTickAsync(stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"GetServerList Error: {e.Message}");
+            }
+
+            try
+            {
+                if (!await timer.WaitForNextTickAsync(stoppingToken))
+                    break;
+            }
+            catch (OperationCanceledException)
+            {
+                break;
             }
         }
     }

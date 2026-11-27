@@ -20,10 +20,18 @@ namespace FrameWork
         private string _stage;
         private bool _failed;
         private bool _canRetry;
-        private bool _showPanel;
+        private StartupFallbackOverlay _overlay;
         public static bool HotUpdateStarted { get; private set; }
         public static event Action<float, string> ProgressChanged;
         public static event Action<Exception> LaunchFailed;
+
+        /// <summary>独立挂载启动兜底 IMGUI，启动完成后即销毁，避免 DontDestroyOnLoad 常驻空跑 OnGUI。</summary>
+        [AddComponentMenu("")]
+        private sealed class StartupFallbackOverlay : MonoBehaviour
+        {
+            internal FrameworkLauncher Owner;
+            private void OnGUI() => Owner?.DrawFallbackPanel();
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -46,10 +54,25 @@ namespace FrameWork
             if (_instance == this) LaunchAsync().Forget(Debug.LogException);
         }
 
-        private void OnGUI()
+        private void SetPanelVisible(bool visible)
         {
-            if (!_showPanel) return;
+            if (visible)
+            {
+                if (_overlay == null)
+                {
+                    _overlay = gameObject.AddComponent<StartupFallbackOverlay>();
+                    _overlay.Owner = this;
+                }
+            }
+            else if (_overlay != null)
+            {
+                Destroy(_overlay);
+                _overlay = null;
+            }
+        }
 
+        private void DrawFallbackPanel()
+        {
             var screen = new Rect(0, 0, Screen.width, Screen.height);
             GUI.Box(screen, GUIContent.none);
             float width = Mathf.Min(420, screen.width * 0.9f);
@@ -78,7 +101,7 @@ namespace FrameWork
         {
             if (_launch != null) return _launch.Task;
             var completion = _launch = new UniTaskCompletionSource();
-            _showPanel = true;
+            SetPanelVisible(true);
             _failed = false;
             _canRetry = false;
             LaunchCore(completion, forceLoadDllInEditor).Forget();
@@ -144,7 +167,7 @@ namespace FrameWork
                 else if (method.ReturnType != typeof(void))
                     throw new InvalidOperationException("热更新入口必须返回 void、UniTask 或 Task。");
                 HotUpdateStarted = true;
-                _showPanel = false;
+                SetPanelVisible(false);
                 ReportProgress(1f, "Ready", "启动完成");
                 completion.TrySetResult();
             }
@@ -166,19 +189,46 @@ namespace FrameWork
 
         private static void InitializeHotUpdateAssemblies(IEnumerable<Assembly> assemblies)
         {
-            var callbacks = assemblies.SelectMany(a => a.GetTypes()).SelectMany(t =>
-                t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-                .Select(method => new { Method = method, Attribute = method.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>() })
-                .Where(callback => callback.Attribute != null).ToArray();
-            var phases = new[] { RuntimeInitializeLoadType.SubsystemRegistration, RuntimeInitializeLoadType.AfterAssembliesLoaded,
-                RuntimeInitializeLoadType.BeforeSplashScreen, RuntimeInitializeLoadType.BeforeSceneLoad, RuntimeInitializeLoadType.AfterSceneLoad };
-            foreach (var phase in phases)
-                foreach (var callback in callbacks.Where(c => c.Attribute.loadType == phase))
+            var phases = new[]
+            {
+                RuntimeInitializeLoadType.SubsystemRegistration,
+                RuntimeInitializeLoadType.AfterAssembliesLoaded,
+                RuntimeInitializeLoadType.BeforeSplashScreen,
+                RuntimeInitializeLoadType.BeforeSceneLoad,
+                RuntimeInitializeLoadType.AfterSceneLoad
+            };
+            var byPhase = new Dictionary<RuntimeInitializeLoadType, List<MethodInfo>>(phases.Length);
+            foreach (var phase in phases) byPhase[phase] = new List<MethodInfo>();
+
+            foreach (var assembly in assemblies)
+            {
+                Type[] types;
+                try { types = assembly.GetTypes(); }
+                catch (ReflectionTypeLoadException ex) { types = ex.Types; }
+                if (types == null) continue;
+
+                foreach (var t in types)
                 {
-                    if (callback.Method.GetParameters().Length != 0 || callback.Method.ReturnType != typeof(void) || callback.Method.ContainsGenericParameters)
-                        throw new InvalidOperationException("热更新启动回调必须是无参数的静态 void 方法：" + callback.Method);
-                    callback.Method.Invoke(null, null);
+                    if (t == null) continue;
+                    var methods = t.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+                    foreach (var method in methods)
+                    {
+                        var attr = method.GetCustomAttribute<RuntimeInitializeOnLoadMethodAttribute>();
+                        if (attr != null && byPhase.TryGetValue(attr.loadType, out var list))
+                            list.Add(method);
+                    }
                 }
+            }
+
+            foreach (var phase in phases)
+            {
+                foreach (var method in byPhase[phase])
+                {
+                    if (method.GetParameters().Length != 0 || method.ReturnType != typeof(void) || method.ContainsGenericParameters)
+                        throw new InvalidOperationException("热更新启动回调必须是无参数的静态 void 方法：" + method);
+                    method.Invoke(null, null);
+                }
+            }
         }
     }
 }

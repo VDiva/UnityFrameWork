@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Text;
 
 namespace UnityWebSocket
@@ -6,6 +7,8 @@ namespace UnityWebSocket
     public class MessageEventArgs : EventArgs
     {
         private byte[] _rawData;
+        private byte[] _pooledBuffer;
+        private int _pooledLength;
         private string _data;
 
         internal MessageEventArgs(Opcode opcode, byte[] rawData)
@@ -14,10 +17,36 @@ namespace UnityWebSocket
             _rawData = rawData;
         }
 
+        private MessageEventArgs(Opcode opcode, byte[] pooledBuffer, int length)
+        {
+            Opcode = opcode;
+            _pooledBuffer = pooledBuffer;
+            _pooledLength = length;
+        }
+
         internal MessageEventArgs(Opcode opcode, string data)
         {
             Opcode = opcode;
             _data = data;
+        }
+
+        public static MessageEventArgs CreateBinary(byte[] rawData) => new MessageEventArgs(Opcode.Binary, rawData);
+        public static MessageEventArgs CreatePooledBinary(byte[] rentedBuffer, int length) =>
+            new MessageEventArgs(Opcode.Binary, rentedBuffer, length);
+        public static MessageEventArgs CreateText(byte[] rawData) => new MessageEventArgs(Opcode.Text, rawData);
+        public static MessageEventArgs CreateText(string data) => new MessageEventArgs(Opcode.Text, data);
+
+        public bool HasPooledSegment => _pooledBuffer != null;
+        public byte[] PooledBuffer => _pooledBuffer;
+        public int PooledLength => _pooledLength;
+
+        public void ReleasePooledBuffer()
+        {
+            byte[] buf = _pooledBuffer;
+            if (buf == null) return;
+            _pooledBuffer = null;
+            _pooledLength = 0;
+            ArrayPool<byte>.Shared.Return(buf);
         }
 
         /// <summary>
@@ -103,6 +132,15 @@ namespace UnityWebSocket
         private void SetRawData()
         {
             if (_rawData != null) return;
+
+            if (_pooledBuffer != null)
+            {
+                byte[] copy = _pooledLength > 0 ? new byte[_pooledLength] : Array.Empty<byte>();
+                if (_pooledLength > 0)
+                    Buffer.BlockCopy(_pooledBuffer, 0, copy, 0, _pooledLength);
+                _rawData = copy;
+                return;
+            }
 
             if (_data == null)
             {

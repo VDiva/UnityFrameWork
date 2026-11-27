@@ -41,10 +41,21 @@ namespace FrameWork.FPS
         private Vector3 eyePosition;
         private bool viewReady;
 
+        private static readonly RaycastHit[] CameraCollisionBuffer = new RaycastHit[8];
+        public static FpsPlayer ActivePlayer { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetActivePlayer() => ActivePlayer = null;
+
         public FpsWeapon EquippedWeapon => loadout != null ? loadout.EquippedWeapon : weapon;
         public FpsViewMode ViewMode { get; private set; }
         public bool IsThirdPerson => ViewMode == FpsViewMode.ThirdPerson;
         public bool IsTopDown => ViewMode == FpsViewMode.TopDown;
+
+        private void OnEnable()
+        {
+            ActivePlayer = this;
+        }
 
         private void Awake()
         {
@@ -72,6 +83,7 @@ namespace FrameWork.FPS
 
         private void OnDisable()
         {
+            if (ActivePlayer == this) ActivePlayer = null;
             if (ownsCursor) SetCursorCaptured(false);
         }
 
@@ -205,12 +217,17 @@ namespace FrameWork.FPS
                 Vector3 offset = aim * new Vector3(thirdPersonOffset.x, thirdPersonOffset.y, -followDistance);
                 float distance = offset.magnitude;
                 Vector3 direction = offset / distance;
-                if (Physics.SphereCast(eye, cameraCollisionRadius, direction, out var hit,
-                    distance, cameraCollisionLayers, QueryTriggerInteraction.Ignore))
+                int hitCount = Physics.SphereCastNonAlloc(eye, cameraCollisionRadius, direction, CameraCollisionBuffer,
+                    distance, cameraCollisionLayers, QueryTriggerInteraction.Ignore);
+                float closest = distance;
+                for (int i = 0; i < hitCount; i++)
                 {
-                    distance = Mathf.Max(0f, hit.distance - 0.05f);
+                    var hit = CameraCollisionBuffer[i];
+                    if (hit.collider == null || hit.collider.transform.IsChildOf(transform)) continue;
+                    float candidate = Mathf.Max(0f, hit.distance - 0.05f);
+                    if (candidate < closest) closest = candidate;
                 }
-                cameraPosition += direction * distance;
+                cameraPosition += direction * closest;
             }
 
             viewCamera.transform.SetPositionAndRotation(cameraPosition, aim);

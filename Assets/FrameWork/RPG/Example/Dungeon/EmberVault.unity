@@ -266,9 +266,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  baseArmor: 0
   onDepleted:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d61f2f16117f474693f2b3718aa9b684, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  levelCurve: {fileID: 11400000, guid: 1713263669e749ba8cc4bc3560dc71ac, type: 2}
+--- !u!114 &109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94cb6368e77a4e209ecf50f5de87c311, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slots:
+  - key: 113
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb220, type: 2}
+  - key: 101
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb221, type: 2}
+  - key: 99
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb222, type: 2}
+  - key: 120
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb223, type: 2}
+  - key: 122
+    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb224, type: 2}
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!1 &200
 GameObject:
   m_ObjectHideFlags: 0
@@ -1759,8 +1799,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a41e7cc2caedbe58891611cf00a1ee5, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 72798df319424c6ba1e6b72c5b36ca74, type: 2}
   muzzle: {fileID: 301}
   automatic: 1
@@ -1856,19 +1896,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &108
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d61f2f16117f474693f2b3718aa9b684, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  levelCurve: {fileID: 11400000, guid: 1713263669e749ba8cc4bc3560dc71ac, type: 2}
 --- !u!1 &2400
 GameObject:
   m_ObjectHideFlags: 0
@@ -1914,7 +1941,15 @@ CharacterController:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2400}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 1.8
@@ -1934,8 +1969,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 183fd9bff1c74b9c276b03e204d7e347, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   maxHealth: 75
   baseArmor: 50
   onDepleted:
@@ -1951,14 +1986,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8b2575329094ad083719d441ec35782, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: d922124bdb2b4c28a9bf122a8cc7b8f8, type: 2}
   behaviorTree: {fileID: 11400000, guid: d18d9af50af14fb4872be370a58d7eea, type: 2}
   weapon: {fileID: 2422}
   target: {fileID: 101}
   findPlayerOnStart: 1
-  sightLayers: {serializedVersion: 2, m_Bits: 4294967295}
+  sightLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &2405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1969,8 +2006,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 82bc7d15140048539230d3ec8dbb2fad, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   experience: 100
 --- !u!1 &2410
 GameObject:
@@ -2023,9 +2060,38 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
+  m_RendererPriority: 0
   m_Materials:
   - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &2420
 GameObject:
   m_ObjectHideFlags: 0
@@ -2068,11 +2134,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a41e7cc2caedbe58891611cf00a1ee5, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 5285c102fe7346d18d6266ea71bb1a53, type: 2}
   muzzle: {fileID: 2421}
-  hitLayers: {serializedVersion: 2, m_Bits: 4294967295}
+  automatic: 1
+  magazineSize: 30
+  startingReserve: 90
+  shotInterval: 0.12
+  reloadDuration: 1.3
+  range: 100
+  damage: 25
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &2500
 GameObject:
   m_ObjectHideFlags: 0
@@ -2118,7 +2193,15 @@ CharacterController:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2500}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 1.8
@@ -2138,8 +2221,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 183fd9bff1c74b9c276b03e204d7e347, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   maxHealth: 75
   baseArmor: 50
   onDepleted:
@@ -2155,14 +2238,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8b2575329094ad083719d441ec35782, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: d922124bdb2b4c28a9bf122a8cc7b8f8, type: 2}
   behaviorTree: {fileID: 11400000, guid: d18d9af50af14fb4872be370a58d7eea, type: 2}
   weapon: {fileID: 2522}
   target: {fileID: 101}
   findPlayerOnStart: 1
-  sightLayers: {serializedVersion: 2, m_Bits: 4294967295}
+  sightLayers:
+    serializedVersion: 2
+    m_Bits: 4095
 --- !u!114 &2505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2173,8 +2258,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 82bc7d15140048539230d3ec8dbb2fad, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   experience: 100
 --- !u!1 &2510
 GameObject:
@@ -2227,9 +2312,38 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
+  m_RendererPriority: 0
   m_Materials:
   - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &2520
 GameObject:
   m_ObjectHideFlags: 0
@@ -2272,11 +2386,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a41e7cc2caedbe58891611cf00a1ee5, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 5285c102fe7346d18d6266ea71bb1a53, type: 2}
   muzzle: {fileID: 2521}
-  hitLayers: {serializedVersion: 2, m_Bits: 4294967295}
+  automatic: 1
+  magazineSize: 30
+  startingReserve: 90
+  shotInterval: 0.12
+  reloadDuration: 1.3
+  range: 100
+  damage: 25
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &2600
 GameObject:
   m_ObjectHideFlags: 0
@@ -2321,8 +2444,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6c4b3bf49a944c3789c184cceba42cb4, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   player: {fileID: 103}
   playerHealth: {fileID: 106}
   inventory: {fileID: 105}
@@ -2334,32 +2457,6 @@ MonoBehaviour:
   extractionRadius: 1.6
   encounterGraph: {fileID: 11400000, guid: 8fa66d2cbe314a26aeb1190c404a261c, type: 2}
   encounterEvents: []
---- !u!114 &109
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94cb6368e77a4e209ecf50f5de87c311, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  slots:
-  - key: 113
-    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb220, type: 2}
-  - key: 101
-    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb221, type: 2}
-  - key: 99
-    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb222, type: 2}
-  - key: 120
-    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb223, type: 2}
-  - key: 122
-    skill: {fileID: 11400000, guid: 40939a5b517741d1a67e9870debdb224, type: 2}
-  targetLayers:
-    serializedVersion: 2
-    m_Bits: 1
 --- !u!114 &2603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2370,8 +2467,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c1744943c792422185b19a7b46aebc41, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   requiredEnemies:
   - {fileID: 2403}
   - {fileID: 2503}
@@ -2387,8 +2484,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d91f24ff818a4dedb690cef408c52d44, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   shellPlaceholders:
   - {fileID: 800}
   - {fileID: 900}
@@ -2443,7 +2540,15 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2700}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 4.8, y: 2.4, z: 0.5}

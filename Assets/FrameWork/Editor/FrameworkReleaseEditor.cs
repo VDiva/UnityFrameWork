@@ -46,11 +46,12 @@ namespace FrameWork.Editor
             var included = new HashSet<string>(StringComparer.Ordinal);
             var builder = new StringBuilder(Application.unityVersion + "\n" + EditorUserBuildSettings.activeBuildTarget + "\n");
             builder.Append("business-hotupdate-v1\n").Append(string.Join(";", hotDlls.OrderBy(n => n, StringComparer.Ordinal))).Append('\n');
+            using var hasher = SHA256.Create();
             foreach (string path in Directory.GetFiles("Assets", "*", SearchOption.AllDirectories).OrderBy(x => x, StringComparer.Ordinal))
             {
                 string normalized = path.Replace('\\', '/');
                 if (!ClientBaselineInputPolicy.Includes(normalized, hotSources, hotDlls)) continue;
-                string hash = Hash(path);
+                string hash = Hash(hasher, path);
                 if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL &&
                     normalized.EndsWith(".a.meta", StringComparison.OrdinalIgnoreCase) &&
                     referenceInputs != null && referenceInputs.TryGetValue(normalized, out string previousHash) &&
@@ -60,20 +61,20 @@ namespace FrameWork.Editor
                 included.Add(normalized);
                 builder.Append(normalized).Append(':').Append(hash).Append('\n');
             }
-            builder.Append(File.ReadAllText("Packages/manifest.json"));
-            inputs?.Add(new ReleaseFile { path = "Packages/manifest.json", sha256 = Hash("Packages/manifest.json") });
+            byte[] manifestBytes = File.ReadAllBytes("Packages/manifest.json");
+            builder.Append(Encoding.UTF8.GetString(manifestBytes));
+            inputs?.Add(new ReleaseFile { path = "Packages/manifest.json", sha256 = Hex(hasher.ComputeHash(manifestBytes)) });
             var startupInputs = new[] { "ProjectSettings/ProjectSettings.asset", FrameworkIntegrationEditor.BootScenePath }
                 .Concat(AssetDatabase.GetDependencies(FrameworkIntegrationEditor.BootScenePath, true))
                 .SelectMany(path => new[] { path, path + ".meta" }).Distinct();
             foreach (string setting in startupInputs)
                 if (File.Exists(setting) && included.Add(setting))
                 {
-                    string hash = Hash(setting);
+                    string hash = Hash(hasher, setting);
                     inputs?.Add(new ReleaseFile { path = setting, sha256 = hash });
                     builder.Append(setting).Append(':').Append(hash).Append('\n');
                 }
-            using var algorithm = SHA256.Create();
-            return Hex(algorithm.ComputeHash(Encoding.UTF8.GetBytes(builder.ToString())));
+            return Hex(hasher.ComputeHash(Encoding.UTF8.GetBytes(builder.ToString())));
         }
 
         // SDKs serialize the Tuanjie WeixinMiniGame switch even in Unity WebGL projects.
@@ -197,13 +198,20 @@ namespace FrameWork.Editor
                 ? JsonUtility.FromJson<FrameworkReleaseManifest>(File.ReadAllText(Path.Combine(publish, "version.json"))) : null;
             var oldFiles = previous?.files.ToDictionary(f => f.path, f => f.sha256) ?? new Dictionary<string, string>();
             var sourceRoot = Path.GetFullPath(result.OutputPackageDirectory).TrimEnd(Path.DirectorySeparatorChar);
-            foreach (string source in Directory.GetFiles(sourceRoot, "*", SearchOption.AllDirectories).OrderBy(x => x, StringComparer.Ordinal))
+            var changedSet = new HashSet<string>(StringComparer.Ordinal);
+            using (var hasher = SHA256.Create())
             {
-                string relative = source.Substring(sourceRoot.Length + 1).Replace('\\', '/');
-                var file = new ReleaseFile { path = relative, size = new FileInfo(source).Length, sha256 = Hash(source) };
-                manifest.files.Add(file);
-                if (!oldFiles.TryGetValue(relative, out string oldHash) || oldHash != file.sha256)
-                    manifest.changedFiles.Add(relative);
+                foreach (string source in Directory.GetFiles(sourceRoot, "*", SearchOption.AllDirectories).OrderBy(x => x, StringComparer.Ordinal))
+                {
+                    string relative = source.Substring(sourceRoot.Length + 1).Replace('\\', '/');
+                    var file = new ReleaseFile { path = relative, size = new FileInfo(source).Length, sha256 = Hash(hasher, source) };
+                    manifest.files.Add(file);
+                    if (!oldFiles.TryGetValue(relative, out string oldHash) || oldHash != file.sha256)
+                    {
+                        manifest.changedFiles.Add(relative);
+                        changedSet.Add(relative);
+                    }
+                }
             }
             Directory.CreateDirectory(archive);
             string patch = Path.Combine(publish, "_patches", version);
@@ -213,7 +221,7 @@ namespace FrameWork.Editor
             {
                 string source = Path.Combine(sourceRoot, file.path);
                 Copy(source, Path.Combine(publish, file.path));
-                if (manifest.changedFiles.Contains(file.path)) Copy(source, Path.Combine(patch, file.path));
+                if (changedSet.Contains(file.path)) Copy(source, Path.Combine(patch, file.path));
             }
             string json = JsonUtility.ToJson(manifest, true);
             File.WriteAllText(Path.Combine(archive, "version.json"), json);
@@ -270,6 +278,10 @@ namespace FrameWork.Editor
         private static string Hash(string path)
         {
             using var algorithm = SHA256.Create();
+            return Hash(algorithm, path);
+        }
+        private static string Hash(SHA256 algorithm, string path)
+        {
             using var file = File.OpenRead(path);
             return Hex(algorithm.ComputeHash(file));
         }

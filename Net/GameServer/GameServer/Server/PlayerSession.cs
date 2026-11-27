@@ -3,16 +3,20 @@ using System.Text;
 using System.Collections.Concurrent;
 using GameData;
 using Google.Protobuf;
+using WebSocketDemo.Transport;
 
 namespace WebSocketDemo
 {
     public class PlayerSession : IDisposable
     {
-        private const int ReceiveBufferSize = 4096;
-        private const int MaxMessageSize = 1024 * 1024;
         private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(5);
 
-        private readonly WebSocket _webSocket;
+        private readonly WebSocket? _webSocket;
+        private readonly IClientTransport _transport;
+        private IClientTransport? _realtimeTransport;
+        private readonly object _realtimeGate = new();
+        private readonly SemaphoreSlim _realtimeSendLock = new(1, 1);
+        private Task _realtimeReceiveTask = Task.CompletedTask;
         private readonly CancellationTokenSource _cts;
         private readonly CancellationTokenRegistration _requestAbortedRegistration;
         private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
@@ -29,9 +33,17 @@ namespace WebSocketDemo
         private readonly object _closeGate = new();
         private Task _closeTask = Task.CompletedTask;
         private long _lastSlowHandlerLog;
+        private long _lastOnlineRenewTick;
 
         public string PlayerId { get; }
         public bool IsSuperseded { get; private set; }
+        public bool SupportsCompactTransforms { get; internal set; }
+        internal float MoveBurstAllowance = NetworkStateValidation.MaxBurstAllowance;
+        internal uint KcpBindConv { get; set; }
+        public bool HasRealtimeTransport => Volatile.Read(ref _realtimeTransport) is { IsConnected: true };
+        public string TransportName => HasRealtimeTransport
+            ? $"{_transport.TransportName}+{Volatile.Read(ref _realtimeTransport)!.TransportName}"
+            : _transport.TransportName;
 
         public Task CloseForReplacementAsync()
         {
@@ -67,7 +79,7 @@ namespace WebSocketDemo
         public uint PendingNetworkRoomId { get; internal set; }
         public ConcurrentDictionary<uint, byte> VisibleNetworkObjects { get; } = new();
         public ConcurrentDictionary<uint, byte> NetworkRoomInvites { get; } = new();
-        public bool IsConnected => _webSocket.State == WebSocketState.Open;
+        public bool IsConnected => _transport.IsConnected;
         public (int Packets, int Bytes, long WaitMs, long WriteMs, long Expired)
             SendQueueStats => (_sendQueue.PendingCount, _sendQueue.PendingBytes,
                 _sendQueue.LastQueueWaitMs, _sendQueue.LastWriteMs,
@@ -77,14 +89,59 @@ namespace WebSocketDemo
         public DateTimeOffset LastChannelChatAt { get; internal set; } = DateTimeOffset.MinValue;
 
         public PlayerSession(string playerId, WebSocket webSocket, CancellationToken requestAborted = default)
+            : this(playerId, new WebSocketClientTransport(webSocket), requestAborted)
+        {
+            _webSocket = webSocket;
+        }
+
+        public PlayerSession(string playerId, IClientTransport transport, CancellationToken requestAborted = default)
         {
             PlayerId = playerId;
-            _webSocket = webSocket;
+            _transport = transport ?? throw new ArgumentNullException(nameof(transport));
             _cts = new CancellationTokenSource();
             _requestAbortedRegistration = requestAborted.Register(() => _cts.Cancel());
             _sendQueue = new SessionSendQueue(SendQueuedAsync, OnSendQueueFailed, label: playerId,
                 realtimeInterval: ReplicationSettings.RealtimeInterval);
             _receiveTask = StartReceivingAsync();
+        }
+
+        /// <summary>为 TCP 主会话附着 KCP 实时通道，承接高频位置/动画/语音包；KCP 断开时自动回退到主通道。</summary>
+        public void AttachRealtimeTransport(IClientTransport realtimeTransport)
+        {
+            if (realtimeTransport == null || !IsConnected || Volatile.Read(ref _disposed) != 0)
+            {
+                realtimeTransport?.Dispose();
+                return;
+            }
+
+            IClientTransport? previous;
+            lock (_realtimeGate)
+            {
+                if (!IsConnected || Volatile.Read(ref _disposed) != 0)
+                {
+                    realtimeTransport.Dispose();
+                    return;
+                }
+                previous = _realtimeTransport;
+                _realtimeTransport = realtimeTransport;
+                _realtimeReceiveTask = StartRealtimeReceivingAsync(realtimeTransport);
+            }
+
+            if (previous != null)
+            {
+                previous.Abort();
+                previous.Dispose();
+            }
+        }
+
+        private void DetachRealtimeTransport(IClientTransport expected)
+        {
+            lock (_realtimeGate)
+            {
+                if (ReferenceEquals(_realtimeTransport, expected))
+                    _realtimeTransport = null;
+            }
+            expected.Dispose();
         }
 
         public async Task WaitForCloseAsync()
@@ -165,87 +222,58 @@ namespace WebSocketDemo
 
         private async Task StartReceivingAsync()
         {
-            var buffer = new byte[ReceiveBufferSize];
-            using var messageBuffer = new MemoryStream(ReceiveBufferSize);
-
             try
             {
-                while (_webSocket.State == WebSocketState.Open && !_cts.Token.IsCancellationRequested)
+                while (_transport.IsConnected && !_cts.Token.IsCancellationRequested)
                 {
-                    WebSocketReceiveResult result;
-                    messageBuffer.SetLength(0);
-                    bool singleFrame = false;
-                    do
+                    TransportReceiveResult result;
+                    try
                     {
-                        try
-                        {
-                            result = await _webSocket.ReceiveAsync(
-                                new ArraySegment<byte>(buffer),
-                                _cts.Token);
-                            MarkActive();
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-
-                        if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            CompleteClientClose(result.CloseStatus, result.CloseStatusDescription);
-                            return;
-                        }
-
-                        if (messageBuffer.Length + result.Count > MaxMessageSize)
-                        {
-                            Console.WriteLine($"[{PlayerId}] Message too large.");
-                            _closeTcs.TrySetResult(true);
-                            _ = SafeCloseAsync(WebSocketCloseStatus.MessageTooBig, "Message too big");
-                            return;
-                        }
-
-                        // 大多数位置包一次 Receive 就完整到达，直接从接收缓冲解析，
-                        // 避免每包再复制到 MemoryStream。分片消息仍按原顺序拼接。
-                        if (result.EndOfMessage && messageBuffer.Length == 0)
-                            singleFrame = true;
-                        else
-                            messageBuffer.Write(buffer, 0, result.Count);
-                    } while (!result.EndOfMessage);
-
-                    int messageLength = singleFrame ? result.Count : checked((int)messageBuffer.Length);
-                    if (messageLength == 0)
+                        result = await _transport.ReceiveMessageAsync(_cts.Token);
+                        MarkActive();
+                    }
+                    catch (OperationCanceledException)
                     {
-                        continue;
+                        return;
                     }
 
-                    byte[] fullData = singleFrame ? buffer : messageBuffer.GetBuffer();
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        CompleteClientClose(result.CloseStatus, result.CloseDescription);
+                        return;
+                    }
+
+                    if (result.Length <= 0 || result.Data == null)
+                        continue;
 
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
-                        var fullMessage = Encoding.UTF8.GetString(fullData, 0, messageLength);
+                        var fullMessage = Encoding.UTF8.GetString(result.Data, 0, result.Length);
                         await OnMessageReceived(fullMessage);
                     }
                     else if (result.MessageType == WebSocketMessageType.Binary)
                     {
-                        await DispatchBinaryMessageAsync(fullData, messageLength);
-                    }
-                    // 大包只在本次处理期间保留容量，不让每个长连接长期占用 1MB 缓冲区。
-                    if (messageBuffer.Capacity > 64 * 1024)
-                    {
-                        messageBuffer.SetLength(0);
-                        messageBuffer.Capacity = ReceiveBufferSize;
+                        await DispatchBinaryMessageAsync(result.Data, result.Length);
                     }
                 }
+            }
+            catch (InvalidDataException ex)
+            {
+                Console.WriteLine($"[{PlayerId}] Invalid frame ({_transport.TransportName}): {ex.Message}");
+                _closeTcs.TrySetResult(true);
+                _ = SafeCloseAsync(WebSocketCloseStatus.MessageTooBig, "Message too big");
+                return;
             }
             catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
             {
             }
             catch (WebSocketException ex)
             {
-                Console.WriteLine($"[{PlayerId}] WebSocket error: {ex.WebSocketErrorCode}, {ex.Message}, socketState={_webSocket.State}, user={UserId ?? "none"}.");
+                Console.WriteLine($"[{PlayerId}] WebSocket error: {ex.WebSocketErrorCode}, {ex.Message}, user={UserId ?? "none"}.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[{PlayerId}] Receive error: {ex.GetType().Name}, {ex.Message}, socketState={_webSocket.State}, user={UserId ?? "none"}.");
+                Console.WriteLine($"[{PlayerId}] Receive error ({_transport.TransportName}): {ex.GetType().Name}, {ex.Message}, user={UserId ?? "none"}.");
             }
             finally
             {
@@ -256,6 +284,35 @@ namespace WebSocketDemo
                 _commands.Complete();
                 await _commands.Completion;
                 QueueOfflineSave();
+            }
+        }
+
+        private async Task StartRealtimeReceivingAsync(IClientTransport realtimeTransport)
+        {
+            try
+            {
+                while (realtimeTransport.IsConnected && IsConnected && !_cts.Token.IsCancellationRequested)
+                {
+                    TransportReceiveResult result = await realtimeTransport.ReceiveMessageAsync(_cts.Token);
+                    if (result.MessageType == WebSocketMessageType.Close)
+                        break;
+                    MarkActive();
+                    if (result.Length > 0 && result.Data != null &&
+                        result.MessageType == WebSocketMessageType.Binary)
+                    {
+                        await DispatchBinaryMessageAsync(result.Data, result.Length);
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{PlayerId}] Realtime KCP receive ended: {ex.Message}");
+            }
+            finally
+            {
+                // KCP 通道异常/关闭不影响主 TCP 连接，仅自动摘除并回退主通道。
+                DetachRealtimeTransport(realtimeTransport);
             }
         }
 
@@ -366,6 +423,17 @@ namespace WebSocketDemo
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 实时但不覆写合并的二进制流（如语音 Opus 帧）：TCP+KCP 模式下优先经 KCP 低延迟发送，
+        /// 拥塞超时自动丢弃过期帧，避免阻塞 TCP 可靠消息队列。
+        /// </summary>
+        public void QueueRealtimeBinary(byte[] data, int maxAgeMs = 150)
+        {
+            if (IsConnected)
+                _sendQueue.Enqueue(data, WebSocketMessageType.Binary, key: null, merge: null,
+                    maxAgeMs: maxAgeMs, preferRealtime: true);
+        }
+
         public void QueueLatestBinary(ulong key, byte[] data, int maxAgeMs = 0)
         {
             if (IsConnected) _sendQueue.Enqueue(data, WebSocketMessageType.Binary, key,
@@ -425,13 +493,51 @@ namespace WebSocketDemo
             if (IsConnected) _sendQueue.Enqueue(data, WebSocketMessageType.Binary);
         }
 
-        private async Task SendQueuedAsync(byte[] data, WebSocketMessageType type, CancellationToken token)
+        private async Task SendQueuedAsync(byte[] data, WebSocketMessageType type, bool isRealtime, bool allowUnreliable, CancellationToken token)
         {
+            if (isRealtime)
+            {
+                IClientTransport? realtime = Volatile.Read(ref _realtimeTransport);
+                if (realtime is { IsConnected: true })
+                {
+                    if (allowUnreliable)
+                    {
+                        try
+                        {
+                            await realtime.SendUnreliableAsync(data, type, token);
+                            return;
+                        }
+                        catch
+                        {
+                            DetachRealtimeTransport(realtime);
+                        }
+                    }
+                    else
+                    {
+                        await _realtimeSendLock.WaitAsync(token);
+                        try
+                        {
+                            if (realtime.IsConnected)
+                            {
+                                await realtime.SendAsync(data, type, token);
+                                return;
+                            }
+                        }
+                        catch
+                        {
+                            // KCP 通道发送异常时自动摘除并回退到主 TCP 通道，避免影响会话存活。
+                            DetachRealtimeTransport(realtime);
+                        }
+                        finally { _realtimeSendLock.Release(); }
+                    }
+                }
+            }
+
             await _sendLock.WaitAsync(token);
             try
             {
                 if (!IsConnected) throw new IOException("socket is not open");
-                await _webSocket.SendAsync(new ArraySegment<byte>(data), type, true, token);
+                await _transport.SendAsync(data, type, token);
             }
             finally { _sendLock.Release(); }
         }
@@ -445,7 +551,9 @@ namespace WebSocketDemo
         public void AbortConnection()
         {
             _sendQueue.Stop();
-            try { _webSocket.Abort(); } catch { }
+            try { _transport.Abort(); } catch { }
+            IClientTransport? realtime = Interlocked.Exchange(ref _realtimeTransport, null);
+            try { realtime?.Abort(); } catch { }
             _closeTcs.TrySetResult(true);
             try { _cts.Cancel(); } catch (ObjectDisposedException) { }
         }
@@ -465,35 +573,59 @@ namespace WebSocketDemo
 
         private async Task CloseCoreAsync(WebSocketCloseStatus closeStatus, string statusDescription)
         {
-            _closeTcs.TrySetResult(true);
-            try { _cts.Cancel(); } catch { }
             _sendQueue.Stop();
+
+            IClientTransport? realtime = Interlocked.Exchange(ref _realtimeTransport, null);
+            if (realtime != null)
+            {
+                try
+                {
+                    using var rtTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                    await realtime.CloseAsync(closeStatus, statusDescription, rtTimeout.Token);
+                }
+                catch { realtime.Abort(); }
+            }
 
             try
             {
-                if (_webSocket.State == WebSocketState.Open ||
-                    _webSocket.State == WebSocketState.CloseReceived)
+                if (_transport.IsConnected)
                 {
                     using var timeoutCts = new CancellationTokenSource(CloseTimeout);
                     await _sendLock.WaitAsync(timeoutCts.Token);
                     try
                     {
-                        await _webSocket.CloseAsync(closeStatus, statusDescription, timeoutCts.Token);
+                        await _transport.CloseAsync(closeStatus, statusDescription, timeoutCts.Token);
                     }
                     finally { _sendLock.Release(); }
                 }
-
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[{PlayerId}] Close failed: {ex.GetType().Name}, {ex.Message}, abort socket.");
-                try { _webSocket.Abort(); } catch { }
+                try { _transport.Abort(); } catch { }
+            }
+            finally
+            {
+                _closeTcs.TrySetResult(true);
+                try { _cts.Cancel(); } catch { }
             }
         }
 
         private void MarkActive()
         {
             LastActiveAt = DateTimeOffset.UtcNow;
+            string? uid = UserId;
+            string? sid = ServerId;
+            if (!string.IsNullOrWhiteSpace(uid) && !string.IsNullOrWhiteSpace(sid) && RedisMrg.IsConnected)
+            {
+                long nowTick = Environment.TickCount64;
+                long prevTick = Volatile.Read(ref _lastOnlineRenewTick);
+                if (nowTick - prevTick >= 120_000 &&
+                    Interlocked.CompareExchange(ref _lastOnlineRenewTick, nowTick, prevTick) == prevTick)
+                {
+                    _ = RedisMrg.SetPlayerOnline(uid, sid);
+                }
+            }
         }
 
         private void QueueOfflineSave()
@@ -515,30 +647,32 @@ namespace WebSocketDemo
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
-            if (!string.IsNullOrWhiteSpace(UserId) &&
-                Interlocked.CompareExchange(ref _offlineSaved, 1, 0) == 0)
-            {
-                OfflineSaveQueue.TryEnqueue(UserId, ServerId);
-            }
-
+            QueueOfflineSave();
+            if (KcpBindConv != 0) KcpBindRegistry.Unregister(KcpBindConv);
             _cts.Cancel();
             _sendQueue.Stop();
+            _commands.Complete();
             _requestAbortedRegistration.Dispose();
 
-            try { _webSocket.Dispose(); } catch { }
+            IClientTransport? realtime = Interlocked.Exchange(ref _realtimeTransport, null);
+            try { realtime?.Dispose(); } catch { }
+            try { _transport.Dispose(); } catch { }
             _ = DisposeResourcesAsync();
         }
 
         private async Task DisposeResourcesAsync()
         {
-            try { await Task.WhenAll(_sendQueue.Completion, _receiveTask, _commands.Completion); }
+            try { await Task.WhenAll(_sendQueue.Completion, _receiveTask, _realtimeReceiveTask, _commands.Completion); }
             catch (Exception) { }
+            // 确保所有在途命令完成后再入队离线存盘，避免存盘早于业务写入。
+            QueueOfflineSave();
             // 接收结束不代表 CloseAsync 已完成，不能提前销毁它仍在使用的发送锁。
             Task closing;
             lock (_closeGate) closing = _closeTask;
             try { await closing; } catch (Exception) { }
             _cts.Dispose();
             _sendLock.Dispose();
+            _realtimeSendLock.Dispose();
             _userDataLock.Dispose();
         }
     }

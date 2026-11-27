@@ -43,12 +43,13 @@ namespace FrameWork.Editor
         [MenuItem("FrameWork/YooAsset/配置资源收集")]
         public static void Configure()
         {
-            Directory.CreateDirectory("Assets/FrameWork/YooAssetSettings");
-            Directory.CreateDirectory("Assets/FrameWork/Resources");
-            Directory.CreateDirectory(ABEditor.abAssetPath);
+            bool createdFolder = false;
+            if (!Directory.Exists("Assets/FrameWork/YooAssetSettings")) { Directory.CreateDirectory("Assets/FrameWork/YooAssetSettings"); createdFolder = true; }
+            if (!Directory.Exists("Assets/FrameWork/Resources")) { Directory.CreateDirectory("Assets/FrameWork/Resources"); createdFolder = true; }
+            if (!Directory.Exists(ABEditor.abAssetPath)) { Directory.CreateDirectory(ABEditor.abAssetPath); createdFolder = true; }
             if (Directory.GetFiles(ABEditor.abAssetPath).Any(path => !path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException("请将 Asset 根目录的资源移到子文件夹：Base 放基础资源，其他目录放按需下载资源。");
-            AssetDatabase.Refresh();
+            if (createdFolder) AssetDatabase.Refresh();
             var runtime = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(SettingsPath);
             if (runtime == null)
             {
@@ -177,10 +178,24 @@ namespace FrameWork.Editor
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets,
             string[] movedAssets, string[] movedFromAssetPaths)
         {
-            if (importedAssets.Concat(deletedAssets).Concat(movedAssets).Concat(movedFromAssetPaths)
-                .Any(path => path == ABEditor.abAssetPath ||
-                    path.StartsWith(ABEditor.abAssetPath + "/", StringComparison.Ordinal)))
+            if (ContainsAssetFolderChange(importedAssets) ||
+                ContainsAssetFolderChange(deletedAssets) ||
+                ContainsAssetFolderChange(movedAssets) ||
+                ContainsAssetFolderChange(movedFromAssetPaths))
                 QueueSync();
+        }
+
+        private static bool ContainsAssetFolderChange(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return false;
+            string prefix = ABEditor.abAssetPath + "/";
+            for (int i = 0; i < paths.Length; i++)
+            {
+                string path = paths[i];
+                if (path == ABEditor.abAssetPath || path.StartsWith(prefix, StringComparison.Ordinal))
+                    return true;
+            }
+            return false;
         }
 
         private static void QueueSync()

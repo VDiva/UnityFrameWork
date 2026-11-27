@@ -47,6 +47,9 @@ message Msg{
     repeated NetworkAnimationData networkAnimations=131;//晚加入房间时批量发送动画状态
     repeated NetworkSyncVarData networkSyncVars=132;//晚加入房间时批量发送同步变量
     repeated EquipmentRollScoreData equipmentRollScores=133;//装备分配每名玩家各轮掷骰子的点数
+    bytes voiceData=134;//原始 Opus 语音帧字节
+    bytes compactTransforms=135;//位压缩量化位置快照批次
+    uint32 voiceSequence=136;//语音包递增序号，用于 Opus FEC 丢包补偿
  }
 
 message EquipmentRollScoreData {

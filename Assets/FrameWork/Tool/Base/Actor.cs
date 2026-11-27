@@ -45,6 +45,36 @@ namespace FrameWork
             return Initialization;
         }
 
+        private sealed class ActorTypeMetadata
+        {
+            public ActorInfoAttribute Info;
+            public bool HasUpdate;
+            public bool HasFixedUpdate;
+            public bool HasLateUpdate;
+        }
+
+        private static readonly Dictionary<Type, ActorTypeMetadata> MetadataCache = new Dictionary<Type, ActorTypeMetadata>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetMetadataCache() => MetadataCache.Clear();
+
+        private static ActorTypeMetadata GetMetadata(Type type)
+        {
+            if (MetadataCache.TryGetValue(type, out var cached))
+                return cached;
+
+            const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
+            var meta = new ActorTypeMetadata
+            {
+                Info = type.GetCustomAttribute<ActorInfoAttribute>(),
+                HasUpdate = type.GetMethod(nameof(Update), flags)?.DeclaringType != typeof(Actor),
+                HasFixedUpdate = type.GetMethod(nameof(FixedUpdate), flags)?.DeclaringType != typeof(Actor),
+                HasLateUpdate = type.GetMethod(nameof(LateUpdate), flags)?.DeclaringType != typeof(Actor)
+            };
+            MetadataCache[type] = meta;
+            return meta;
+        }
+
         private async UniTask SpawnCore(Transform parent)
         {
             GameObject instance = null;
@@ -52,7 +82,8 @@ namespace FrameWork
             {
                 // 构造函数返回后再调用派生类生命周期。
                 await UniTask.Yield(PlayerLoopTiming.Update);
-                var info = GetType().GetCustomAttribute<ActorInfoAttribute>();
+                var meta = GetMetadata(GetType());
+                var info = meta.Info;
                 if (info == null || string.IsNullOrWhiteSpace(info.PrefabName))
                     throw new InvalidOperationException(GetType().Name + " 缺少有效的 ActorInfoAttribute");
                 instance = await ABMrg.InstantiateAsync(info.PrefabName);
@@ -64,6 +95,9 @@ namespace FrameWork
                 _gameObject = instance;
                 var actorMono = instance.AddComponent<ActorMono>();
                 actorMono.SetActor(this);
+                if (meta.HasUpdate) instance.AddComponent<ActorUpdateDriver>().Bind(this);
+                if (meta.HasFixedUpdate) instance.AddComponent<ActorFixedUpdateDriver>().Bind(this);
+                if (meta.HasLateUpdate) instance.AddComponent<ActorLateUpdateDriver>().Bind(this);
                 Awake();
                 instance.SetActive(true);
                 Start();

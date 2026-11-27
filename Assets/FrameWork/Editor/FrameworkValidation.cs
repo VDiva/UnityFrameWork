@@ -25,6 +25,7 @@ namespace FrameWork.Editor
         private const string Report = "FrameWork.Validation.Report";
         private const string HostOriginal = "FrameWork.Validation.HostOriginal";
         private const string HostMode = "FrameWork.Validation.HostMode";
+        private const string ColdCacheDir = "FrameWork.Validation.ColdCacheDir";
 
         public static void ValidateSyncedProjectBatch()
         {
@@ -74,7 +75,8 @@ namespace FrameWork.Editor
         public static void RunHost()
         {
             FrameworkSetup.Setup();
-            SessionState.SetString(HostOriginal, Convert.ToBase64String(File.ReadAllBytes(YooResourceEditor.SettingsPath)));
+            string originalBase64 = Convert.ToBase64String(File.ReadAllBytes(YooResourceEditor.SettingsPath));
+            SessionState.SetString(HostOriginal, originalBase64);
             var settings = AssetDatabase.LoadAssetAtPath<YooResourceSettings>(YooResourceEditor.SettingsPath);
             settings.editorSimulate = false;
             settings.playerMode = YooPlayerMode.Host;
@@ -86,7 +88,28 @@ namespace FrameWork.Editor
             EditorUtility.SetDirty(settings);
             AssetDatabase.SaveAssets();
             SessionState.SetBool(HostMode, true);
-            Run();
+            try
+            {
+                Run();
+            }
+            catch
+            {
+                RestoreHostSettings();
+                SessionState.SetBool(HostMode, false);
+                SessionState.SetBool("FrameWork.Validation.ColdHost", false);
+                SessionState.SetBool(Pending, false);
+                SessionState.SetBool(Running, false);
+                throw;
+            }
+        }
+
+        private static void RestoreHostSettings()
+        {
+            string encoded = SessionState.GetString(HostOriginal, "");
+            if (string.IsNullOrEmpty(encoded)) return;
+            File.WriteAllBytes(YooResourceEditor.SettingsPath, Convert.FromBase64String(encoded));
+            AssetDatabase.ImportAsset(YooResourceEditor.SettingsPath);
+            SessionState.EraseString(HostOriginal);
         }
 
         [InitializeOnLoadMethod]
@@ -119,17 +142,27 @@ namespace FrameWork.Editor
             {
                 SessionState.SetBool(Pending, false);
                 SessionState.SetBool(Running, false);
-                FrameworkSetup.AssertLayout();
-                if (SessionState.GetBool(HostMode, false))
+                bool wasHostMode = SessionState.GetBool(HostMode, false);
+                try
                 {
-                    File.WriteAllBytes(YooResourceEditor.SettingsPath, Convert.FromBase64String(SessionState.GetString(HostOriginal, "")));
-                    AssetDatabase.ImportAsset(YooResourceEditor.SettingsPath);
+                    if (wasHostMode) RestoreHostSettings();
+                    string coldCache = SessionState.GetString(ColdCacheDir, "");
+                    if (!string.IsNullOrEmpty(coldCache))
+                    {
+                        SessionState.EraseString(ColdCacheDir);
+                        try { if (Directory.Exists(coldCache)) Directory.Delete(coldCache, true); }
+                        catch (Exception ex) { Debug.LogWarning("清理临时验证缓存失败：" + ex.Message); }
+                    }
+                    FrameworkSetup.AssertLayout();
+                    Directory.CreateDirectory(Path.GetDirectoryName(ResultPath));
+                    File.WriteAllText(ResultPath, SessionState.GetString(Report, "{}"));
+                    Debug.Log("FRAMEWORK_SMOKE_FINISHED：" + ResultPath);
                 }
-                Directory.CreateDirectory(Path.GetDirectoryName(ResultPath));
-                File.WriteAllText(ResultPath, SessionState.GetString(Report, "{}"));
-                Debug.Log("FRAMEWORK_SMOKE_FINISHED：" + ResultPath);
-                SessionState.SetBool(HostMode, false);
-                SessionState.SetBool("FrameWork.Validation.ColdHost", false);
+                finally
+                {
+                    SessionState.SetBool(HostMode, false);
+                    SessionState.SetBool("FrameWork.Validation.ColdHost", false);
+                }
                 if (Application.isBatchMode)
                     EditorApplication.Exit(JsonUtility.FromJson<IntegrationCheckResult>(SessionState.GetString(Report, "{}")).success ? 0 : 1);
             }
@@ -146,6 +179,7 @@ namespace FrameWork.Editor
                     var boot = Resources.Load<FrameworkBootSettings>("FrameworkBootSettings");
                     string root = $"http://127.0.0.1:18765/{EditorUserBuildSettings.activeBuildTarget}/{boot.clientBuildId}";
                     string cache = Path.GetFullPath("Library/FrameWork/Validation/ColdCache/" + Guid.NewGuid().ToString("N"));
+                    SessionState.SetString(ColdCacheDir, cache);
                     ABMrg.InitializeOptionsFactory = settings => {
                         _coldFactoryUsed = true;
                         return new YooAsset.HostPlayModeOptions {

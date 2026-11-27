@@ -1,0 +1,19 @@
+{
+  "name": "Unity.NetRpc.CodeGen",
+  "references": [],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Mono.Cecil.dll",
+    "Mono.Cecil.Pdb.dll",
+    "Mono.Cecil.Rocks.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [{"name":"com.unity.nuget.mono-cecil","expression":"","define":"CECIL_INSTALLED"}],
+  "noEngineReferences": true
+}

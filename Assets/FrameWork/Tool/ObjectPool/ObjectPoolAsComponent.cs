@@ -31,12 +31,24 @@ namespace FrameWork
             }
             if (_capacity >= 0 && _items.Count >= _capacity)
             {
+                _created = Math.Max(0, _created - 1);
                 UnityEngine.Object.Destroy(item.gameObject);
                 return;
             }
             _idle.Add(item);
             _items.Enqueue(item);
             item.gameObject.SetActive(false);
+        }
+
+        public void Clear()
+        {
+            while (_items.Count > 0)
+            {
+                var item = _items.Dequeue();
+                if (item != null) UnityEngine.Object.Destroy(item.gameObject);
+            }
+            _idle.Clear();
+            _created = 0;
         }
 
         public T DeQueue()

@@ -125,6 +125,8 @@ public sealed class NetworkRoomManager
             string levelKey = roomData.LevelKey.Trim();
             Room? room = _rooms.Values
                 .Where(r => CanJoinRoom(r) &&
+                            string.Equals(r.MapName, map, StringComparison.Ordinal) &&
+                            string.Equals(r.LevelKey, levelKey, StringComparison.Ordinal) &&
                             r.HighQualityEquipmentRoll == roomData.HighQualityEquipmentRoll &&
                             (!r.HighQualityEquipmentRoll || r.EquipmentRollMinQuality ==
                                 NormalizeEquipmentRollQuality(roomData.EquipmentRollMinQuality)) &&

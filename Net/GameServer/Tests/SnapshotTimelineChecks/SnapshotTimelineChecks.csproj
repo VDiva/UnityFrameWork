@@ -6,6 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../../../Assets/FrameWork/Tool/WebSocket/WebNet/SnapshotTimeline.cs" Link="SnapshotTimeline.cs" />
+    <Compile Include="../../../../Assets/FrameWork/Tool/Net/Network/SnapshotTimeline.cs" Link="SnapshotTimeline.cs" />
   </ItemGroup>
 </Project>

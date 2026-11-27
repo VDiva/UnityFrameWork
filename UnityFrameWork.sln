@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Editor", "FrameWo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.InteractiveFilm.Editor", "FrameWork.InteractiveFilm.Editor.csproj", "{9f95e635-1cd4-721a-b59e-e2c47b29243f}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.WebRpc.CodeGen", "Unity.WebRpc.CodeGen.csproj", "{45f751dc-a8bf-1106-d9b2-2ce840f98b8b}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.NetRpc.CodeGen", "Unity.NetRpc.CodeGen.csproj", "{3f6af491-b289-8c26-1bae-f4f5d5414881}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageToolsEditor", "PackageToolsEditor.csproj", "{b35c4ce7-4cbb-bf57-af80-400bb5125c8c}"
 EndProject
@@ -108,8 +108,8 @@ Global
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9f95e635-1cd4-721a-b59e-e2c47b29243f}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9f95e635-1cd4-721a-b59e-e2c47b29243f}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{45f751dc-a8bf-1106-d9b2-2ce840f98b8b}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{45f751dc-a8bf-1106-d9b2-2ce840f98b8b}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3f6af491-b289-8c26-1bae-f4f5d5414881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3f6af491-b289-8c26-1bae-f4f5d5414881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{b35c4ce7-4cbb-bf57-af80-400bb5125c8c}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{b35c4ce7-4cbb-bf57-af80-400bb5125c8c}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{c83c34ff-091a-a940-7c5c-c40d6de3da25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

@@ -22,12 +22,12 @@ namespace UnityWebSocket
     {
         #region Internal Constructors
 
-        internal ErrorEventArgs(string message)
+        public ErrorEventArgs(string message)
           : this(message, null)
         {
         }
 
-        internal ErrorEventArgs(string message, Exception exception)
+        public ErrorEventArgs(string message, Exception exception)
         {
             this.Message = message;
             this.Exception = exception;

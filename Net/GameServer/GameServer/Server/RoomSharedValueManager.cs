@@ -8,13 +8,33 @@ namespace WebSocketDemo;
 public sealed class RoomSharedValueManager
 {
     private const int MaxKeyLength = 64;
+    private const int MaxKeysPerRoom = 128;
     private const long MaxDelta = 1_000_000_000;
+    private const long MaxStoredValue = 1_000_000_000_000_000;
     private readonly ConcurrentDictionary<StateKey, State> _states = new();
 
     public static RoomSharedValueManager Instance { get; } = new();
 
     private readonly record struct StateKey(string ServerId, uint RoomId, string Key);
     private readonly record struct State(long Value, ulong Version);
+
+    private bool CanInsertKey(string serverId, uint roomId, StateKey key)
+    {
+        if (_states.ContainsKey(key)) return true;
+        int count = 0;
+        foreach (StateKey existing in _states.Keys)
+        {
+            if (existing.RoomId == roomId && existing.ServerId == serverId && ++count >= MaxKeysPerRoom)
+                return false;
+        }
+        return true;
+    }
+
+    private static long AddSaturated(long current, long delta)
+    {
+        try { return Math.Clamp(checked(current + delta), -MaxStoredValue, MaxStoredValue); }
+        catch (OverflowException) { return delta > 0 ? MaxStoredValue : -MaxStoredValue; }
+    }
 
     public async Task AddAsync(PlayerSession sender, RoomSharedValueData? request)
     {
@@ -31,10 +51,11 @@ public sealed class RoomSharedValueManager
         string serverId = ServerScope.Normalize(sender.ServerId);
         uint roomId = sender.NetworkRoomId;
         var stateKey = new StateKey(serverId, roomId, key);
+        if (!CanInsertKey(serverId, roomId, stateKey)) return;
         State updated = _states.AddOrUpdate(
             stateKey,
             _ => new State(BoundTimer(key, request.Delta), 1),
-            (_, old) => new State(BoundTimer(key, checked(old.Value + request.Delta)), checked(old.Version + 1)));
+            (_, old) => new State(BoundTimer(key, AddSaturated(old.Value, request.Delta)), unchecked(old.Version + 1)));
 
         await BroadcastAsync(serverId, roomId, key, updated);
     }
@@ -55,10 +76,11 @@ public sealed class RoomSharedValueManager
         string serverId = ServerScope.Normalize(sender.ServerId);
         uint roomId = sender.NetworkRoomId;
         var stateKey = new StateKey(serverId, roomId, key);
+        if (!CanInsertKey(serverId, roomId, stateKey)) return;
         State updated = _states.AddOrUpdate(
             stateKey,
             _ => new State(request.Value, 1),
-            (_, old) => new State(request.Value, checked(old.Version + 1)));
+            (_, old) => new State(request.Value, unchecked(old.Version + 1)));
 
         await BroadcastAsync(serverId, roomId, key, updated);
     }

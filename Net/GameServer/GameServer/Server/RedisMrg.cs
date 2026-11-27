@@ -188,6 +188,36 @@ public static class RedisMrg
     }
 
     /// <summary>
+    /// 单次管线批量写入玩家二进制快照并标记 dirty，省去串行多次网络往返。
+    /// </summary>
+    public static async Task<bool> SaveUserDataAndMarkDirty(string userId, string serverId, UserData data)
+    {
+        if (!IsConnected) return false;
+        try
+        {
+            serverId = ServerScope.Normalize(serverId);
+            data.ServerId = serverId;
+            byte[] payload = data.ToByteArray();
+            var database = GetDatabase();
+            var batch = database.CreateBatch();
+            string userKey = ServerScope.UserKey(serverId, userId);
+
+            Task<bool> saveTask = batch.StringSetAsync(GetUserDataKey(serverId, userId), payload, TimeSpan.FromHours(3));
+            Task<bool> markTask = batch.StringSetAsync(GetUserDirtyKey(serverId, userId), "1", TimeSpan.FromHours(2));
+            Task<bool> setTask = batch.SetAddAsync(DirtyUsersKey, userKey);
+            batch.Execute();
+
+            await Task.WhenAll(saveTask, markTask, setTask);
+            return saveTask.Result && markTask.Result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Redis SaveUserDataAndMarkDirty failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
     /// 标记玩家数据已变更，后续可以定时把 dirty 玩家批量写回 MongoDB。
     /// </summary>
     public static async Task<bool> MarkUserDirty(string userId, string serverId)
@@ -198,9 +228,12 @@ public static class RedisMrg
             var database = GetDatabase();
             var userKey = ServerScope.UserKey(serverId, userId);
             var markTask = database.StringSetAsync(GetUserDirtyKey(serverId, userId), "1", TimeSpan.FromHours(2));
+            // 同步延长玩家数据缓存 TTL，防止 30 分钟缓存早于 2 小时脏标记过期造成未落库数据丢失。
+            var extendDataTask = database.KeyExpireAsync(GetUserDataKey(serverId, userId), TimeSpan.FromHours(3));
             var setTask = database.SetAddAsync(DirtyUsersKey, userKey);
-            await Task.WhenAll(markTask, setTask);
-            return markTask.Result && setTask.Result;
+            await Task.WhenAll(markTask, extendDataTask, setTask);
+            // SetAddAsync 在成员已存在时返回 false，不应据此判定失败。
+            return markTask.Result;
         }
         catch (Exception ex)
         {
@@ -227,6 +260,73 @@ public static class RedisMrg
         {
             Console.WriteLine($"Redis ClearUserDirty failed: {ex.Message}");
             return false;
+        }
+    }
+
+    /// <summary>单次 MGET 批量读取多名玩家的缓存存档，供定时脏数据批量落库使用。</summary>
+    public static async Task<Dictionary<string, UserData>> GetUsersDataBatch(IReadOnlyList<(string UserKey, string ServerId, string UserId)> entries)
+    {
+        var result = new Dictionary<string, UserData>(entries.Count, StringComparer.Ordinal);
+        if (!IsConnected || entries.Count == 0)
+            return result;
+
+        try
+        {
+            var database = GetDatabase();
+            var keys = new RedisKey[entries.Count];
+            for (int i = 0; i < entries.Count; i++)
+                keys[i] = GetUserDataKey(entries[i].ServerId, entries[i].UserId);
+
+            var values = await database.StringGetAsync(keys);
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (!values[i].HasValue) continue;
+                byte[]? bytes = values[i];
+                if (bytes == null) continue;
+                try
+                {
+                    result[entries[i].UserKey] = UserData.Parser.ParseFrom(bytes);
+                }
+                catch (Exception parseEx)
+                {
+                    Console.WriteLine($"Redis batch parse user data failed ({entries[i].UserKey}): {parseEx.Message}");
+                }
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Redis GetUsersDataBatch failed: {ex.Message}");
+            return result;
+        }
+    }
+
+    /// <summary>单次管线批量清理已成功落库玩家的 dirty 标记。</summary>
+    public static async Task ClearUsersDirtyBatch(IReadOnlyList<(string UserKey, string ServerId, string UserId)> entries)
+    {
+        if (!IsConnected || entries.Count == 0)
+            return;
+
+        try
+        {
+            var database = GetDatabase();
+            var dirtyKeys = new RedisKey[entries.Count];
+            var members = new RedisValue[entries.Count];
+            for (int i = 0; i < entries.Count; i++)
+            {
+                dirtyKeys[i] = GetUserDirtyKey(entries[i].ServerId, entries[i].UserId);
+                members[i] = entries[i].UserKey;
+            }
+
+            var batch = database.CreateBatch();
+            Task delTask = batch.KeyDeleteAsync(dirtyKeys);
+            Task remTask = batch.SetRemoveAsync(DirtyUsersKey, members);
+            batch.Execute();
+            await Task.WhenAll(delTask, remTask);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Redis ClearUsersDirtyBatch failed: {ex.Message}");
         }
     }
 
@@ -261,7 +361,8 @@ public static class RedisMrg
             var onlineKeyTask = database.StringSetAsync(GetUserOnlineKey(serverId, userId), "1", OnlineExpire);
             var onlineSetTask = database.SetAddAsync(OnlineUsersKey, userKey);
             await Task.WhenAll(onlineKeyTask, onlineSetTask);
-            return onlineKeyTask.Result && onlineSetTask.Result;
+            // SetAddAsync 对已存在成员返回 false，续期在线状态仍视为成功。
+            return onlineKeyTask.Result;
         }
         catch (Exception ex)
         {
@@ -309,8 +410,34 @@ public static class RedisMrg
         }
     }
 
+    /// <summary>批量判断多名同服玩家是否在线（单次 MGET，避免好友列表 N+1）。</summary>
+    public static async Task<HashSet<string>> GetOnlineUsersSet(IReadOnlyList<string> userIds, string serverId)
+    {
+        var online = new HashSet<string>(StringComparer.Ordinal);
+        if (!IsConnected || userIds.Count == 0) return online;
+        try
+        {
+            var database = GetDatabase();
+            var keys = new RedisKey[userIds.Count];
+            for (int i = 0; i < userIds.Count; i++)
+                keys[i] = GetUserOnlineKey(serverId, userIds[i]);
+            var values = await database.StringGetAsync(keys);
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (values[i].HasValue)
+                    online.Add(userIds[i]);
+            }
+            return online;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Redis GetOnlineUsersSet failed: {ex.Message}");
+            return online;
+        }
+    }
+
     /// <summary>
-    /// 获取当前在线玩家 id 列表。过期的在线 key 会从集合中顺手清理掉。
+    /// 获取当前在线玩家 id 列表。过期的在线 key 会批量从集合中清理掉。
     /// </summary>
     public static async Task<List<string>> GetOnlineUserIds()
     {
@@ -319,25 +446,36 @@ public static class RedisMrg
         {
             var database = GetDatabase();
             var values = await database.SetMembersAsync(OnlineUsersKey);
-            var result = new List<string>();
-
+            var userKeys = new List<string>(values.Length);
             foreach (var value in values)
             {
                 var userKey = value.ToString();
-                if (string.IsNullOrWhiteSpace(userKey))
-                {
-                    continue;
-                }
+                if (!string.IsNullOrWhiteSpace(userKey))
+                    userKeys.Add(userKey);
+            }
+            if (userKeys.Count == 0) return userKeys;
 
-                if (await database.KeyExistsAsync($"player:online:{userKey}"))
+            var result = new List<string>(userKeys.Count);
+            var expired = new List<RedisValue>();
+            const int batchSize = 500;
+            for (int offset = 0; offset < userKeys.Count; offset += batchSize)
+            {
+                int count = Math.Min(batchSize, userKeys.Count - offset);
+                var keys = new RedisKey[count];
+                for (int i = 0; i < count; i++)
+                    keys[i] = $"player:online:{userKeys[offset + i]}";
+                var exists = await database.StringGetAsync(keys);
+                for (int i = 0; i < count; i++)
                 {
-                    result.Add(userKey);
-                }
-                else
-                {
-                    await database.SetRemoveAsync(OnlineUsersKey, userKey);
+                    if (exists[i].HasValue)
+                        result.Add(userKeys[offset + i]);
+                    else
+                        expired.Add(userKeys[offset + i]);
                 }
             }
+
+            if (expired.Count > 0)
+                await database.SetRemoveAsync(OnlineUsersKey, expired.ToArray());
 
             return result;
         }
@@ -525,7 +663,8 @@ public static class RedisMrg
                 rankData.Level);
 
             await Task.WhenAll(nameTask, dataTask, rankTask);
-            return nameTask.Result && dataTask.Result && rankTask.Result;
+            // SetAddAsync / SortedSetAddAsync 在成员已存在时返回 false，不应据此判定更新失败。
+            return dataTask.Result;
         }
         catch (Exception ex)
         {
@@ -543,9 +682,10 @@ public static class RedisMrg
 
         try
         {
+            var database = GetDatabase();
             var safeCount = Math.Clamp(count, 1, 1000);
             var candidateCount = Math.Clamp(safeCount * 10, 100, 5000);
-            var candidates = await GetDatabase().SortedSetRangeByRankWithScoresAsync(
+            var candidates = await database.SortedSetRangeByRankWithScoresAsync(
                 GetRankKey(serverId, rankName),
                 0,
                 candidateCount - 1,
@@ -556,35 +696,49 @@ public static class RedisMrg
             if (candidates.Length == candidateCount)
             {
                 double boundaryLevel = candidates[^1].Score;
-                var tied = await GetDatabase().SortedSetRangeByScoreAsync(
+                var tied = await database.SortedSetRangeByScoreAsync(
                     GetRankKey(serverId, rankName), boundaryLevel, boundaryLevel);
                 userIds = userIds.Concat(tied).Distinct().ToList();
             }
 
-            var tasks = userIds
+            var validUserIds = userIds
                 .Select(x => x.ToString())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(async userId =>
-                {
-                    var bytes = await GetBytes(GetRankDataKey(serverId, rankName, userId));
-                    if (bytes == null) return null;
+                .ToList();
 
+            var rankData = new List<RankData>(validUserIds.Count);
+            var corruptedKeys = new List<RedisKey>();
+            const int batchSize = 500;
+            for (int offset = 0; offset < validUserIds.Count; offset += batchSize)
+            {
+                int batchCount = Math.Min(batchSize, validUserIds.Count - offset);
+                var keys = new RedisKey[batchCount];
+                for (int i = 0; i < batchCount; i++)
+                    keys[i] = GetRankDataKey(serverId, rankName, validUserIds[offset + i]);
+
+                var values = await database.StringGetAsync(keys);
+                for (int i = 0; i < batchCount; i++)
+                {
+                    if (!values[i].HasValue) continue;
                     try
                     {
-                        return RankData.Parser.ParseFrom(bytes);
+                        byte[]? bytes = values[i];
+                        if (bytes == null) continue;
+                        var parsed = RankData.Parser.ParseFrom(bytes);
+                        if (rankName != BattleRankPolicy.RankName || BattleRankPolicy.IsValid(parsed))
+                            rankData.Add(parsed);
                     }
                     catch
                     {
-                        await Delete(GetRankDataKey(serverId, rankName, userId));
-                        return null;
+                        corruptedKeys.Add(keys[i]);
                     }
-                });
+                }
+            }
 
-            var rankData = await Task.WhenAll(tasks);
+            if (corruptedKeys.Count > 0)
+                await database.KeyDeleteAsync(corruptedKeys.ToArray());
+
             return rankData
-                .Where(x => x != null)
-                .Select(x => x!)
-                .Where(x => rankName != BattleRankPolicy.RankName || BattleRankPolicy.IsValid(x))
                 .OrderByDescending(x => x.Level)
                 .ThenBy(x => x.LevelTime <= 0 ? long.MaxValue : x.LevelTime)
                 .ThenBy(x => x.UserId, StringComparer.Ordinal)

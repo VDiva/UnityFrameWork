@@ -4,6 +4,7 @@
     <PackageReference Include="Google.Protobuf" Version="3.35.1" />
     <Compile Include="../../GameServer/Server/NetworkStateValidation.cs" Link="NetworkStateValidation.cs" />
     <Compile Include="../../GameServer/Server/DeferredMessagePacket.cs" Link="DeferredMessagePacket.cs" />
+    <Compile Include="../../GameServer/Server/CompactTransformCodec.cs" Link="CompactTransformCodec.cs" />
     <Compile Include="../../GameServer/Server/TransformBatchPacket.cs" Link="TransformBatchPacket.cs" />
     <Compile Include="../../GameServer/Server/SessionSendQueue.cs" Link="SessionSendQueue.cs" />
     <Compile Include="../../GameServer/Server/EquipmentRoll.cs" Link="EquipmentRoll.cs" />

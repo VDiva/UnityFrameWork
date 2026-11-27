@@ -222,10 +222,12 @@ namespace WebSocketDemo
                    session.IsConnected;
         }
 
+        private static readonly TimeSpan UnboundIdleTimeout = TimeSpan.FromMinutes(10);
+
         public int RemoveDisconnectedSessions()
         {
             var removed = 0;
-            foreach (var pair in _sessions.ToArray())
+            foreach (var pair in _sessions)
             {
                 if (pair.Value.IsConnected)
                 {
@@ -254,16 +256,11 @@ namespace WebSocketDemo
             var now = DateTimeOffset.UtcNow;
             var removed = 0;
 
-            foreach (var pair in _sessions.ToArray())
+            foreach (var pair in _sessions)
             {
                 var session = pair.Value;
-                // 未登录连接不再自动超时，方便客户端停留在选服界面。
-                if (string.IsNullOrWhiteSpace(session.UserId))
-                {
-                    continue;
-                }
-
-                var timeout = BoundIdleTimeout;
+                bool unbound = string.IsNullOrWhiteSpace(session.UserId);
+                var timeout = unbound ? UnboundIdleTimeout : BoundIdleTimeout;
                 var idleTime = now - session.LastActiveAt;
 
                 if (idleTime <= timeout)
@@ -334,8 +331,12 @@ namespace WebSocketDemo
         public Task BroadcastBinaryAsync(
             byte[] data, string? exceptPlayerId = null, uint roomId = 0, string? serverId = null)
         {
-            foreach (PlayerSession session in SessionsForRoom(roomId))
+            ConcurrentDictionary<string, PlayerSession>? target = GetSessionMapForRoom(roomId);
+            if (target == null) return Task.CompletedTask;
+
+            foreach (var entry in target)
             {
+                PlayerSession session = entry.Value;
                 if (session.IsConnected && !string.IsNullOrWhiteSpace(session.UserId) &&
                     session.PlayerId != exceptPlayerId &&
                     (serverId == null || session.ServerId == serverId) &&
@@ -357,8 +358,12 @@ namespace WebSocketDemo
             string? serverId = null,
             int maxAgeMs = 0)
         {
-            foreach (PlayerSession session in SessionsForRoom(roomId))
+            ConcurrentDictionary<string, PlayerSession>? target = GetSessionMapForRoom(roomId);
+            if (target == null) return;
+
+            foreach (var entry in target)
             {
+                PlayerSession session = entry.Value;
                 if (session.IsConnected &&
                     !string.IsNullOrWhiteSpace(session.UserId) &&
                     session.PlayerId != exceptPlayerId &&
@@ -378,8 +383,12 @@ namespace WebSocketDemo
             string? serverId = null,
             int maxAgeMs = 0)
         {
-            foreach (PlayerSession session in SessionsForRoom(roomId))
+            ConcurrentDictionary<string, PlayerSession>? target = GetSessionMapForRoom(roomId);
+            if (target == null) return;
+
+            foreach (var entry in target)
             {
+                PlayerSession session = entry.Value;
                 if (session.IsConnected &&
                     !string.IsNullOrWhiteSpace(session.UserId) &&
                     session.PlayerId != exceptPlayerId &&
@@ -396,14 +405,24 @@ namespace WebSocketDemo
             ulong key, byte[] data, string? exceptPlayerId = null,
             uint roomId = 0, string? serverId = null)
         {
-            foreach (PlayerSession session in SessionsForRoom(roomId))
+            ConcurrentDictionary<string, PlayerSession>? target = GetSessionMapForRoom(roomId);
+            if (target == null) return;
+
+            foreach (var entry in target)
             {
+                PlayerSession session = entry.Value;
                 if (session.IsConnected && !string.IsNullOrWhiteSpace(session.UserId) &&
                     session.PlayerId != exceptPlayerId &&
                     (serverId == null || session.ServerId == serverId) &&
                     (roomId == 0 || session.NetworkRoomId == roomId))
                     session.QueueLatestControlBinary(key, data);
             }
+        }
+
+        private ConcurrentDictionary<string, PlayerSession>? GetSessionMapForRoom(uint roomId)
+        {
+            if (roomId == 0) return _sessions;
+            return _roomSessions.TryGetValue(roomId, out var members) ? members : null;
         }
 
         internal IEnumerable<PlayerSession> SessionsForRoom(uint roomId)
@@ -553,25 +572,81 @@ namespace WebSocketDemo
                 previous.RoomId == snapshot.RoomId && previous.SceneEpoch == snapshot.SceneEpoch &&
                 snapshot.Sequence <= previous.Sequence)
                 return;
+            if (!NetworkStateValidation.IsWithinSpeedEnvelope(
+                    sender.LastNetworkTransform, snapshot, ref sender.MoveBurstAllowance))
+                return;
+
             var cached = snapshot.Clone();
             sender.LastNetworkTransform = cached;
+            ulong key = CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate, snapshot.ObjectId);
             if (sender.NetworkRoomId == NetworkRoomManager.LobbyRoomId)
             {
                 await UpdateLobbyAoiAsync(sender);
-                var bytes = DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
-                    ServerMsgType = ServerMsgType.NetworkTransformUpdate,
-                    NetworkTransform = cached });
-                SendToObserversLatest(sender, CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate,
-                    snapshot.ObjectId), bytes, maxAgeMs: 250);
+                DeferredMessagePacket? legacyBytes = null;
+                DeferredMessagePacket? compactBytes = null;
+                foreach (uint objectId in sender.VisibleNetworkObjects.Keys)
+                {
+                    if (!_lobbySubjects.TryGetValue(objectId, out PlayerSession? observer) ||
+                        !observer.IsConnected || observer.PlayerId == sender.PlayerId)
+                        continue;
+                    if (observer.SupportsCompactTransforms)
+                    {
+                        compactBytes ??= DeferredMessagePacket.FromOwnedMessage(new Msg
+                        {
+                            MsgType = ProtobufMsgType.Server,
+                            ServerMsgType = ServerMsgType.NetworkTransformUpdate,
+                            CompactTransforms = CompactTransformCodec.EncodeSingle(cached)
+                        });
+                        observer.QueueLatestPayload(key, compactBytes, maxAgeMs: 250);
+                    }
+                    else
+                    {
+                        legacyBytes ??= DeferredMessagePacket.FromOwnedMessage(new Msg
+                        {
+                            MsgType = ProtobufMsgType.Server,
+                            ServerMsgType = ServerMsgType.NetworkTransformUpdate,
+                            NetworkTransform = cached
+                        });
+                        observer.QueueLatestPayload(key, legacyBytes, maxAgeMs: 250);
+                    }
+                }
             }
             else
             {
                 if (!HasRoomObserver(sender.NetworkRoomId, sender.PlayerId)) return;
-                var bytes = DeferredMessagePacket.FromOwnedMessage(new Msg { MsgType = ProtobufMsgType.Server,
-                    ServerMsgType = ServerMsgType.NetworkTransformUpdate,
-                    NetworkTransform = cached });
-                BroadcastLatestBinary(CreateRealtimeKey(ServerMsgType.NetworkTransformUpdate, snapshot.ObjectId),
-                    bytes, sender.PlayerId, sender.NetworkRoomId, sender.ServerId, maxAgeMs: 250);
+                DeferredMessagePacket? legacyBytes = null;
+                DeferredMessagePacket? compactBytes = null;
+                foreach (PlayerSession receiver in SessionsForRoom(sender.NetworkRoomId))
+                {
+                    if (!receiver.IsConnected || string.IsNullOrWhiteSpace(receiver.UserId) ||
+                        receiver.PlayerId == sender.PlayerId ||
+                        receiver.ServerId != sender.ServerId ||
+                        receiver.NetworkRoomId != sender.NetworkRoomId)
+                        continue;
+                    if (!NetworkStateValidation.ShouldForwardByDistanceLod(receiver.LastNetworkTransform, cached))
+                        continue;
+
+                    if (receiver.SupportsCompactTransforms)
+                    {
+                        compactBytes ??= DeferredMessagePacket.FromOwnedMessage(new Msg
+                        {
+                            MsgType = ProtobufMsgType.Server,
+                            ServerMsgType = ServerMsgType.NetworkTransformUpdate,
+                            CompactTransforms = CompactTransformCodec.EncodeSingle(cached)
+                        });
+                        receiver.QueueLatestPayload(key, compactBytes, maxAgeMs: 250);
+                    }
+                    else
+                    {
+                        legacyBytes ??= DeferredMessagePacket.FromOwnedMessage(new Msg
+                        {
+                            MsgType = ProtobufMsgType.Server,
+                            ServerMsgType = ServerMsgType.NetworkTransformUpdate,
+                            NetworkTransform = cached
+                        });
+                        receiver.QueueLatestPayload(key, legacyBytes, maxAgeMs: 250);
+                    }
+                }
             }
         }
 

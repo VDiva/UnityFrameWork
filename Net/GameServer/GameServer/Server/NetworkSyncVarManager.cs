@@ -60,6 +60,79 @@ public sealed class NetworkSyncVarManager
         }.ToByteArray(), sender.PlayerId, roomId);
     }
 
+    public async Task RelayBatchAsync(PlayerSession sender, Google.Protobuf.Collections.RepeatedField<NetworkSyncVarData> inputs)
+    {
+        if (inputs == null || inputs.Count == 0 || inputs.Count > MaxFieldsPerObject || sender.NetworkRoomId == 0)
+            return;
+
+        uint roomId = sender.NetworkRoomId;
+        List<NetworkSyncVarData>? accepted = null;
+        uint checkedObjectId = 0;
+        bool checkedObjectAllowed = false;
+
+        for (int i = 0; i < inputs.Count; i++)
+        {
+            NetworkSyncVarData? input = inputs[i];
+            if (input == null || input.ObjectId == 0 || input.Value.Length > MaxValueBytes)
+                continue;
+
+            if (input.ObjectId != sender.NetworkObjectId)
+            {
+                if (input.ObjectId != checkedObjectId)
+                {
+                    checkedObjectId = input.ObjectId;
+                    checkedObjectAllowed = NetworkRoomObjectManager.Instance.CanSync(sender, input.ObjectId);
+                }
+                if (!checkedObjectAllowed)
+                    continue;
+            }
+
+            NetworkSyncVarData state = input.Clone();
+            var key = new SyncKey(state.BehaviourId, state.FieldId);
+            ObjectStates objectStates = _statesByObject.GetOrAdd(state.ObjectId, _ => new ObjectStates());
+            bool stored = false;
+            lock (objectStates.Gate)
+            {
+                bool exists = objectStates.Values.TryGetValue(key, out var current);
+                if ((!exists || state.Sequence > current!.Data.Sequence) &&
+                    (exists || objectStates.Values.Count < MaxFieldsPerObject))
+                {
+                    int bytes = state.CalculateSize();
+                    int nextBytes = objectStates.Bytes - (current?.Bytes ?? 0) + bytes;
+                    if (nextBytes <= MaxObjectBytes)
+                    {
+                        objectStates.Values[key] = new SyncState(roomId, state, bytes);
+                        objectStates.Bytes = nextBytes;
+                        stored = true;
+                    }
+                }
+            }
+
+            if (stored)
+            {
+                accepted ??= new List<NetworkSyncVarData>(inputs.Count);
+                accepted.Add(state);
+            }
+        }
+
+        if (accepted == null || accepted.Count == 0 ||
+            !PlayerSessionManager.Instance.HasRoomObserver(roomId, sender.PlayerId))
+            return;
+
+        var outbound = new Msg
+        {
+            MsgType = ProtobufMsgType.Server,
+            ServerMsgType = ServerMsgType.NetworkSyncVarUpdate
+        };
+        if (accepted.Count == 1)
+            outbound.NetworkSyncVar = accepted[0];
+        else
+            outbound.NetworkSyncVars.AddRange(accepted);
+
+        await PlayerSessionManager.Instance.BroadcastBinaryAsync(
+            outbound.ToByteArray(), sender.PlayerId, roomId);
+    }
+
     public async Task SendObjectStateAsync(PlayerSession receiver, uint objectId)
     {
         if (!_statesByObject.TryGetValue(objectId, out var objectStates)) return;

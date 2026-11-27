@@ -20,14 +20,32 @@ public sealed class SessionSendQueue
         public ISessionPacketPayload MergeFrom(ISessionPacketPayload previous) =>
             Merge == null ? this : new BytePayload(Merge(previous.GetBytes(), Data), Merge);
     }
-    private sealed record Packet(ISessionPacketPayload Payload, WebSocketMessageType Type, ulong? Key,
-        long QueuedAt, int MaxAgeMs);
+    private readonly struct Packet
+    {
+        public readonly ISessionPacketPayload Payload;
+        public readonly WebSocketMessageType Type;
+        public readonly ulong? Key;
+        public readonly long QueuedAt;
+        public readonly int MaxAgeMs;
+        public readonly bool PreferRealtime;
+
+        public Packet(ISessionPacketPayload payload, WebSocketMessageType type, ulong? key,
+            long queuedAt, int maxAgeMs, bool preferRealtime)
+        {
+            Payload = payload;
+            Type = type;
+            Key = key;
+            QueuedAt = queuedAt;
+            MaxAgeMs = maxAgeMs;
+            PreferRealtime = preferRealtime;
+        }
+    }
     private readonly object _gate = new();
     private readonly LinkedList<Packet> _packets = new();
     private readonly Dictionary<ulong, LinkedListNode<Packet>> _latest = new();
     private readonly SemaphoreSlim _signal = new(0, 1);
     private readonly CancellationTokenSource _stop = new();
-    private readonly Func<byte[], WebSocketMessageType, CancellationToken, Task> _send;
+    private readonly Func<byte[], WebSocketMessageType, bool, bool, CancellationToken, Task> _send;
     private readonly Action<Exception> _failed;
     private readonly int _maxPackets;
     private readonly int _maxBytes;
@@ -56,6 +74,22 @@ public sealed class SessionSendQueue
     public SessionSendQueue(Func<byte[], WebSocketMessageType, CancellationToken, Task> send,
         Action<Exception> failed, int maxPackets = 1024, int maxBytes = 4 * 1024 * 1024,
         TimeSpan? timeout = null, string label = "session", TimeSpan? realtimeInterval = null)
+        : this((data, type, _, _, token) => send(data, type, token),
+            failed, maxPackets, maxBytes, timeout, label, realtimeInterval)
+    {
+    }
+
+    public SessionSendQueue(Func<byte[], WebSocketMessageType, bool, CancellationToken, Task> send,
+        Action<Exception> failed, int maxPackets = 1024, int maxBytes = 4 * 1024 * 1024,
+        TimeSpan? timeout = null, string label = "session", TimeSpan? realtimeInterval = null)
+        : this((data, type, isRealtime, _, token) => send(data, type, isRealtime, token),
+            failed, maxPackets, maxBytes, timeout, label, realtimeInterval)
+    {
+    }
+
+    public SessionSendQueue(Func<byte[], WebSocketMessageType, bool, bool, CancellationToken, Task> send,
+        Action<Exception> failed, int maxPackets = 1024, int maxBytes = 4 * 1024 * 1024,
+        TimeSpan? timeout = null, string label = "session", TimeSpan? realtimeInterval = null)
     {
         if (maxPackets <= 0 || maxBytes <= 0) throw new ArgumentOutOfRangeException(nameof(maxPackets));
         var interval = realtimeInterval ?? TimeSpan.Zero;
@@ -73,14 +107,17 @@ public sealed class SessionSendQueue
     }
 
     public bool Enqueue(byte[] data, WebSocketMessageType type, ulong? key = null,
-        Func<byte[], byte[], byte[]>? merge = null, int maxAgeMs = 0)
+        Func<byte[], byte[], byte[]>? merge = null, int maxAgeMs = 0, bool preferRealtime = false)
     {
-        return Enqueue(new BytePayload(data ?? throw new ArgumentNullException(nameof(data)), merge), type, key, maxAgeMs);
+        return Enqueue(new BytePayload(data ?? throw new ArgumentNullException(nameof(data)), merge),
+            type, key, maxAgeMs, preferRealtime);
     }
 
-    public bool Enqueue(ISessionPacketPayload payload, WebSocketMessageType type, ulong? key = null, int maxAgeMs = 0)
+    public bool Enqueue(ISessionPacketPayload payload, WebSocketMessageType type, ulong? key = null,
+        int maxAgeMs = 0, bool preferRealtime = false)
     {
         ArgumentNullException.ThrowIfNull(payload);
+        bool isRealtime = key.HasValue || preferRealtime;
         bool overflow;
         lock (_gate)
         {
@@ -100,10 +137,13 @@ public sealed class SessionSendQueue
                     (nextBytes > _maxBytes || (previous == null && _packets.Count >= _maxPackets)))
                 {
                     var next = node.Next;
-                    if (node.Value.Key.HasValue && !ReferenceEquals(node, previous))
+                    if ((node.Value.Key.HasValue || node.Value.PreferRealtime) && !ReferenceEquals(node, previous))
                     {
-                        if (_latest.TryGetValue(node.Value.Key.Value, out var indexed) &&
+                        if (node.Value.Key.HasValue &&
+                            _latest.TryGetValue(node.Value.Key.Value, out var indexed) &&
                             ReferenceEquals(indexed, node)) _latest.Remove(node.Value.Key.Value);
+                        if (!node.Value.Key.HasValue && _reliablePackets > 0)
+                            _reliablePackets--;
                         _bytes -= node.Value.Payload.ByteCount;
                         _packets.Remove(node);
                         nextBytes = (long)_bytes + payload.ByteCount - (previous?.Value.Payload.ByteCount ?? 0);
@@ -113,10 +153,10 @@ public sealed class SessionSendQueue
             }
             overflow = nextBytes > _maxBytes || (previous == null && _packets.Count >= _maxPackets);
             // 单个实时包放不下或队列全部是可靠包时，跳过这帧即可，不中止连接。
-            if (overflow && key.HasValue) return false;
+            if (overflow && isRealtime) return false;
             if (!overflow)
             {
-                var packet = new Packet(payload, type, key, Environment.TickCount64, maxAgeMs);
+                var packet = new Packet(payload, type, key, Environment.TickCount64, maxAgeMs, preferRealtime);
                 if (previous != null)
                 {
                     previous.Value = packet;
@@ -125,13 +165,13 @@ public sealed class SessionSendQueue
                 else
                 {
                     // 不跨越生成、销毁、场景、RPC 等可靠消息替换状态，避免时间倒序。
-                    if (!key.HasValue) { _latest.Clear(); _reliablePackets++; }
+                    if (!isRealtime) _latest.Clear();
+                    if (!key.HasValue) _reliablePackets++;
                     var node = _packets.AddLast(packet);
                     if (key.HasValue) _latest[key.Value] = node;
                 }
                 _bytes = (int)nextBytes;
-                // 空队列首次入队才唤醒；实时覆盖不打断发送窗口，避免每次更新创建一次等待。
-                // 可靠消息始终可以唤醒窗口等待，保持控制消息低延迟。
+                // 空队列首次入队或非合批实时包（如语音）/可靠消息立即唤醒发送循环，降低延迟。
                 if ((!key.HasValue || previous == null && _packets.Count == 1) && _signal.CurrentCount == 0)
                     _signal.Release();
                 return true;
@@ -143,7 +183,7 @@ public sealed class SessionSendQueue
             _bytes = 0;
             _reliablePackets = 0;
         }
-        _stop.Cancel();
+        try { _stop.Cancel(); } catch (ObjectDisposedException) { }
         _failed(new IOException("send queue exceeded packet/byte limit"));
         return false;
     }
@@ -158,7 +198,7 @@ public sealed class SessionSendQueue
             _bytes = 0;
             _reliablePackets = 0;
         }
-        _stop.Cancel();
+        try { _stop.Cancel(); } catch (ObjectDisposedException) { }
     }
 
     private async Task RunAsync()
@@ -174,7 +214,8 @@ public sealed class SessionSendQueue
                 bool sentRealtime = false;
                 while (true)
                 {
-                    Packet? packet = null;
+                    Packet packet = default;
+                    bool hasPacket = false;
                     int waitMs = 0;
                     lock (_gate)
                     {
@@ -185,14 +226,14 @@ public sealed class SessionSendQueue
                             if (sentRealtime) _nextRealtimeFlush = Environment.TickCount64 + _realtimeIntervalMs;
                             break;
                         }
-                        // 按发送窗口合并状态；可靠消息到达会唤醒等待并立即放行前序状态。
-                        // 不逐个对象限速，同一窗口中不同 key 的状态都能发送。
+                        // 按发送窗口合并状态；可靠消息或低延迟语音包到达会立即放行。
                         long remaining = _nextRealtimeFlush - Environment.TickCount64;
                         if (!sentRealtime && first.Value.Key.HasValue && _reliablePackets == 0 && remaining > 0)
                             waitMs = (int)Math.Min(remaining, int.MaxValue);
                         else
                         {
                             packet = first.Value;
+                            hasPacket = true;
                             _packets.RemoveFirst();
                             _bytes -= packet.Payload.ByteCount;
                             if (!packet.Key.HasValue) _reliablePackets--;
@@ -205,8 +246,8 @@ public sealed class SessionSendQueue
                         await _signal.WaitAsync(waitMs, _stop.Token);
                         continue;
                     }
-                    if (packet == null) continue;
-                    // Transform 是可丢帧状态；过期后发送只会挡住更新的位置。
+                    if (!hasPacket) continue;
+                    // Transform/Voice 是可丢帧状态；过期后发送只会挡住更新的实时数据。
                     if (packet.MaxAgeMs > 0 &&
                         Environment.TickCount64 - packet.QueuedAt > packet.MaxAgeMs)
                     {
@@ -214,13 +255,15 @@ public sealed class SessionSendQueue
                         continue;
                     }
                     // 编码在锁外、真正发送前才执行，被覆盖或过期的快照无需编码。
-                    byte[] data = packet.Payload.GetBytes();
+                    byte[] data = packet.Payload!.GetBytes();
                     if (data.Length != packet.Payload.ByteCount) throw new InvalidOperationException("packet byte count changed");
                     sentRealtime |= packet.Key.HasValue;
+                    bool routeRealtime = packet.Key.HasValue || packet.PreferRealtime;
+                    bool allowUnreliable = routeRealtime && packet.MaxAgeMs > 0;
                     deadline.CancelAfter(_timeout);
                     long sendStarted = Environment.TickCount64;
                     // 发送必须支持取消；发生超时后直接中止连接，不再继续发后续可靠包。
-                    await _send(data, packet.Type, deadline.Token);
+                    await _send(data, packet.Type, routeRealtime, allowUnreliable, deadline.Token);
                     Interlocked.Increment(ref _sentPackets);
                     deadline.Token.ThrowIfCancellationRequested();
                     deadline.CancelAfter(Timeout.InfiniteTimeSpan);
@@ -241,6 +284,12 @@ public sealed class SessionSendQueue
         {
             Stop();
             _failed(exception);
+        }
+        finally
+        {
+            lock (_gate) { _closed = true; }
+            _signal.Dispose();
+            _stop.Dispose();
         }
     }
 }
