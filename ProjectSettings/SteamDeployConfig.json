@@ -1,0 +1,18 @@
+{
+    "steamCmdPath": "",
+    "steamAccount": "",
+    "appId": "480",
+    "depotId": "481",
+    "branchName": "",
+    "buildsRootDir": "Builds/Steam",
+    "executableName": "awaw",
+    "buildTarget": 19,
+    "developmentBuild": false,
+    "writeSteamAppIdInBuild": false,
+    "buildDescription": "",
+    "excludePatterns": [
+        "*.pdb",
+        "*_BurstDebugInformation_DoNotShip*",
+        "*_BackUpThisFolder_ButDontShipItWithYourGame*"
+    ]
+}

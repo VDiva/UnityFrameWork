@@ -16,7 +16,9 @@ namespace FrameWork.Editor.SteamDeploy
         private Process _activeProcess;
         private readonly object _procGate = new object();
 
-        public bool IsUploading
+        public bool IsUploading => IsBusy;
+
+        public bool IsBusy
         {
             get
             {
@@ -189,17 +191,180 @@ namespace FrameWork.Editor.SteamDeploy
             return appVdfPath;
         }
 
+        public bool StartVerifyAccount(
+            SteamDeployConfig config,
+            string password,
+            string guardCode,
+            Action<string> onLog,
+            Action<bool, string> onCompleted)
+        {
+            if (IsBusy)
+            {
+                onCompleted?.Invoke(false, "已有 SteamCMD 任务正在运行。");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.steamCmdPath) || !File.Exists(config.steamCmdPath))
+            {
+                onCompleted?.Invoke(false, "未找到 steamcmd.exe，请先配置正确的 SteamCMD 路径。");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.steamAccount))
+            {
+                onCompleted?.Invoke(false, "请填写 Steam 开发者账号。");
+                return false;
+            }
+
+            string account = config.steamAccount.Trim();
+            string loginArg = BuildLoginArgument(account, password, guardCode);
+            string args = $"+set_steam_guard_code \"{(guardCode ?? string.Empty).Trim()}\" {loginArg} +quit";
+            if (string.IsNullOrWhiteSpace(guardCode))
+                args = $"{loginArg} +quit";
+
+            onLog?.Invoke($"[SteamCMD] 开始验证账号：{account} ...");
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = config.steamCmdPath,
+                Arguments = args,
+                WorkingDirectory = Path.GetDirectoryName(config.steamCmdPath) ?? Directory.GetCurrentDirectory(),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+
+            var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            bool loggedInOk = false;
+            bool needGuard = false;
+            bool invalidPassword = false;
+
+            void InspectLine(string line)
+            {
+                if (line.IndexOf("Logged in OK", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("Waiting for user info...OK", StringComparison.OrdinalIgnoreCase) >= 0)
+                    loggedInOk = true;
+                if (line.IndexOf("Steam Guard", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("Two-factor", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("confirmation", StringComparison.OrdinalIgnoreCase) >= 0)
+                    needGuard = true;
+                if (line.IndexOf("Invalid Password", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    line.IndexOf("Rate Limit Exceeded", StringComparison.OrdinalIgnoreCase) >= 0)
+                    invalidPassword = true;
+            }
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (string.IsNullOrEmpty(e.Data)) return;
+                InspectLine(e.Data);
+                onLog?.Invoke(MaskSecret(e.Data, password));
+            };
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (string.IsNullOrEmpty(e.Data)) return;
+                InspectLine(e.Data);
+                onLog?.Invoke("[ERR] " + MaskSecret(e.Data, password));
+            };
+            process.Exited += (_, _) =>
+            {
+                int exitCode = -1;
+                try { exitCode = process.ExitCode; } catch { }
+                lock (_procGate)
+                {
+                    if (ReferenceEquals(_activeProcess, process))
+                        _activeProcess = null;
+                }
+                process.Dispose();
+
+                bool ok = loggedInOk || (exitCode == 0 && !invalidPassword && !needGuard);
+                string msg;
+                if (ok)
+                    msg = $"账号验证成功：{account}（本机令牌已就绪，可直接上传）";
+                else if (invalidPassword)
+                    msg = "账号验证失败：密码错误或触发登录频率限制，请检查账号密码。";
+                else if (needGuard)
+                    msg = "需要 Steam Guard 验证：请填入手机/邮箱验证码后重试，或点击「弹窗登录」完成首次授权。";
+                else
+                    msg = $"账号验证未通过 (ExitCode={exitCode})，请查看下方 SteamCMD 日志。";
+
+                onCompleted?.Invoke(ok, msg);
+            };
+
+            try
+            {
+                lock (_procGate)
+                    _activeProcess = process;
+
+                process.Start();
+                // 关闭标准输入，避免需要交互输入时无限期挂死。
+                try { process.StandardInput.Close(); } catch { }
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                lock (_procGate)
+                {
+                    if (ReferenceEquals(_activeProcess, process))
+                        _activeProcess = null;
+                }
+                process.Dispose();
+                onCompleted?.Invoke(false, $"启动 SteamCMD 验证失败：{ex.Message}");
+                return false;
+            }
+        }
+
+        public bool OpenInteractiveLogin(SteamDeployConfig config, Action<string> onLog, out string error)
+        {
+            error = null;
+            if (string.IsNullOrWhiteSpace(config.steamCmdPath) || !File.Exists(config.steamCmdPath))
+            {
+                error = "未找到 steamcmd.exe，请先配置正确的 SteamCMD 路径。";
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.steamAccount))
+            {
+                error = "请先填写 Steam 开发者账号。";
+                return false;
+            }
+
+            try
+            {
+                string account = config.steamAccount.Trim();
+                var psi = new ProcessStartInfo
+                {
+                    FileName = config.steamCmdPath,
+                    Arguments = $"+login \"{account}\"",
+                    WorkingDirectory = Path.GetDirectoryName(config.steamCmdPath) ?? Directory.GetCurrentDirectory(),
+                    UseShellExecute = true,
+                    CreateNoWindow = false
+                };
+                Process.Start(psi);
+                onLog?.Invoke($"[SteamCMD] 已弹出交互式登录窗口（账号：{account}）。请在黑框内完成密码/Steam Guard 确认，看到 Steam> 后输入 quit 即可缓存登录态。");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = $"打开 SteamCMD 登录窗口失败：{ex.Message}";
+                return false;
+            }
+        }
+
         public bool StartUpload(
             SteamDeployConfig config,
             string password,
             SteamBuildEntry build,
             string description,
             Action<string> onLog,
-            Action<bool, string> onCompleted)
+            Action<bool, string> onCompleted,
+            string guardCode = null)
         {
-            if (IsUploading)
+            if (IsBusy)
             {
-                onCompleted?.Invoke(false, "已有上传任务正在运行。");
+                onCompleted?.Invoke(false, "已有 SteamCMD 任务正在运行。");
                 return false;
             }
             if (build == null || !Directory.Exists(build.FullPath))
@@ -225,9 +390,7 @@ namespace FrameWork.Editor.SteamDeploy
 
             string appVdfPath = GenerateVdfFiles(config, build, description);
             string account = config.steamAccount.Trim();
-            string loginArg = string.IsNullOrEmpty(password)
-                ? $"+login \"{account}\""
-                : $"+login \"{account}\" \"{password}\"";
+            string loginArg = BuildLoginArgument(account, password, guardCode);
             string args = $"{loginArg} +run_app_build \"{appVdfPath}\" +quit";
 
             onLog?.Invoke($"[SteamCMD] 准备上传：{build.FolderName} (AppID={config.appId}, DepotID={config.depotId}, Branch={(string.IsNullOrWhiteSpace(config.branchName) ? "<不切分支>" : config.branchName)})");
@@ -404,6 +567,16 @@ namespace FrameWork.Editor.SteamDeploy
             }
             catch { }
             return total;
+        }
+
+        private static string BuildLoginArgument(string account, string password, string guardCode)
+        {
+            if (string.IsNullOrEmpty(password))
+                return $"+login \"{account}\"";
+            string code = guardCode?.Trim();
+            return string.IsNullOrEmpty(code)
+                ? $"+login \"{account}\" \"{password}\""
+                : $"+login \"{account}\" \"{password}\" \"{code}\"";
         }
 
         private static string EscapeVdf(string value) =>

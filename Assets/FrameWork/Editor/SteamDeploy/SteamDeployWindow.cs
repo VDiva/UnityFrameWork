@@ -36,7 +36,9 @@ namespace FrameWork.Editor.SteamDeploy
         private List<SteamBuildEntry> _builds = new List<SteamBuildEntry>();
         private string _selectedBuildPath;
         private string _password = string.Empty;
+        private string _guardCode = string.Empty;
         private bool _rememberPassword;
+        private bool _accountVerified;
         private bool _showConfigFoldout = true;
         private bool _autoScrollLog = true;
         private string _statusMessage = "就绪";
@@ -154,7 +156,7 @@ namespace FrameWork.Editor.SteamDeploy
                     {
                         Color prevBg = GUI.backgroundColor;
                         GUI.backgroundColor = new Color(0.95f, 0.45f, 0.45f);
-                        if (GUILayout.Button("终止上传", GUILayout.Width(90f), GUILayout.Height(30f)))
+                        if (GUILayout.Button("终止任务", GUILayout.Width(90f), GUILayout.Height(30f)))
                             _service.CancelUpload(EnqueueLog);
                         GUI.backgroundColor = prevBg;
                     }
@@ -165,7 +167,7 @@ namespace FrameWork.Editor.SteamDeploy
                 GUI.contentColor = uploading
                     ? new Color(1f, 0.85f, 0.35f)
                     : (_statusIsError ? new Color(1f, 0.45f, 0.45f) : new Color(0.75f, 0.95f, 0.75f));
-                EditorGUILayout.LabelField($"状态：{(uploading ? "SteamCMD 正在上传中..." : _statusMessage)}", EditorStyles.miniBoldLabel);
+                EditorGUILayout.LabelField($"状态：{(uploading ? "SteamCMD 任务执行中..." : _statusMessage)}", EditorStyles.miniBoldLabel);
                 GUI.contentColor = prevColor;
             }
         }
@@ -194,8 +196,14 @@ namespace FrameWork.Editor.SteamDeploy
 
                 using (new EditorGUILayout.HorizontalScope())
                 {
+                    string prevAcc = _config.steamAccount;
                     _config.steamAccount = EditorGUILayout.TextField("Steam 账号", _config.steamAccount);
+                    if (_config.steamAccount != prevAcc) _accountVerified = false;
+
+                    string prevPwd = _password;
                     _password = EditorGUILayout.PasswordField("密码(可留空)", _password);
+                    if (_password != prevPwd) _accountVerified = false;
+
                     bool nextRemember = EditorGUILayout.ToggleLeft("本机记住", _rememberPassword, GUILayout.Width(76f));
                     if (nextRemember != _rememberPassword)
                     {
@@ -203,6 +211,22 @@ namespace FrameWork.Editor.SteamDeploy
                         SteamDeployConfig.RememberPassword = _rememberPassword;
                         SteamDeployConfig.SavePassword(_password);
                     }
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    _guardCode = EditorGUILayout.TextField(
+                        new GUIContent("Steam Guard 码", "首次登录或需要令牌时填写 5 位验证码；已缓存令牌可留空"),
+                        _guardCode);
+
+                    Color prevBg = GUI.backgroundColor;
+                    GUI.backgroundColor = _accountVerified ? new Color(0.55f, 0.9f, 0.55f) : prevBg;
+                    if (GUILayout.Button(_accountVerified ? "已验证 ✓" : "验证账号", GUILayout.Width(86f)))
+                        RunVerifyAccount();
+                    GUI.backgroundColor = prevBg;
+
+                    if (GUILayout.Button(new GUIContent("弹窗登录", "弹出 SteamCMD 黑框进行首次密码/手机令牌授权并缓存登录态"), GUILayout.Width(76f)))
+                        RunInteractiveLogin();
                 }
 
                 using (new EditorGUILayout.HorizontalScope())
@@ -427,6 +451,32 @@ namespace FrameWork.Editor.SteamDeploy
             StartUploadInternal(created);
         }
 
+        private void RunVerifyAccount()
+        {
+            SaveAllConfig();
+            _accountVerified = false;
+            SetStatus($"正在验证 Steam 账号 ({_config.steamAccount})...", false);
+            _service.StartVerifyAccount(_config, _password, _guardCode, EnqueueLog, (ok, msg) =>
+            {
+                EnqueueLog($"[Verify] {msg}");
+                ScheduleMainThread(() =>
+                {
+                    _accountVerified = ok;
+                    if (ok) _guardCode = string.Empty;
+                    SetStatus(msg, !ok);
+                });
+            });
+        }
+
+        private void RunInteractiveLogin()
+        {
+            SaveAllConfig();
+            if (_service.OpenInteractiveLogin(_config, EnqueueLog, out string err))
+                SetStatus("已打开 SteamCMD 登录窗口，完成授权并输入 quit 后点击「验证账号」即可。", false);
+            else
+                SetStatus(err, true);
+        }
+
         private void StartUploadInternal(SteamBuildEntry target)
         {
             SetStatus($"正在上传 {target.FolderName}...", false);
@@ -438,7 +488,7 @@ namespace FrameWork.Editor.SteamDeploy
                     RefreshBuilds(selectLatestIfEmpty: false);
                     SetStatus(msg, !ok);
                 });
-            });
+            }, _guardCode);
         }
 
         private void RefreshBuilds(bool selectLatestIfEmpty)
