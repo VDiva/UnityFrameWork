@@ -13,6 +13,7 @@ public static class ServerVersionProtocol
     public const string QueueWaitMsKey = "__server_queue_wait_ms";
     public const string WriteMsKey = "__server_write_ms";
     public const string ExpiredRealtimeKey = "__server_expired_realtime";
+    public const string ServerTimeMsKey = "__server_time_ms";
     private static IConfiguration? _configuration;
 
     public static void Configure(IConfiguration configuration) => _configuration = configuration;
@@ -47,5 +48,6 @@ public static class ServerVersionProtocol
         response.DataDic[QueueWaitMsKey] = stats.WaitMs.ToString();
         response.DataDic[WriteMsKey] = stats.WriteMs.ToString();
         response.DataDic[ExpiredRealtimeKey] = stats.Expired.ToString();
+        response.DataDic[ServerTimeMsKey] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
     }
 }

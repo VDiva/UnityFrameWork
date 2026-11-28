@@ -171,8 +171,8 @@ public sealed class SessionSendQueue
                     if (key.HasValue) _latest[key.Value] = node;
                 }
                 _bytes = (int)nextBytes;
-                // 空队列首次入队或非合批实时包（如语音）/可靠消息立即唤醒发送循环，降低延迟。
-                if ((!key.HasValue || previous == null && _packets.Count == 1) && _signal.CurrentCount == 0)
+                // 空队列首次入队、高优先级实时状态（preferRealtime）或可靠消息立即唤醒发送循环，降低延迟。
+                if ((!key.HasValue || preferRealtime || previous == null && _packets.Count == 1) && _signal.CurrentCount == 0)
                     _signal.Release();
                 return true;
             }
@@ -226,9 +226,10 @@ public sealed class SessionSendQueue
                             if (sentRealtime) _nextRealtimeFlush = Environment.TickCount64 + _realtimeIntervalMs;
                             break;
                         }
-                        // 按发送窗口合并状态；可靠消息或低延迟语音包到达会立即放行。
+                        // 按发送窗口合并普通实时状态；可靠消息、语音包或高优先级玩家位置（PreferRealtime）立即放行。
                         long remaining = _nextRealtimeFlush - Environment.TickCount64;
-                        if (!sentRealtime && first.Value.Key.HasValue && _reliablePackets == 0 && remaining > 0)
+                        if (!sentRealtime && first.Value.Key.HasValue && !first.Value.PreferRealtime &&
+                            _reliablePackets == 0 && remaining > 0)
                             waitMs = (int)Math.Min(remaining, int.MaxValue);
                         else
                         {

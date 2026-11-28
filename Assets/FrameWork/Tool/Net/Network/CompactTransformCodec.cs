@@ -31,6 +31,9 @@ namespace FrameWork.Net.Network
         private const byte ExtraExactBaseTime = 0x01;
         private const byte ExtraOffsetTime = 0x02;
         private const byte ExtraHasChildren = 0x04;
+        private const byte ExtraPos2D = 0x08;
+        private const byte ExtraVel2D = 0x10;
+        private const byte ExtraRotZOnly = 0x20;
 
         private const float Sqrt2 = 1.41421356237f;
         private const float InvSqrt2 = 0.70710678118f;
@@ -159,6 +162,13 @@ namespace FrameWork.Net.Network
             }
 
             byte extra = 0;
+            bool pos2D = hasPos && Math.Abs(d.PositionZ) < 0.0001f;
+            bool vel2D = (flags & FlagNonZeroVel) != 0 && Math.Abs(d.VelocityZ) < 0.0005f;
+            bool rotZOnly = hasRot && Math.Abs(d.RotationX) < 0.0005f && Math.Abs(d.RotationY) < 0.0005f;
+            if (pos2D) extra |= ExtraPos2D;
+            if (vel2D) extra |= ExtraVel2D;
+            if (rotZOnly) extra |= ExtraRotZOnly;
+
             float timeOffset = 0f;
             if (hasBaseTime && IsFinitePositive(d.SentTime))
             {
@@ -185,11 +195,16 @@ namespace FrameWork.Net.Network
             {
                 w.Write(d.PositionX);
                 w.Write(d.PositionY);
-                w.Write(d.PositionZ);
+                if (!pos2D) w.Write(d.PositionZ);
             }
 
             if (hasRot)
-                w.Write(PackSmallestThree(d.RotationX, d.RotationY, d.RotationZ, d.RotationW));
+            {
+                if (rotZOnly)
+                    w.Write(PackRotZ16(d.RotationZ, d.RotationW));
+                else
+                    w.Write(PackSmallestThree(d.RotationX, d.RotationY, d.RotationZ, d.RotationW));
+            }
 
             if ((flags & FlagUniformScale) != 0)
             {
@@ -206,7 +221,7 @@ namespace FrameWork.Net.Network
             {
                 w.Write(FloatToHalf(d.VelocityX));
                 w.Write(FloatToHalf(d.VelocityY));
-                w.Write(FloatToHalf(d.VelocityZ));
+                if (!vel2D) w.Write(FloatToHalf(d.VelocityZ));
             }
 
             if ((extra & ExtraOffsetTime) != 0)
@@ -264,21 +279,35 @@ namespace FrameWork.Net.Network
 
             if ((flags & FlagHasPos) != 0)
             {
-                if (pos + 12 > span.Length) return false;
+                bool pos2D = (extra & ExtraPos2D) != 0;
+                int need = pos2D ? 8 : 12;
+                if (pos + need > span.Length) return false;
                 d.PositionX = ReadSingleLE(span, ref pos);
                 d.PositionY = ReadSingleLE(span, ref pos);
-                d.PositionZ = ReadSingleLE(span, ref pos);
+                d.PositionZ = pos2D ? 0f : ReadSingleLE(span, ref pos);
             }
 
             if ((flags & FlagHasRot) != 0)
             {
-                if (pos + 4 > span.Length) return false;
-                uint packedRot = ReadUInt32LE(span, ref pos);
-                UnpackSmallestThree(packedRot, out float rx, out float ry, out float rz, out float rw);
-                d.RotationX = rx;
-                d.RotationY = ry;
-                d.RotationZ = rz;
-                d.RotationW = rw;
+                if ((extra & ExtraRotZOnly) != 0)
+                {
+                    if (pos + 2 > span.Length) return false;
+                    UnpackRotZ16(ReadUInt16LE(span, ref pos), out float rz, out float rw);
+                    d.RotationX = 0f;
+                    d.RotationY = 0f;
+                    d.RotationZ = rz;
+                    d.RotationW = rw;
+                }
+                else
+                {
+                    if (pos + 4 > span.Length) return false;
+                    uint packedRot = ReadUInt32LE(span, ref pos);
+                    UnpackSmallestThree(packedRot, out float rx, out float ry, out float rz, out float rw);
+                    d.RotationX = rx;
+                    d.RotationY = ry;
+                    d.RotationZ = rz;
+                    d.RotationW = rw;
+                }
             }
 
             if ((flags & FlagHasScaleFlag) != 0)
@@ -308,10 +337,12 @@ namespace FrameWork.Net.Network
                 d.HasVelocity = true;
                 if ((flags & FlagNonZeroVel) != 0)
                 {
-                    if (pos + 6 > span.Length) return false;
+                    bool vel2D = (extra & ExtraVel2D) != 0;
+                    int need = vel2D ? 4 : 6;
+                    if (pos + need > span.Length) return false;
                     d.VelocityX = HalfToFloat(ReadUInt16LE(span, ref pos));
                     d.VelocityY = HalfToFloat(ReadUInt16LE(span, ref pos));
-                    d.VelocityZ = HalfToFloat(ReadUInt16LE(span, ref pos));
+                    d.VelocityZ = vel2D ? 0f : HalfToFloat(ReadUInt16LE(span, ref pos));
                 }
             }
 
@@ -358,6 +389,24 @@ namespace FrameWork.Net.Network
             }
 
             return true;
+        }
+
+        public static ushort PackRotZ16(float z, float w)
+        {
+            double angle = Math.Atan2(z, w); // [-pi, pi]
+            if (angle < 0) angle += Math.PI * 2.0;
+            double norm = angle / (Math.PI * 2.0);
+            int q = (int)(norm * 65535.0 + 0.5);
+            if (q < 0) q = 0;
+            else if (q > 65535) q = 65535;
+            return (ushort)q;
+        }
+
+        public static void UnpackRotZ16(ushort packed, out float z, out float w)
+        {
+            double angle = (packed / 65535.0) * (Math.PI * 2.0);
+            z = (float)Math.Sin(angle);
+            w = (float)Math.Cos(angle);
         }
 
         public static uint PackSmallestThree(float x, float y, float z, float w)

@@ -169,6 +169,7 @@ namespace FrameWork.Net.Network
             new Dictionary<uint, List<NetworkTransformData>>();
         readonly List<NetworkTransformData> decodedCompactTransforms = new List<NetworkTransformData>(64);
         uint pendingLocalObjectId;
+        bool backgroundQualityProbing;
 
         sealed class SpawnRecord
         {
@@ -360,6 +361,21 @@ namespace FrameWork.Net.Network
                 if (item != null && item.isActiveAndEnabled)
                     item.TickAuthority(now, soloRoom);
             }
+
+            // 正式包未启用调试延迟浮层时，仍每 4 秒后台探测一次以维持 NTP 时钟同步与拥塞自适应。
+            if (GameNet.IsConnected && !backgroundQualityProbing &&
+                Time.realtimeSinceStartupAsDouble - NetworkQualityMonitor.LastProbeTime >= 4.0)
+            {
+                ProbeNetworkQualityAsync().Forget();
+            }
+        }
+
+        async UniTaskVoid ProbeNetworkQualityAsync()
+        {
+            backgroundQualityProbing = true;
+            try { await GameNet.MeasureServerLatencyAsync(3f); }
+            catch { }
+            finally { backgroundQualityProbing = false; }
         }
 
         void LateUpdate()

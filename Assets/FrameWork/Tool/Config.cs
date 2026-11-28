@@ -32,6 +32,7 @@ namespace FrameWork
         public static string DebugTcpIp => ResolveTransportAddress(_configData.debugTcpServerIp, _configData.debugServerIp, "tcp", TcpPort);
         public static string KcpServerIp => ResolveTransportAddress(_configData.kcpServerIp, _configData.serverIp, "kcp", KcpPort);
         public static string DebugKcpIp => ResolveTransportAddress(_configData.debugKcpServerIp, _configData.debugServerIp, "kcp", KcpPort);
+        public static string SteamServerAddress => _configData.steamTargetAddress;
         public static string ClientVersion => _configData.versions;
         public static string ServerVersion => _configData.serverVersion;
         public static long ConvertDateTimep(DateTime time) => new DateTimeOffset(time.ToUniversalTime()).ToUnixTimeSeconds();

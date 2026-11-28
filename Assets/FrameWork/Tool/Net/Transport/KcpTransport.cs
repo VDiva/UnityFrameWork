@@ -169,8 +169,8 @@ namespace FrameWork.Net.Transport
         public void SendRealtimeAsync(byte[] data)
         {
             if (_state != WebSocketState.Open || data == null) return;
-            // 低延迟非覆写实时流（如 Opus 语音帧）：单包 <= 安全 MTU 时直接走非可靠有序 UDP 数据报，彻底消除 KCP 队头阻塞。
-            if (TrySendUnreliableDirect(ClientTransportProtocol.FrameBinary, data))
+            // 低延迟非覆写实时流（如 Opus 语音帧）：单包 <= 安全 MTU 时直接走非可靠 UDP 数据报，彻底消除 KCP 队头阻塞。
+            if (TrySendUnreliableDirect(ClientTransportProtocol.FrameBinary, data, ordered: true))
                 return;
             lock (_sendGate)
             {
@@ -503,8 +503,8 @@ namespace FrameWork.Net.Transport
                             if (item.MaxAgeMs > 0 && unchecked(Environment.TickCount - item.QueuedAt) > item.MaxAgeMs)
                                 continue;
                             byte[] framePayload = item.Data ?? item.Deferred?.Encode();
-                            // 带有效期的可丢帧快照（如位置同步）优先走非可靠有序 UDP 数据报，动画等无有效期状态走可靠 KCP。
-                            if (item.MaxAgeMs > 0 && TrySendUnreliableDirect(item.FrameType, framePayload))
+                            // 带有效期的可丢帧快照（如位置同步）走非可靠 UDP 且 seq=0（由上层按 ObjectId 独立去重），避免跨对象乱序误杀。
+                            if (item.MaxAgeMs > 0 && TrySendUnreliableDirect(item.FrameType, framePayload, ordered: false))
                                 continue;
                             SendKcpFrameLocked(item.FrameType, framePayload);
                             sentAny = true;
@@ -687,7 +687,7 @@ namespace FrameWork.Net.Transport
             return ((ushort)CloseStatusCode.Normal, "Normal Closure");
         }
 
-        private bool TrySendUnreliableDirect(byte frameType, byte[] payload)
+        private bool TrySendUnreliableDirect(byte frameType, byte[] payload, bool ordered)
         {
             UdpClient udp = _udp;
             uint conv = _conv;
@@ -698,8 +698,12 @@ namespace FrameWork.Net.Transport
             if (payloadLen > ClientTransportProtocol.SafeUnreliablePayloadBytes)
                 return false;
 
-            uint seq = unchecked((uint)Interlocked.Increment(ref UnsafeSeqCounter));
-            if (seq == 0) seq = unchecked((uint)Interlocked.Increment(ref UnsafeSeqCounter));
+            uint seq = 0;
+            if (ordered)
+            {
+                seq = unchecked((uint)Interlocked.Increment(ref UnsafeSeqCounter));
+                if (seq == 0) seq = unchecked((uint)Interlocked.Increment(ref UnsafeSeqCounter));
+            }
             _ = _unreliableOutSeq;
 
             int total = ClientTransportProtocol.UnreliableHeaderBytes + payloadLen;

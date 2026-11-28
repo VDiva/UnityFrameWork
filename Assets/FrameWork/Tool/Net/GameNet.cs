@@ -132,6 +132,7 @@ namespace FrameWork.Net
             public readonly int ServerQueueWaitMs;
             public readonly int ServerWriteMs;
             public readonly long ExpiredRealtimePackets;
+            public readonly long ServerTimeMs;
 
             public ServerLatencySample(float rttMs, Msg response)
             {
@@ -142,6 +143,8 @@ namespace FrameWork.Net
                 ServerWriteMs = ReadInt(response, "__server_write_ms");
                 ExpiredRealtimePackets = response.DataDic.TryGetValue("__server_expired_realtime", out string value) &&
                     long.TryParse(value, out long count) ? count : 0;
+                ServerTimeMs = response.DataDic.TryGetValue("__server_time_ms", out string timeStr) &&
+                    long.TryParse(timeStr, out long serverMs) ? serverMs : 0;
             }
 
             static int ReadInt(Msg response, string key) =>
@@ -241,6 +244,9 @@ namespace FrameWork.Net
                 case NativeTransportMode.Kcp:
                     Connect(kcpAddress);
                     break;
+                case NativeTransportMode.Steam:
+                    ConnectSteam(Config.SteamServerAddress);
+                    break;
                 default:
                     Connect(wsAddress);
                     break;
@@ -298,17 +304,57 @@ namespace FrameWork.Net
 #endif
         }
 
+        /// <summary>
+        /// 预留入口：通过 Steam 网络服务连接到指定房主/中继目标（steam://&lt;hostSteamId&gt;）。
+        /// </summary>
+        public static void ConnectSteam(ulong hostSteamId)
+        {
+            if (hostSteamId == 0)
+            {
+                Debug.LogError("[GameNet] Steam 目标 ID 无效。");
+                return;
+            }
+            ConnectSteam($"steam://{hostSteamId}");
+        }
+
+        /// <summary>
+        /// 预留入口：通过 Steam 网络服务连接到指定地址（例如 steam://&lt;HostSteamId&gt;）。
+        /// </summary>
+        public static void ConnectSteam(string steamAddress)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            Debug.LogError("[GameNet] WebGL 平台不支持 Steam 网络服务。");
+#else
+            if (string.IsNullOrWhiteSpace(steamAddress))
+            {
+                Debug.LogError("[GameNet] Steam 连接地址不能为空，请先通过 Steam 大厅获取房主 SteamId。");
+                return;
+            }
+            string addr = steamAddress.Trim();
+            if (!addr.StartsWith("steam://", StringComparison.OrdinalIgnoreCase))
+                addr = "steam://" + addr;
+            Connect(addr);
+#endif
+        }
+
         private static INetTransport CreateTransport(string address, string kcpAddress)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
             if (address.StartsWith("tcp://", StringComparison.OrdinalIgnoreCase) ||
                 address.StartsWith("kcp://", StringComparison.OrdinalIgnoreCase) ||
-                address.StartsWith("tcp+kcp://", StringComparison.OrdinalIgnoreCase))
+                address.StartsWith("tcp+kcp://", StringComparison.OrdinalIgnoreCase) ||
+                address.StartsWith("steam://", StringComparison.OrdinalIgnoreCase))
             {
                 throw new NotSupportedException($"WebGL 平台仅支持 WebSocket，不支持地址：{address}");
             }
             return new WebSocketTransport(address);
 #else
+            if (NetTransportRegistry.TryCreate(address, out INetTransport customTransport))
+                return customTransport;
+
+            if (address.StartsWith("steam://", StringComparison.OrdinalIgnoreCase))
+                return new SteamNetTransport(address);
+
             if (!string.IsNullOrWhiteSpace(kcpAddress))
             {
                 string tcpAddr = address.StartsWith("tcp+kcp://", StringComparison.OrdinalIgnoreCase)
@@ -360,6 +406,7 @@ namespace FrameWork.Net
             ++_connectionWatchVersion;
             ++_loginWatchVersion;
             _loginAwaitingConfirmation = false;
+            FrameWork.Net.Network.NetworkQualityMonitor.Reset();
             CancelReconnect();
             FailPendingRequests(new InvalidOperationException("已主动断开网络连接。"));
             _transport?.CloseAsync();
@@ -552,6 +599,7 @@ namespace FrameWork.Net
             ++_connectionWatchVersion;
             ++_loginWatchVersion;
             _loginAwaitingConfirmation = false;
+            FrameWork.Net.Network.NetworkQualityMonitor.Reset();
 
             // 明确的账号替换不是弱网断线，不自动抢回账号。
             if (e.Code == 4001 || (int)e.StatusCode == 4001) { _manualDisconnect = true; CancelReconnect(); }
@@ -1097,8 +1145,10 @@ namespace FrameWork.Net
                 Msg response = await AwaitWithTimeoutAsync(completion, timeoutSeconds);
                 if (!IsConnected || !ReferenceEquals(transport, _transport) || generation != ConnectionGeneration)
                     throw new InvalidOperationException("测量期间连接已变化。");
-                return new ServerLatencySample(
+                var sample = new ServerLatencySample(
                     (float)((Time.realtimeSinceStartupAsDouble - startedAt) * 1000.0), response);
+                FrameWork.Net.Network.NetworkQualityMonitor.RecordLatencySample(sample, Time.unscaledTimeAsDouble);
+                return sample;
             }
             finally
             {

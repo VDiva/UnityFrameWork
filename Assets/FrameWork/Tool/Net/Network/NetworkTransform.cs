@@ -43,16 +43,18 @@ namespace FrameWork.Net.Network
 
         [Header("发送设置")]
         [SerializeField, Min(0.02f)] float sendInterval = 0.1f;
+        [Tooltip("玩家对象的默认发送周期（秒）；默认 30Hz（0.033s），将端到端视觉同步延迟压到几十毫秒。")]
+        [SerializeField, Min(0.02f)] float playerSendInterval = 0.033f;
         [SerializeField, Min(0f)] float positionThreshold = 0.01f;
         [SerializeField, Min(0f)] float rotationThreshold = 0.5f;
         [SerializeField, Min(0f)] float scaleThreshold = 0.01f;
         [SerializeField, Min(0.2f)] float heartbeatInterval = 1f;
 
         [Header("远端快照")]
-        [Tooltip("按发送周期保留的插值时间。增大可抵抗网络抖动，但会增加远端显示延迟。")]
+        [Tooltip("按发送周期保留的插值时间上限倍率。好网下会自动贴近下限，抖动时按需放大。")]
         [SerializeField, Range(1f, 3f)] float snapshotBufferMultiplier = 1.5f;
-        [Tooltip("网络抖动时平滑修正远端位置的时间，单位秒。")]
-        [SerializeField, Range(0.01f, 0.15f)] float positionCorrectionTime = 0.04f;
+        [Tooltip("仅在外推恢复或突变纠偏时平滑修正远端位置的时间（秒）；正常区间插值直出，避免双重延迟。")]
+        [SerializeField, Range(0.01f, 0.15f)] float positionCorrectionTime = 0.035f;
         [Tooltip("短暂丢包时沿最后速度继续移动的最长时间，单位秒。")]
         [SerializeField, Range(0.05f, 0.5f)] float maxPredictionTime = 0.2f;
         [Tooltip("位置误差超过此距离时按传送处理，不让物体穿越整张地图。")]
@@ -89,9 +91,19 @@ namespace FrameWork.Net.Network
         RigidbodyType2D originalBodyType;
         RigidbodyInterpolation2D originalBodyInterpolation;
         Vector3 renderVelocity;
+        float correctionBlendRemaining;
+        bool wasExtrapolating;
         internal int tickIndex = -1;
         readonly SnapshotTimeline<RemoteSnapshot> remoteSnapshots =
             new SnapshotTimeline<RemoteSnapshot>(8);
+
+        struct ChildSnapshot
+        {
+            public Vector3 position;
+            public Quaternion rotation;
+            public Vector3 scale;
+            public bool valid;
+        }
 
         struct RemoteSnapshot
         {
@@ -99,6 +111,19 @@ namespace FrameWork.Net.Network
             public Quaternion rotation;
             public Vector3 scale;
             public Vector3 velocity;
+            public ChildSnapshot[] children;
+        }
+
+        float EffectiveSendInterval
+        {
+            get
+            {
+                bool isPlayer = Identity != null && Identity.IsPlayerObject;
+                float baseInterval = isPlayer
+                    ? Mathf.Min(sendInterval, playerSendInterval)
+                    : sendInterval * NetworkQualityMonitor.AiSendIntervalScale;
+                return Mathf.Max(0.02f, baseInterval);
+            }
         }
 
         void Awake()
@@ -141,7 +166,7 @@ namespace FrameWork.Net.Network
 
         void UpdateAuthorityObject(float now)
         {
-            float interval = sendInterval;
+            float interval = EffectiveSendInterval;
             // 单人房间没有远端观众，AI 只需让服务端保留近期状态供后来加入的玩家使用。
             NetworkRoomManager roomManager = NetworkRoomManager.Instance;
             bool soloAi = Identity.IsAiObject && roomManager != null &&
@@ -221,58 +246,81 @@ namespace FrameWork.Net.Network
             if (!receivedFirstSnapshot)
                 return;
 
+            float dt = Time.unscaledDeltaTime;
             float positionT = ExpLerpFactor(interpolationSpeed);
             float rotationT = ExpLerpFactor(rotationInterpolationSpeed);
             float scaleT = ExpLerpFactor(scaleInterpolationSpeed);
             Vector3 renderPosition = targetPosition;
             Quaternion renderRotation = targetRotation;
             Vector3 renderScale = targetScale;
-            if (!SampleRemoteSnapshot(out renderPosition, out renderRotation, out renderScale))
+            bool sampled = SampleRemoteSnapshot(out renderPosition, out renderRotation, out renderScale,
+                out bool extrapolating, out bool appliedChildrenFromTimeline);
+            if (!sampled)
             {
                 float age = Mathf.Clamp((float)(Time.unscaledTimeAsDouble - lastRemoteSampleTime),
                     0f, maxPredictionTime > 0f ? maxPredictionTime : 0.2f);
                 renderPosition = targetPosition + targetVelocity * age;
+                extrapolating = age > 0.001f;
             }
+
+            // 仅在刚结束外推或出现突发位置误差时启用短时 SmoothDamp 纠偏，正常区间插值直出，避免双重延迟。
+            if (wasExtrapolating && !extrapolating)
+                correctionBlendRemaining = Mathf.Max(correctionBlendRemaining,
+                    (positionCorrectionTime > 0f ? positionCorrectionTime : 0.035f) * 2.5f);
+            wasExtrapolating = extrapolating;
 
             if (syncPosition)
             {
-                float snapSqr = Mathf.Max(snapDistance > 0f ? snapDistance : 8f,
+                float snapDist = Mathf.Max(snapDistance > 0f ? snapDistance : 8f,
                     targetVelocity.magnitude * (maxPredictionTime > 0f ? maxPredictionTime : 0.2f) * 2f);
-                snapSqr *= snapSqr;
-                if ((renderPosition - transform.position).sqrMagnitude > snapSqr)
+                float errorSqr = (renderPosition - transform.position).sqrMagnitude;
+                if (errorSqr > snapDist * snapDist)
+                {
+                    transform.position = renderPosition;
+                    renderVelocity = Vector3.zero;
+                    correctionBlendRemaining = 0f;
+                }
+                else if (sampled && !extrapolating && correctionBlendRemaining <= 0f && errorSqr <= 0.25f)
                 {
                     transform.position = renderPosition;
                     renderVelocity = Vector3.zero;
                 }
                 else
                 {
+                    if (correctionBlendRemaining > 0f)
+                        correctionBlendRemaining = Mathf.Max(0f, correctionBlendRemaining - dt);
                     transform.position = Vector3.SmoothDamp(transform.position, renderPosition,
-                        ref renderVelocity, positionCorrectionTime > 0f ? positionCorrectionTime : 0.04f,
-                        Mathf.Infinity, Time.unscaledDeltaTime);
+                        ref renderVelocity, positionCorrectionTime > 0f ? positionCorrectionTime : 0.035f,
+                        Mathf.Infinity, dt);
                 }
             }
             if (syncRotation)
-                transform.rotation = Quaternion.Slerp(transform.rotation, renderRotation, rotationT);
+                transform.rotation = sampled && !extrapolating
+                    ? renderRotation
+                    : Quaternion.Slerp(transform.rotation, renderRotation, rotationT);
             if (syncScale)
-                transform.localScale = interpolateScale
-                    ? Vector3.Lerp(transform.localScale, renderScale, scaleT)
-                    : renderScale;
+                transform.localScale = !interpolateScale || (sampled && !extrapolating)
+                    ? renderScale
+                    : Vector3.Lerp(transform.localScale, renderScale, scaleT);
 
-            foreach (ChildTransformSync child in childTransforms)
+            if (!appliedChildrenFromTimeline)
             {
-                if (child?.target == null || !child.receivedSnapshot)
-                    continue;
+                foreach (ChildTransformSync child in childTransforms)
+                {
+                    if (child?.target == null || !child.receivedSnapshot)
+                        continue;
 
-                if (child.syncPosition)
-                    child.target.localPosition = Vector3.Lerp(
-                        child.target.localPosition, child.targetPosition, positionT);
-                if (child.syncRotation)
-                    child.target.localRotation = Quaternion.Slerp(
-                        child.target.localRotation, child.targetRotation, rotationT);
-                if (child.syncScale)
-                    child.target.localScale = interpolateScale
-                        ? Vector3.Lerp(child.target.localScale, child.targetScale, scaleT)
-                        : child.targetScale;
+                    if (child.syncPosition)
+                        child.target.localPosition = Vector3.Lerp(
+                            child.target.localPosition, child.targetPosition, positionT);
+                    if (child.syncRotation)
+                        child.target.localRotation = Quaternion.Slerp(
+                            child.target.localRotation, child.targetRotation, rotationT);
+                    if (child.syncScale)
+                        child.target.localScale = interpolateScale
+                            ? Vector3.Lerp(child.target.localScale, child.targetScale, scaleT)
+                            : child.targetScale;
+                }
             }
         }
 
@@ -329,10 +377,9 @@ namespace FrameWork.Net.Network
                 targetVelocity = Vector3.ClampMagnitude(targetVelocity, 50f);
             }
             lastRemoteSampleTime = sampleTime;
+            ReadChildSnapshots(data);
             if (hasValidSentTime)
                 AddRemoteSnapshot(data.SentTime);
-
-            ReadChildSnapshots(data);
 
             if (!receivedFirstSnapshot)
             {
@@ -350,32 +397,91 @@ namespace FrameWork.Net.Network
 
         void AddRemoteSnapshot(double sentTime)
         {
-            float bufferTime = Mathf.Max(0.02f, sendInterval) *
-                               Mathf.Clamp(snapshotBufferMultiplier, 1f, 3f);
+            bool isPlayer = Identity != null && Identity.IsPlayerObject;
+            float baseInterval = EffectiveSendInterval;
+            float jitter = (float)remoteSnapshots.EstimatedJitter;
+            // 按实际网络抖动自适应缓冲：玩家好网下探至 1.0x 发送周期（~33ms），抖动或弱网时自动放大抗抖。
+            float minBuf = baseInterval * (isPlayer ? 1.0f : 1.15f);
+            float maxBuf = Mathf.Min(0.35f, baseInterval * Mathf.Clamp(snapshotBufferMultiplier, 1f, 3f) + 0.08f);
+            float bufferTime = Mathf.Clamp(
+                baseInterval + jitter * 2.0f + NetworkQualityMonitor.RecommendedExtraBufferSeconds,
+                minBuf, Mathf.Max(minBuf, maxBuf));
+
             if (remoteSnapshots.TryGetLatest(out RemoteSnapshot latest) &&
                 (targetPosition - latest.position).sqrMagnitude > snapDistance * snapDistance)
                 remoteSnapshots.Clear();
+
+            ChildSnapshot[] childSnaps = null;
+            if (childTransforms.Length > 0)
+            {
+                childSnaps = new ChildSnapshot[childTransforms.Length];
+                for (int i = 0; i < childTransforms.Length; i++)
+                {
+                    ChildTransformSync child = childTransforms[i];
+                    if (child != null && child.receivedSnapshot)
+                    {
+                        childSnaps[i] = new ChildSnapshot
+                        {
+                            position = child.targetPosition,
+                            rotation = child.targetRotation,
+                            scale = child.targetScale,
+                            valid = true
+                        };
+                    }
+                }
+            }
+
             remoteSnapshots.Add(sentTime, new RemoteSnapshot
             {
                 position = targetPosition,
                 rotation = targetRotation,
                 scale = targetScale,
-                velocity = targetVelocity
+                velocity = targetVelocity,
+                children = childSnaps
             }, bufferTime);
         }
 
-        bool SampleRemoteSnapshot(out Vector3 position, out Quaternion rotation, out Vector3 scale)
+        bool SampleRemoteSnapshot(out Vector3 position, out Quaternion rotation, out Vector3 scale,
+            out bool extrapolating, out bool appliedChildren)
         {
             position = targetPosition;
             rotation = targetRotation;
             scale = targetScale;
+            extrapolating = false;
+            appliedChildren = false;
             if (!remoteSnapshots.TrySample(Time.unscaledDeltaTime, maxPredictionTime,
                     out RemoteSnapshot first, out RemoteSnapshot second,
                     out float t, out float extrapolation)) return false;
+            extrapolating = extrapolation > 0.0001f;
             position = Vector3.LerpUnclamped(first.position, second.position, t) +
                        second.velocity * extrapolation;
             rotation = Quaternion.Slerp(first.rotation, second.rotation, t);
             scale = Vector3.Lerp(first.scale, second.scale, t);
+
+            if (childTransforms.Length > 0 && first.children != null && second.children != null &&
+                first.children.Length == childTransforms.Length && second.children.Length == childTransforms.Length)
+            {
+                for (int i = 0; i < childTransforms.Length; i++)
+                {
+                    ChildTransformSync child = childTransforms[i];
+                    if (child?.target == null) continue;
+                    ChildSnapshot c1 = first.children[i];
+                    ChildSnapshot c2 = second.children[i];
+                    if (!c1.valid && !c2.valid) continue;
+                    if (!c1.valid) c1 = c2;
+                    if (!c2.valid) c2 = c1;
+
+                    if (child.syncPosition)
+                        child.target.localPosition = Vector3.LerpUnclamped(c1.position, c2.position, t);
+                    if (child.syncRotation)
+                        child.target.localRotation = Quaternion.Slerp(c1.rotation, c2.rotation, t);
+                    if (child.syncScale)
+                        child.target.localScale = interpolateScale
+                            ? Vector3.Lerp(c1.scale, c2.scale, t)
+                            : c2.scale;
+                }
+                appliedChildren = true;
+            }
             return true;
         }
 
@@ -513,6 +619,8 @@ namespace FrameWork.Net.Network
             lastRemoteSampleTime = 0;
             lastRemoteSentTime = 0;
             renderVelocity = Vector3.zero;
+            correctionBlendRemaining = 0f;
+            wasExtrapolating = false;
             remoteSnapshots.Clear();
             if (body != null)
             {

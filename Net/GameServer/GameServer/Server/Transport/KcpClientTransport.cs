@@ -229,8 +229,10 @@ namespace WebSocketDemo.Transport
             byte[] rented = ArrayPool<byte>.Shared.Rent(total);
             try
             {
-                uint seq = Interlocked.Increment(ref _unreliableOutSeq);
-                if (seq == 0) seq = Interlocked.Increment(ref _unreliableOutSeq);
+                // 服务端下行复用同一 UDP 通道转发多对象/多玩家实时包，seq 置 0 交由上层按 ObjectId 独立去重，
+                // 避免公网轻微乱序导致不同对象或语音帧在传输层互相误杀。
+                uint seq = 0;
+                _ = _unreliableOutSeq;
 
                 Span<byte> span = rented.AsSpan(0, total);
                 span[0] = TransportProtocol.UdpUnreliableData;

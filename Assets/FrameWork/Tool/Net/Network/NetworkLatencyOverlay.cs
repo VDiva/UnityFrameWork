@@ -150,7 +150,7 @@ namespace FrameWork.Net.Network
                 {
                     peakRtt = Mathf.Max(peakRtt, sample.RttMs);
                 }
-                pingText = $"Ping {latestRtt:0}ms  max {peakRtt:0}";
+                pingText = $"[{GameNet.ActiveTransportName}] {latestRtt:0}ms (max {peakRtt:0})";
             }
             catch (Exception)
             {

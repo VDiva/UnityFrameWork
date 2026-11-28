@@ -13,7 +13,9 @@ namespace FrameWork.Net.Transport
 
     /// <summary>
     /// 将 TCP / KCP 后台线程的网络事件安全派发到 Unity 主线程，并在退出时中止后台套接字。
+    /// 优先于默认脚本与 NetworkManager 执行，消除 1 帧（16.7~33.3ms）的收包派发延迟。
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     internal sealed class NetTransportPump : MonoBehaviour
     {
         private static NetTransportPump _instance;

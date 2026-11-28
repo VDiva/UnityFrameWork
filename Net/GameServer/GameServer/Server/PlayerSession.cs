@@ -440,9 +440,9 @@ namespace WebSocketDemo
                 maxAgeMs: maxAgeMs);
         }
 
-        public void QueueLatestPayload(ulong key, ISessionPacketPayload payload, int maxAgeMs = 0)
+        public void QueueLatestPayload(ulong key, ISessionPacketPayload payload, int maxAgeMs = 0, bool immediate = false)
         {
-            if (IsConnected) _sendQueue.Enqueue(payload, WebSocketMessageType.Binary, key, maxAgeMs);
+            if (IsConnected) _sendQueue.Enqueue(payload, WebSocketMessageType.Binary, key, maxAgeMs, preferRealtime: immediate);
         }
 
         public void QueueLatestTransformBatch(ulong key, byte[] data)

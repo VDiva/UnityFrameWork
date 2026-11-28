@@ -634,7 +634,7 @@ namespace WebSocketDemo
                             ServerMsgType = ServerMsgType.NetworkTransformUpdate,
                             CompactTransforms = CompactTransformCodec.EncodeSingle(cached)
                         });
-                        receiver.QueueLatestPayload(key, compactBytes, maxAgeMs: 250);
+                        receiver.QueueLatestPayload(key, compactBytes, maxAgeMs: 250, immediate: true);
                     }
                     else
                     {
@@ -644,7 +644,7 @@ namespace WebSocketDemo
                             ServerMsgType = ServerMsgType.NetworkTransformUpdate,
                             NetworkTransform = cached
                         });
-                        receiver.QueueLatestPayload(key, legacyBytes, maxAgeMs: 250);
+                        receiver.QueueLatestPayload(key, legacyBytes, maxAgeMs: 250, immediate: true);
                     }
                 }
             }

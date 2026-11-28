@@ -459,8 +459,21 @@ public sealed class NetworkRoomObjectManager
             group.Add(snapshot);
         }
 
-        (ulong Key, TransformBatchPacket Payload)[]? sharedLegacy = null;
-        (ulong Key, TransformBatchPacket Payload)[]? sharedCompact = null;
+        Dictionary<uint, TransformBatchPacket>? sharedLegacyByGroup = null;
+        Dictionary<uint, TransformBatchPacket>? sharedCompactByGroup = null;
+
+        TransformBatchPacket GetOrCreateShared(uint groupId, List<NetworkTransformData> all, bool compact)
+        {
+            var cache = compact
+                ? (sharedCompactByGroup ??= new Dictionary<uint, TransformBatchPacket>(groups.Count))
+                : (sharedLegacyByGroup ??= new Dictionary<uint, TransformBatchPacket>(groups.Count));
+            if (!cache.TryGetValue(groupId, out TransformBatchPacket? packet))
+            {
+                packet = new TransformBatchPacket(all, compact);
+                cache.Add(groupId, packet);
+            }
+            return packet;
+        }
 
         foreach (PlayerSession receiver in PlayerSessionManager.Instance.SessionsForRoom(roomId))
         {
@@ -472,11 +485,11 @@ public sealed class NetworkRoomObjectManager
             NetworkTransformData? observerPos = receiver.LastNetworkTransform;
             if (observerPos == null)
             {
-                var packets = compact
-                    ? (sharedCompact ??= groups.Select(p => (Key: ((ulong)p.Key << 32) | 0x40000000UL, Payload: new TransformBatchPacket(p.Value, true))).ToArray())
-                    : (sharedLegacy ??= groups.Select(p => (Key: ((ulong)p.Key << 32) | 0x40000000UL, Payload: new TransformBatchPacket(p.Value, false))).ToArray());
-                foreach (var packet in packets)
-                    receiver.QueueLatestTransformBatch(packet.Key, packet.Payload);
+                foreach (var pair in groups)
+                {
+                    ulong key = ((ulong)pair.Key << 32) | 0x40000000UL;
+                    receiver.QueueLatestTransformBatch(key, GetOrCreateShared(pair.Key, pair.Value, compact));
+                }
                 continue;
             }
 
@@ -505,7 +518,7 @@ public sealed class NetworkRoomObjectManager
                 if (allKept)
                 {
                     ulong key = ((ulong)pair.Key << 32) | 0x40000000UL;
-                    receiver.QueueLatestTransformBatch(key, new TransformBatchPacket(all, compact));
+                    receiver.QueueLatestTransformBatch(key, GetOrCreateShared(pair.Key, all, compact));
                 }
                 else if (filtered != null && filtered.Count > 0)
                 {

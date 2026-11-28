@@ -10,6 +10,7 @@ public static class NetworkStateValidation
     public const float MaxBurstAllowance = 60f;
     private const float NearLodDistSq = 18f * 18f;
     private const float MidLodDistSq = 40f * 40f;
+    private const float FarLodDistSq = 80f * 80f;
 
     static bool Vector(float x, float y, float z) => float.IsFinite(x) && float.IsFinite(y) && float.IsFinite(z);
 
@@ -86,7 +87,11 @@ public static class NetworkStateValidation
         if (distSq <= MidLodDistSq)
             return (targetPos.Sequence & 1UL) == 0;
 
-        return (targetPos.Sequence & 3UL) == 0;
+        if (distSq <= FarLodDistSq)
+            return (targetPos.Sequence & 3UL) == 0;
+
+        // 超远距降为 1/8 频率，静止停步关键帧已在上方放行。
+        return (targetPos.Sequence & 7UL) == 0;
     }
     public static bool IsValid(NetworkTransformData? s) => s != null &&
         Vector(s.PositionX, s.PositionY, s.PositionZ) &&

@@ -1,5 +1,7 @@
 #if UNITY_EDITOR || !UNITY_WEBGL
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityWebSocket;
 
@@ -15,8 +17,14 @@ namespace FrameWork.Net.Transport
     {
         private readonly TcpTransport _tcp;
         private readonly string _kcpAddress;
+        private readonly object _kcpGate = new object();
         private KcpTransport _kcp;
-        private bool _closing;
+        private volatile bool _closing;
+        private uint _lastBindConv;
+        private byte[] _lastBindToken;
+        private int _kcpReattachAttempt;
+        private int _kcpReattachGeneration;
+        private const int MaxKcpReattachAttempts = 5;
 
         public string Address => _tcp.Address;
         public string KcpAddress => _kcpAddress;
@@ -52,6 +60,7 @@ namespace FrameWork.Net.Transport
         public void CloseAsync()
         {
             _closing = true;
+            Interlocked.Increment(ref _kcpReattachGeneration);
             DetachAndCloseKcp();
             _tcp.CloseAsync();
         }
@@ -108,6 +117,7 @@ namespace FrameWork.Net.Transport
         private void HandleTcpClose(object sender, CloseEventArgs e)
         {
             _closing = true;
+            Interlocked.Increment(ref _kcpReattachGeneration);
             DetachAndCloseKcp();
             OnClose?.Invoke(this, e);
         }
@@ -117,20 +127,37 @@ namespace FrameWork.Net.Transport
             if (_closing || string.IsNullOrWhiteSpace(_kcpAddress))
                 return;
 
-            DetachAndCloseKcp();
+            _lastBindConv = conv;
+            _lastBindToken = bindToken;
+            _kcpReattachAttempt = 0;
+            Interlocked.Increment(ref _kcpReattachGeneration);
+            AttachKcp(conv, bindToken);
+        }
 
-            var kcp = KcpTransport.CreateBound(_kcpAddress, conv, bindToken);
-            _kcp = kcp;
-            kcp.OnOpen += HandleKcpOpen;
-            kcp.OnMessage += HandleKcpMessage;
-            kcp.OnError += HandleKcpError;
-            kcp.OnClose += HandleKcpClose;
+        private void AttachKcp(uint conv, byte[] bindToken)
+        {
+            KcpTransport kcp;
+            lock (_kcpGate)
+            {
+                if (_closing || string.IsNullOrWhiteSpace(_kcpAddress) || conv == 0 || bindToken == null)
+                    return;
+
+                DetachAndCloseKcpLocked();
+
+                kcp = KcpTransport.CreateBound(_kcpAddress, conv, bindToken);
+                _kcp = kcp;
+                kcp.OnOpen += HandleKcpOpen;
+                kcp.OnMessage += HandleKcpMessage;
+                kcp.OnError += HandleKcpError;
+                kcp.OnClose += HandleKcpClose;
+            }
             kcp.ConnectAsync();
         }
 
         private void HandleKcpOpen(object sender, OpenEventArgs e)
         {
             if (!ReferenceEquals(sender, _kcp)) return;
+            _kcpReattachAttempt = 0;
             Debug.Log($"[HybridTransport] KCP 实时通道已附着 ({_kcpAddress}, conv={_kcp.Conv})");
         }
 
@@ -153,9 +180,40 @@ namespace FrameWork.Net.Transport
                 Debug.LogWarning($"[HybridTransport] KCP 实时通道关闭（code={e.Code}），后续实时消息自动回退到 TCP。");
             DetachKcpEvents(_kcp);
             _kcp = null;
+            ScheduleKcpReattach();
+        }
+
+        private void ScheduleKcpReattach()
+        {
+            if (_closing || _tcp.ReadyState != WebSocketState.Open ||
+                _lastBindConv == 0 || _lastBindToken == null ||
+                _kcpReattachAttempt >= MaxKcpReattachAttempts)
+                return;
+
+            int attempt = ++_kcpReattachAttempt;
+            int generation = Interlocked.Increment(ref _kcpReattachGeneration);
+            int delayMs = Math.Min(30000, 3000 << (attempt - 1));
+            uint conv = _lastBindConv;
+            byte[] token = _lastBindToken;
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(delayMs).ConfigureAwait(false);
+                if (_closing || generation != Volatile.Read(ref _kcpReattachGeneration) ||
+                    _tcp.ReadyState != WebSocketState.Open)
+                    return;
+                Debug.Log($"[HybridTransport] 尝试第 {attempt} 次重新附着 KCP 实时通道 (conv={conv})");
+                AttachKcp(conv, token);
+            });
         }
 
         private void DetachAndCloseKcp()
+        {
+            lock (_kcpGate)
+                DetachAndCloseKcpLocked();
+        }
+
+        private void DetachAndCloseKcpLocked()
         {
             KcpTransport old = _kcp;
             _kcp = null;

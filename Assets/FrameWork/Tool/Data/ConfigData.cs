@@ -16,7 +16,9 @@ namespace FrameWork
         [LabelText("仅 KCP (UDP)")]
         Kcp = 2,
         [LabelText("WebSocket")]
-        WebSocket = 3
+        WebSocket = 3,
+        [LabelText("Steam 网络服务（预留）")]
+        Steam = 4
     }
 
     [CreateAssetMenu(fileName = "ConfigData", menuName = "FrameWork/CreateConfigData")]
@@ -46,5 +48,7 @@ namespace FrameWork
         [LabelText("正式服 KCP 地址(可选)")] public string kcpServerIp = "";
         [Tooltip("可选：显式指定调试服 KCP 地址（如 kcp://127.0.0.1:5102），留空则自动推导。")]
         [LabelText("调试服 KCP 地址(可选)")] public string debugKcpServerIp = "";
+        [Tooltip("可选：Steam 网络服务默认目标地址（如 steam://<HostSteamId>）；通常留空并在加入 Steam 大厅后动态调用 GameNet.ConnectSteam。")]
+        [LabelText("Steam 默认目标地址(可选)")] public string steamTargetAddress = "";
     }
 }
