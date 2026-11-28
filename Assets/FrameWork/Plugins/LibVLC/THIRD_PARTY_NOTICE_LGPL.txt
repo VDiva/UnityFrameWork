@@ -1,0 +1,14 @@
+LibVLC & LibVLCSharp Third-Party Notice (LGPL-2.1)
+===================================================
+
+This project dynamically loads unmodified official binaries of:
+- LibVLC Windows (3.0.21, VideoLAN): https://www.videolan.org/vlc/libvlc.html
+- LibVLC Android (libvlc-all 3.7.8, VideoLAN): https://code.videolan.org/videolan/vlc-android
+- LibVLCSharp (3.10.2, VideoLAN): https://code.videolan.org/videolan/LibVLCSharp
+
+Both components are licensed under the GNU Lesser General Public License v2.1 (LGPL-2.1).
+Per LGPL-2.1 terms for commercial distribution:
+1. LibVLC is dynamically linked via external shared libraries (libvlc.dll / libvlccore.dll / plugins/*.dll),
+   allowing end users to replace or relink the LibVLC libraries with compatible versions.
+2. The full license text is distributed alongside the native libraries (COPYING.txt).
+3. Source code for LibVLC and LibVLCSharp is publicly available from VideoLAN at the URLs above.
