@@ -78,10 +78,6 @@ namespace FrameWork
         public override void Start()
         {
             base.Start();
-            
-            EventMrg.Subscribe<int>((int)MessageType.UiMessage, (int)UiMessageType.Show, ShowUi);
-            EventMrg.Subscribe<int>((int)MessageType.UiMessage, (int)UiMessageType.Hide, HideUi);
-            EventMrg.Subscribe<int>((int)MessageType.UiMessage, (int)UiMessageType.Remove, RemoveUi);
         }
 
         public override void OnDestroy()
@@ -91,11 +87,6 @@ namespace FrameWork
             viewCanvasTweener?.Kill();
             bgTweener?.Kill();
             UiManager.ForgetUi(this);
-            
-            EventMrg.Unsubscribe<int>((int)MessageType.UiMessage, (int)UiMessageType.Show, ShowUi);
-            EventMrg.Unsubscribe<int>((int)MessageType.UiMessage, (int)UiMessageType.Hide, HideUi);
-            EventMrg.Unsubscribe<int>((int)MessageType.UiMessage, (int)UiMessageType.Remove, RemoveUi);
-           
         }
 
         protected virtual void ShowUi(int index)

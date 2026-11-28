@@ -29,6 +29,12 @@ namespace FrameWork
         
         private readonly UniTaskCompletionSource<Actor> _initialization = new UniTaskCompletionSource<Actor>();
         private bool _spawnStarted;
+        internal bool HasUpdate;
+        internal bool HasFixedUpdate;
+        internal bool HasLateUpdate;
+        internal int UpdateTickIndex = -1;
+        internal int FixedUpdateTickIndex = -1;
+        internal int LateUpdateTickIndex = -1;
         public UniTask<Actor> Initialization => _initialization.Task;
 
         public Actor() { _ = SpawnObject(null); }
@@ -93,11 +99,11 @@ namespace FrameWork
                 instance.transform.localRotation = Quaternion.identity;
                 instance.transform.localScale = Vector3.one;
                 _gameObject = instance;
+                HasUpdate = meta.HasUpdate;
+                HasFixedUpdate = meta.HasFixedUpdate;
+                HasLateUpdate = meta.HasLateUpdate;
                 var actorMono = instance.AddComponent<ActorMono>();
                 actorMono.SetActor(this);
-                if (meta.HasUpdate) instance.AddComponent<ActorUpdateDriver>().Bind(this);
-                if (meta.HasFixedUpdate) instance.AddComponent<ActorFixedUpdateDriver>().Bind(this);
-                if (meta.HasLateUpdate) instance.AddComponent<ActorLateUpdateDriver>().Bind(this);
                 Awake();
                 instance.SetActive(true);
                 Start();

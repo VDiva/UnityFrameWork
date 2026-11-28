@@ -179,10 +179,10 @@ namespace FrameWork
 
 
         /// <summary>
-        /// AES加密
+        /// AES-ECB 加密（仅兼容历史密文，新业务请使用 <see cref="EncryptCbc"/>）。
         /// </summary>
         /// <param name="toEncryptArray">明文</param>
-        /// <param name="key">密钥</param>
+        /// <param name="key">Base64 密钥</param>
         /// <returns></returns>
         public static byte[] Encrypt(byte[] toEncryptArray, string key)
         {
@@ -199,13 +199,11 @@ namespace FrameWork
             }
         }
 
-
-
         /// <summary>
-        /// AES解密
+        /// AES-ECB 解密（仅兼容历史密文，新业务请使用 <see cref="DecryptCbc"/>）。
         /// </summary>
         /// <param name="toEncryptArray">密文</param>
-        /// <param name="key">密钥</param>
+        /// <param name="key">Base64 密钥</param>
         /// <returns></returns>
         public static byte[] Decrypt(byte[] toEncryptArray, string key)
         {
@@ -218,6 +216,54 @@ namespace FrameWork
                 using (ICryptoTransform cTransform = rDel.CreateDecryptor())
                 {
                     return cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+                }
+            }
+        }
+
+        /// <summary>
+        /// AES-CBC 加密（随机 16 字节 IV 拼接在密文头部，推荐用于新业务数据与存档加密）。
+        /// </summary>
+        public static byte[] EncryptCbc(byte[] plainBytes, string base64Key)
+        {
+            if (plainBytes == null) throw new ArgumentNullException(nameof(plainBytes));
+            byte[] keyArray = Convert.FromBase64String(base64Key);
+            using (var aes = Aes.Create())
+            {
+                aes.Key = keyArray;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.GenerateIV();
+                byte[] iv = aes.IV;
+                using (ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, iv))
+                {
+                    byte[] cipher = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+                    byte[] output = new byte[iv.Length + cipher.Length];
+                    Buffer.BlockCopy(iv, 0, output, 0, iv.Length);
+                    Buffer.BlockCopy(cipher, 0, output, iv.Length, cipher.Length);
+                    return output;
+                }
+            }
+        }
+
+        /// <summary>
+        /// AES-CBC 解密（从密文头部读取 16 字节 IV 并解密）。
+        /// </summary>
+        public static byte[] DecryptCbc(byte[] cipherWithIv, string base64Key)
+        {
+            if (cipherWithIv == null) throw new ArgumentNullException(nameof(cipherWithIv));
+            if (cipherWithIv.Length <= 16)
+                throw new ArgumentException("无效的 CBC 密文长度。", nameof(cipherWithIv));
+            byte[] keyArray = Convert.FromBase64String(base64Key);
+            using (var aes = Aes.Create())
+            {
+                aes.Key = keyArray;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                byte[] iv = new byte[16];
+                Buffer.BlockCopy(cipherWithIv, 0, iv, 0, 16);
+                using (ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, iv))
+                {
+                    return decryptor.TransformFinalBlock(cipherWithIv, 16, cipherWithIv.Length - 16);
                 }
             }
         }

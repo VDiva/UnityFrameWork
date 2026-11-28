@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using YooAsset;
@@ -24,8 +25,13 @@ namespace FrameWork
         /// <summary>可接入微信等定制文件系统；必须在 Init 前设置。</summary>
         public static Func<YooResourceSettings, InitializePackageOptions> InitializeOptionsFactory;
 
+        /// <summary>切换场景释放旧场景句柄后是否自动卸载未被引用的 YooAsset 资源包。</summary>
+        public static bool AutoUnloadUnusedOnSceneLoaded = true;
+
         private static readonly Dictionary<(string, Type), AssetHandle> Assets = new();
         private static readonly Dictionary<AssetHandle, (string, Type)> HandleKeys = new();
+        private static readonly Dictionary<(string, Type), int> RefCounts = new();
+        private static readonly HashSet<(string, Type)> PendingReleases = new();
         private static UniTaskCompletionSource _initialization;
         private static ResourcePackage _package;
         private static SceneHandle _scene;
@@ -41,6 +47,9 @@ namespace FrameWork
         {
             Assets.Clear();
             HandleKeys.Clear();
+            RefCounts.Clear();
+            PendingReleases.Clear();
+            AutoUnloadUnusedOnSceneLoaded = true;
             _initialization = null;
             _package = null;
             _scene = null;
@@ -78,6 +87,8 @@ namespace FrameWork
         private static void UnregisterHandle((string, Type) key, AssetHandle handle)
         {
             Assets.Remove(key);
+            RefCounts.Remove(key);
+            PendingReleases.Remove(key);
             if (handle != null) HandleKeys.Remove(handle);
         }
 
@@ -224,43 +235,66 @@ namespace FrameWork
                     new[] { _primary + "/" + fileName, _fallback + "/" + fileName };
         }
 
-        private static UniTask WaitOperation(AsyncOperationBase operation)
+        private static UniTask WaitOperation(AsyncOperationBase operation, CancellationToken cancellationToken = default)
         {
             if (operation == null || operation.IsDone)
                 return UniTask.CompletedTask;
 
+            cancellationToken.ThrowIfCancellationRequested();
             var source = AutoResetUniTaskCompletionSource.Create();
+            CancellationTokenRegistration registration = default;
             Action<AsyncOperationBase> onCompleted = null;
             onCompleted = op =>
             {
                 op.Completed -= onCompleted;
+                registration.Dispose();
                 source.TrySetResult();
             };
+            if (cancellationToken.CanBeCanceled)
+            {
+                registration = cancellationToken.Register(() =>
+                {
+                    operation.Completed -= onCompleted;
+                    source.TrySetCanceled(cancellationToken);
+                });
+            }
             operation.Completed += onCompleted;
             return source.Task;
         }
 
-        private static UniTask WaitAssetHandle(AssetHandle handle)
+        private static UniTask WaitAssetHandle(AssetHandle handle, CancellationToken cancellationToken = default)
         {
             if (handle == null || !handle.IsValid || handle.IsDone)
                 return UniTask.CompletedTask;
 
+            cancellationToken.ThrowIfCancellationRequested();
             var source = AutoResetUniTaskCompletionSource.Create();
+            CancellationTokenRegistration registration = default;
             Action<AssetHandle> onCompleted = null;
             onCompleted = h =>
             {
                 if (h != null && h.IsValid)
                     h.Completed -= onCompleted;
+                registration.Dispose();
                 source.TrySetResult();
             };
+            if (cancellationToken.CanBeCanceled)
+            {
+                registration = cancellationToken.Register(() =>
+                {
+                    if (handle.IsValid)
+                        handle.Completed -= onCompleted;
+                    source.TrySetCanceled(cancellationToken);
+                });
+            }
             handle.Completed += onCompleted;
             return source.Task;
         }
 
-        private static async UniTask Wait(AsyncOperationBase operation)
+        private static async UniTask Wait(AsyncOperationBase operation, CancellationToken cancellationToken = default)
         {
             if (!operation.IsDone)
-                await WaitOperation(operation);
+                await WaitOperation(operation, cancellationToken);
             if (operation.Status != EOperationStatus.Succeeded)
                 throw new ResourceOperationException(operation.Error);
         }
@@ -274,6 +308,10 @@ namespace FrameWork
             return false;
         }
 
+        /// <summary>获取指定缓存资源的当前引用计数（用于诊断与内存审计）。</summary>
+        public static int GetRefCount<T>(string name) =>
+            RefCounts.TryGetValue((name, typeof(T)), out int count) ? count : 0;
+
         public static bool TryGetLoaded<T>(string name, out T asset)
         {
             if (TryGetCachedHandle((name, typeof(T)), out var handle) &&
@@ -286,19 +324,51 @@ namespace FrameWork
             return false;
         }
 
-        public static async UniTask<T> LoadAsync<T>(string name, bool isRelease = true)
+        public static UniTask<T> LoadAsync<T>(string name, bool isRelease = true) =>
+            LoadAsync<T>(name, isRelease, default);
+
+        public static async UniTask<T> LoadAsync<T>(string name, bool isRelease, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!IsInitialized)
                 await Init();
+            cancellationToken.ThrowIfCancellationRequested();
+
             var key = (name, typeof(T));
             if (!TryGetCachedHandle(key, out var handle))
             {
                 handle = Package.LoadAssetAsync(name, typeof(T));
                 RegisterHandle(key, handle);
             }
-            if (handle.IsValid && !handle.IsDone)
-                await WaitAssetHandle(handle);
-            if (!handle.IsValid) throw new InvalidOperationException("资源加载失败或句柄已释放：" + name);
+
+            PendingReleases.Remove(key);
+            RefCounts[key] = RefCounts.TryGetValue(key, out int refCount) ? refCount + 1 : 1;
+
+            try
+            {
+                if (handle.IsValid && !handle.IsDone)
+                    await WaitAssetHandle(handle, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            catch
+            {
+                DecrementRefOnAbort(key, handle);
+                throw;
+            }
+
+            if (PendingReleases.Remove(key) && (!RefCounts.TryGetValue(key, out int remaining) || remaining <= 0))
+            {
+                if (Assets.TryGetValue(key, out var current) && ReferenceEquals(current, handle))
+                    UnregisterHandle(key, handle);
+                if (handle.IsValid) handle.Release();
+                throw new OperationCanceledException("资源加载完成前已被释放：" + name);
+            }
+
+            if (!handle.IsValid)
+            {
+                DecrementRefOnAbort(key, handle);
+                throw new InvalidOperationException("资源加载失败或句柄已释放：" + name);
+            }
             if (handle.Status != EOperationStatus.Succeeded)
             {
                 string error = handle.Error;
@@ -308,6 +378,30 @@ namespace FrameWork
                 throw new InvalidOperationException($"资源加载失败：{name}，{error}");
             }
             return (T)(object)handle.AssetObject;
+        }
+
+        private static void DecrementRefOnAbort((string, Type) key, AssetHandle handle)
+        {
+            if (RefCounts.TryGetValue(key, out int count))
+            {
+                count--;
+                if (count > 0)
+                {
+                    RefCounts[key] = count;
+                    return;
+                }
+                RefCounts.Remove(key);
+            }
+            if (handle != null && handle.IsValid && handle.IsDone)
+            {
+                if (Assets.TryGetValue(key, out var current) && ReferenceEquals(current, handle))
+                    UnregisterHandle(key, handle);
+                handle.Release();
+            }
+            else if (Assets.TryGetValue(key, out var current) && ReferenceEquals(current, handle))
+            {
+                PendingReleases.Add(key);
+            }
         }
 
         /// <summary>isRelease 保留旧签名；缓存由 ReleaseAsset 显式释放。</summary>
@@ -330,14 +424,20 @@ namespace FrameWork
                 throw new InvalidOperationException($"资源加载失败：{name}，{error}");
             }
             RegisterHandle(key, handle);
+            RefCounts[key] = 1;
             return (T)(object)handle.AssetObject;
 #endif
         }
 
-        public static async UniTask PreloadAsync<T>(IEnumerable<string> names)
+        public static UniTask PreloadAsync<T>(IEnumerable<string> names) =>
+            PreloadAsync<T>(names, default);
+
+        public static async UniTask PreloadAsync<T>(IEnumerable<string> names, CancellationToken cancellationToken)
         {
             if (names == null) return;
+            cancellationToken.ThrowIfCancellationRequested();
             await Init();
+            cancellationToken.ThrowIfCancellationRequested();
             int maxConcurrency = Math.Max(1,
 #if UNITY_WEBGL && !UNITY_EDITOR
                 Mathf.Clamp(WebGLMaxConcurrentRequests, 1, 4)
@@ -349,8 +449,9 @@ namespace FrameWork
             var batch = new List<UniTask>(maxConcurrency);
             foreach (string name in names)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (string.IsNullOrEmpty(name)) continue;
-                batch.Add(LoadAsync<T>(name));
+                batch.Add(LoadAsync<T>(name, true, cancellationToken));
                 if (batch.Count >= maxConcurrency)
                 {
                     await UniTask.WhenAll(batch);
@@ -361,11 +462,28 @@ namespace FrameWork
                 await UniTask.WhenAll(batch);
         }
 
-        public static bool ReleaseAsset<T>(string name)
+        /// <summary>递减资源引用计数，归零时释放底层句柄；若资源仍在加载中则标记为加载完成后自动释放。</summary>
+        public static bool ReleaseAsset<T>(string name) => ReleaseAsset<T>(name, false);
+
+        /// <summary>释放缓存资源句柄；force=true 时忽略引用计数直接释放。</summary>
+        public static bool ReleaseAsset<T>(string name, bool force)
         {
             var key = (name, typeof(T));
             if (!TryGetCachedHandle(key, out var handle)) return false;
-            if (!handle.IsDone) throw new InvalidOperationException("资源仍在加载：" + name);
+
+            if (!force && RefCounts.TryGetValue(key, out int count) && count > 1)
+            {
+                RefCounts[key] = count - 1;
+                return false;
+            }
+
+            RefCounts.Remove(key);
+            if (!handle.IsDone)
+            {
+                PendingReleases.Add(key);
+                return true;
+            }
+
             UnregisterHandle(key, handle);
             handle.Release();
             return true;
@@ -379,15 +497,39 @@ namespace FrameWork
             if (handle.IsValid) handle.Release();
         }
 
-        public static async UniTask<GameObject> InstantiateAsync(string name, Transform parent = null)
+        /// <summary>卸载 YooAsset 中引用计数已归零的资源包，可选同步触发 Unity 未引用资源卸载与 GC。</summary>
+        public static async UniTask UnloadUnusedAssetsAsync(bool unloadUnityResources = false, bool forceGC = false,
+            CancellationToken cancellationToken = default)
         {
+            if (!IsInitialized || _package == null) return;
+            cancellationToken.ThrowIfCancellationRequested();
+            var op = _package.UnloadUnusedAssetsAsync();
+            await WaitOperation(op, cancellationToken);
+            if (unloadUnityResources)
+            {
+                var unityOp = Resources.UnloadUnusedAssets();
+                if (unityOp != null)
+                    await unityOp.ToUniTask(cancellationToken: cancellationToken);
+            }
+            if (forceGC)
+                GC.Collect();
+        }
+
+        public static UniTask<GameObject> InstantiateAsync(string name, Transform parent = null) =>
+            InstantiateAsync(name, parent, default);
+
+        public static async UniTask<GameObject> InstantiateAsync(string name, Transform parent, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!IsInitialized)
                 await Init();
+            cancellationToken.ThrowIfCancellationRequested();
             var handle = Package.LoadAssetAsync<GameObject>(name);
             try
             {
                 if (handle.IsValid && !handle.IsDone)
-                    await WaitAssetHandle(handle);
+                    await WaitAssetHandle(handle, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!handle.IsValid) throw new InvalidOperationException("预制体句柄已失效：" + name);
                 if (handle.Status != EOperationStatus.Succeeded)
                     throw new InvalidOperationException($"预制体加载失败：{name}，{handle.Error}");
@@ -403,28 +545,41 @@ namespace FrameWork
             if (instance != null) Object.Destroy(instance); // OnDestroy 释放独立资源句柄。
         }
 
-        public static async UniTask DownloadAllAsync(Action<float> progress = null)
-            => await DownloadResourcesAsync(null, progress);
+        public static UniTask DownloadAllAsync(Action<float> progress = null)
+            => DownloadResourcesAsync(null, progress, default);
+
+        public static UniTask DownloadAllAsync(Action<float> progress, CancellationToken cancellationToken)
+            => DownloadResourcesAsync(null, progress, cancellationToken);
 
         /// <summary>按标签预下载，例如 startup、Level1；已有资源会复用。</summary>
-        public static async UniTask DownloadByTagAsync(string tag, Action<float> progress = null)
+        public static UniTask DownloadByTagAsync(string tag, Action<float> progress = null)
+            => DownloadByTagAsync(tag, progress, default);
+
+        public static async UniTask DownloadByTagAsync(string tag, Action<float> progress, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(tag)) throw new ArgumentException("下载标签不能为空。", nameof(tag));
-            await DownloadResourcesAsync(new[] { tag }, progress);
+            await DownloadResourcesAsync(new[] { tag }, progress, cancellationToken);
         }
 
-        private static async UniTask DownloadResourcesAsync(string[] tags, Action<float> progress)
+        private static async UniTask DownloadResourcesAsync(string[] tags, Action<float> progress, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await Init();
+            cancellationToken.ThrowIfCancellationRequested();
             var settings = GetResourceSettings();
             var download = Package.CreateResourceDownloader(new ResourceDownloaderOptions(
                 tags, settings.downloadConcurrency, settings.downloadRetryCount));
             download.StartDownload();
             while (!download.IsDone)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    download.CancelDownload();
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
                 progress?.Invoke(download.TotalDownloadBytes == 0 ? 1f :
                     (float)download.CurrentDownloadBytes / download.TotalDownloadBytes);
-                await UniTask.Yield();
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
             }
             if (download.Status != EOperationStatus.Succeeded) throw new ResourceOperationException(download.Error);
             progress?.Invoke(1f);
@@ -467,6 +622,8 @@ namespace FrameWork
                 if (_scene != null && _scene.IsValid) _scene.Release();
                 _scene = loading;
                 loaded = true;
+                if (AutoUnloadUnusedOnSceneLoaded)
+                    UnloadUnusedAssetsAsync().Forget(Debug.LogException);
                 ReportProgress(progress, 1f);
                 call?.Invoke();
                 SceneLoaded?.Invoke(name);

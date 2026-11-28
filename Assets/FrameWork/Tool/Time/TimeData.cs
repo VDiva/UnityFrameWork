@@ -1,21 +1,25 @@
 using System;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace FrameWork
 {
     /// <summary>
-    /// UniTask 定时器句柄，可交给 Timer.DestroyTimer 提前取消。
-    /// 不使用 CancellationTokenSource.Dispose，避免微信小游戏 IL2CPP 签名异常与每定时器 CTS 分配。
+    /// 集中式定时器句柄，由 TimerDriver 统一驱动，不再为每个定时器维护独立 UniTask 每帧 Yield 状态机。
+    /// 支持受 Time.timeScale 影响的游戏时间以及忽略 timeScale 的真实时间。
     /// </summary>
     public sealed class TimeData
     {
         private bool _isInterval;
         private float _delay;
         private float _duration;
+        private float _elapsed;
+        private float _nextTriggerTime;
         private int _remainingCalls;
+        private bool _ignoreTimeScale;
         private Action _action;
         private bool _cancelled;
         internal bool Poolable;
+        internal int ActiveIndex = -1;
 
         internal string Key { get; set; }
         internal Action Callback => _action;
@@ -31,16 +35,27 @@ namespace FrameWork
         }
 
         internal void Init(
-            bool isInterval, float delay, float duration, Action action, int callCount = -1)
+            bool isInterval, float delay, float duration, Action action, int callCount = -1, bool ignoreTimeScale = false)
         {
             _isInterval = isInterval;
             _delay = Math.Max(0f, delay);
             _duration = duration;
+            _elapsed = 0f;
             _remainingCalls = callCount;
+            _ignoreTimeScale = ignoreTimeScale;
             _action = action;
             _cancelled = false;
             IsRunning = true;
-            RunAsync().Forget();
+
+            if (_isInterval && _remainingCalls == 0)
+            {
+                Finish();
+                return;
+            }
+
+            float now = GetNow();
+            _nextTriggerTime = now + _delay;
+            Timer.RegisterActive(this);
         }
 
         internal void Cancel()
@@ -48,95 +63,77 @@ namespace FrameWork
             if (!IsRunning)
                 return;
 
-            IsRunning = false;
             _cancelled = true;
+            Finish();
+        }
+
+        internal void Tick(float scaledNow, float unscaledNow, float scaledDelta, float unscaledDelta)
+        {
+            if (!IsRunning || _cancelled)
+                return;
+
+            float now = _ignoreTimeScale ? unscaledNow : scaledNow;
+            if (now < _nextTriggerTime)
+                return;
+
+            if (!_isInterval)
+            {
+                var callback = _action;
+                Finish();
+                InvokeSafe(callback);
+                return;
+            }
+
+            float step = _delay > 0f ? _delay : (_ignoreTimeScale ? unscaledDelta : scaledDelta);
+            _elapsed += step;
+            if (_duration >= 0f && _elapsed > _duration)
+            {
+                Finish();
+                return;
+            }
+
+            var intervalCallback = _action;
+            if (_remainingCalls > 0)
+                _remainingCalls--;
+
+            bool done = _remainingCalls == 0 || (_duration >= 0f && _elapsed >= _duration);
+            if (done)
+            {
+                Finish();
+            }
+            else
+            {
+                // 防止 0 秒循环在同一帧持续执行，至少推迟到下一帧。
+                _nextTriggerTime = _delay > 0f ? now + _delay : now;
+            }
+
+            InvokeSafe(intervalCallback);
+        }
+
+        private float GetNow() => _ignoreTimeScale ? Time.unscaledTime : Time.time;
+
+        private static void InvokeSafe(Action callback)
+        {
+            if (callback == null) return;
+            try { callback.Invoke(); }
+            catch (Exception error) { Debug.LogException(error); }
+        }
+
+        private void Finish()
+        {
+            if (!IsRunning)
+                return;
+
+            IsRunning = false;
             _action = null;
-        }
-
-        private async UniTaskVoid RunAsync()
-        {
-            try
+            Timer.UnregisterActive(this);
+            Timer.OnTimerFinished(this);
+            if (Poolable)
             {
-                if (!_isInterval)
-                {
-                    if (!await WaitScaledAsync(_delay))
-                        return;
-                    if (_cancelled)
-                        return;
-                    _action?.Invoke();
-                    return;
-                }
-
-                float elapsed = 0f;
-                while (!_cancelled)
-                {
-                    if (_remainingCalls == 0)
-                        break;
-
-                    // 防止 0 秒循环在同一帧持续执行，至少等待到下一次 Update。
-                    if (_delay <= 0f)
-                    {
-                        await UniTask.Yield(PlayerLoopTiming.Update);
-                        if (_cancelled)
-                            break;
-                        elapsed += UnityEngine.Time.deltaTime;
-                    }
-                    else
-                    {
-                        if (!await WaitScaledAsync(_delay))
-                            break;
-                        elapsed += _delay;
-                    }
-
-                    if (_duration >= 0f && elapsed > _duration)
-                        break;
-
-                    if (_cancelled)
-                        break;
-
-                    _action?.Invoke();
-
-                    if (_remainingCalls > 0)
-                        _remainingCalls--;
-
-                    if (_remainingCalls == 0 ||
-                        (_duration >= 0f && elapsed >= _duration))
-                        break;
-                }
+                Key = null;
+                Poolable = false;
+                Timer.ReturnPooled(this);
             }
-            catch (OperationCanceledException)
-            {
-                // 主动销毁定时器属于正常流程，不需要输出异常。
-            }
-            finally
-            {
-                IsRunning = false;
-                _action = null;
-                Timer.OnTimerFinished(this);
-                if (Poolable)
-                {
-                    Key = null;
-                    Poolable = false;
-                    Timer.ReturnPooled(this);
-                }
-            }
-        }
-
-        private async UniTask<bool> WaitScaledAsync(float seconds)
-        {
-            if (seconds <= 0f)
-                return !_cancelled;
-
-            float remaining = seconds;
-            while (remaining > 0f)
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                if (_cancelled)
-                    return false;
-                remaining -= UnityEngine.Time.deltaTime;
-            }
-
-            return !_cancelled;
         }
     }
 }

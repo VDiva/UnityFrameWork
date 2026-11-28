@@ -15,7 +15,7 @@ namespace Xlsx
 		public static void Update()
 		{
 			var nextData = Tool.LoadXlsxAsset<XlsxAsset_Test>("XlsxAsset_Test").Rows;
-			var nextIndex = new XlsxData<string,Xlsx_Test>("Key", nextData);
+			var nextIndex = new XlsxData<string,Xlsx_Test>(row => row.Key, nextData);
 			data = nextData;
 			XlsxDataAsOneKey = nextIndex;
 		}

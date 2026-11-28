@@ -15,8 +15,8 @@
 | UniTask | 异步初始化、资源加载和生命周期任务 |
 | Actor / UiActor | 将预制体封装成可管理的业务对象 |
 | UiManager | UI 根节点、窗口打开关闭、层级和提示接入 |
-| 配置表工具 | 从 XLSX 生成 C# 类型、查询代码及运行时数据 |
-| WebNet | WebSocket 连接、消息、房间、RPC、对象同步及语音 |
+| 配置表工具 | 从 XLSX 生成 C# 类型、零反射查询代码及运行时数据 |
+| GameNet | WebSocket / TCP / KCP 双通道传输、消息、房间、RPC、对象同步及语音 |
 | Pathfinding | 跨平台 2D/3D 地面与飞行通用寻路（非 Web 多线程 Burst Job，WebGL 主线程分帧） |
 | 编辑器发布工具 | 客户端基线检查、热更新 DLL 和资源发布 |
 
@@ -54,7 +54,7 @@ Assets/FrameWork/
 │  ├─ Base/                         # Actor、UiActor 等
 │  ├─ UiTool/                       # UI 管理
 │  ├─ ObjectPool/                   # 对象池
-│  └─ WebSocket/                    # 网络运行时
+│  └─ Net/                          # 网络运行时（Transport、Network、RPC）
 ├─ Xlsx/                            # XLSX 源表格
 └─ YooAssetSettings/                # 资源收集配置
 ```
@@ -176,7 +176,7 @@ var icon = await ABMrg.LoadAsync<UnityEngine.Sprite>("MyIcon");
 ABMrg.ReleaseAsset<UnityEngine.Sprite>("MyIcon");
 ```
 
-`LoadAsync` 会缓存资源句柄。实例化对象建议使用专门的接口：
+`LoadAsync` 会缓存资源句柄并维护引用计数；多次 `LoadAsync` 同一资源时，需配对调用 `ReleaseAsset` 归零后才会真正释放底层句柄（支持 `force: true` 强制释放与 `CancellationToken` 取消）。切换场景后默认会触发 `ABMrg.UnloadUnusedAssetsAsync()` 卸载未引用的资源包。实例化对象建议使用专门的接口：
 
 ```csharp
 var instance = await ABMrg.InstantiateAsync("MyPrefab", parent);
@@ -253,6 +253,8 @@ UiManager.RemoveUi<MyWindow>(); // 移除窗口
 
 同一窗口类型正在打开时，后续调用会等待同一个请求，打开参数以第一次调用为准。隐藏、移除或切场景会使尚未完成的对应请求失效，异步加载结束后窗口不会再弹出。打开失败或请求失效时，调用方应检查返回值是否为 `null`。
 
+隐藏后的窗口默认会在 `UiManager.DefaultAutoDestroyDelaySeconds`（默认 60 秒，采用忽略 `timeScale` 的真实时间）内未被再次打开时自动销毁，并在下一帧通过 `ABMrg.UnloadUnusedAssetsAsync()` 卸载未引用的资源内存；期间若再次调用 `OpenUi` 会自动取消计时。单个窗口可通过 `[UiMode(Mode.Normal, Permanent = true)]` 设为常驻，或通过 `AutoDestroyDelaySeconds` 自定义超时时间（`0` 表示隐藏时立即销毁）。
+
 提示与 UI 特效由业务接入：
 
 ```csharp
@@ -284,24 +286,24 @@ await FrameWork.Tool.LoadAllXlsx();
 
 ## 10. 网络接入
 
-连接入口是 `FrameWork.WebSocket.WebNet`，配置初始化完成后可按业务需要调用 `Connect()` 或 `Connect(address)`。断开使用 `Disconnect()`。
+连接入口是 `FrameWork.Net.GameNet`，配置初始化完成后可按业务需要调用 `Connect()`、`Connect(address)` 或原生双通道 `ConnectTcpAndKcp(tcpAddress, kcpAddress)`（WebGL 自动回退为 WebSocket）。断开使用 `Disconnect()`。
 
 主要组件：
 
 | 类型 | 作用 |
 | --- | --- |
-| WebNetworkRoomManager | 房间进入、退出、场景切换等 |
-| WebNetworkManager | 网络对象创建、注册和回收 |
-| WebNetworkIdentity | 网络对象及控制权身份 |
-| WebNetworkBehaviour | 网络行为基类 |
-| WebNetworkTransform | 位置等变换同步 |
-| WebNetworkAnimator / WebNetworkSpineAnimator | 动画同步 |
-| WebNetworkSyncVars / WebSyncVar | 同步变量 |
-| WebNetworkVoiceManager | 语音采集、编码和播放 |
+| NetworkRoomManager | 房间进入、退出、场景切换等 |
+| NetworkManager | 网络对象创建、注册、集中 Tick 驱动与回收 |
+| NetworkIdentity | 网络对象及控制权身份 |
+| NetworkBehaviour | 网络行为基类 |
+| NetworkTransform | 位置等变换同步 |
+| NetworkAnimator / NetworkSpineAnimator | 动画同步 |
+| NetworkSyncVars / SyncVar | 同步变量 |
+| NetworkVoiceManager | 语音采集、编码和播放 |
 
-`WebClientRpc` 用于房间对象 RPC。被标记的方法必须返回 void，参数类型应在当前 RPC 分发器支持范围内；编译后的 Weaver 自动注入发送逻辑。`IncludeSender=false` 为本端先执行、转发给其他端；true 为本端也等待服务端回包执行。
+`ClientRpc` 用于房间对象 RPC。被标记的方法必须返回 void，参数类型应在当前 RPC 分发器支持范围内；编译后的 `NetRpcILPostProcessor` Weaver 自动注入发送逻辑。`IncludeSender=false` 为本端先执行、转发给其他端；true 为本端也等待服务端回包执行。
 
-业务规则通过 `WebNetworkIntegration` 接入，包括错误提示、首次登录的新手房间、地图准备、生成物配置、Spine 动画抑制及父节点解析。框架不会自动推断项目的关卡、掉落、UI 或布局规则。
+业务规则通过 `NetworkIntegration` 接入，包括错误提示、首次登录的新手房间、地图准备、生成物配置、Spine 动画抑制及父节点解析。框架不会自动推断项目的关卡、掉落、UI 或布局规则。
 
 Game 项目的 GameEntry 已配置这些业务钩子。不要使用独立框架的示例入口直接覆盖它。协议及服务端有变更时，需要另外确认客户端、服务端版本兼容；同步 Unity 框架不等于同步服务端。
 
@@ -377,5 +379,5 @@ Game 项目的历史迁移说明见根目录 `FRAMEWORK_MIGRATION.md`，最近�
 ## 14. 编辑器依赖与代码生成
 
 - **编辑器依赖** 中，Odin（`Sirenix`）和 `NodeGraphProcessor` 位于 `Assets/FrameWork/Plugins`。复制模块时保留相应插件目录及其 `.meta`。
-- **WebRPC 代码生成** 通过 `Packages/manifest.json` 声明的 `com.unity.nuget.mono-cecil` 获取 Mono.Cecil。同步框架后若 `WebRpc.CodeGen` 找不到 Mono.Cecil，检查该包是否已解析。
+- **NetRPC 代码生成** 通过 `Packages/manifest.json` 声明的 `com.unity.nuget.mono-cecil` 获取 Mono.Cecil。同步框架后若 `Unity.NetRpc.CodeGen` 找不到 Mono.Cecil，检查该包是否已解析。
 - **寻路模块 (`FrameWork.Pathfinding`)** 位于 `Assets/FrameWork/Plugins/Pathfinding`，属于 AOT 程序集并由 `HotUpdate.asmdef` 引用，依赖 `com.unity.burst`、`com.unity.collections`、`com.unity.mathematics`。详细 API 与基准测试入口见 `Assets/FrameWork/Plugins/Pathfinding/README.md`。

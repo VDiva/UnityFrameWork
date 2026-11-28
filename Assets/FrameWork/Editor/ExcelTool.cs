@@ -265,7 +265,7 @@ namespace FrameWork
             sw.AppendLine("\t\tpublic static void Update()");
             sw.AppendLine("\t\t{");
             sw.AppendLine($"\t\t\tvar nextData = Tool.LoadXlsxAsset<{assetName}>(\"{assetName}\").Rows;");
-            sw.AppendLine($"\t\t\tvar nextIndex = new XlsxData<{row[0]},{fileName}>(\"{row2[0]}\", nextData);");
+            sw.AppendLine($"\t\t\tvar nextIndex = new XlsxData<{row[0]},{fileName}>(row => row.{row2[0]}, nextData);");
             sw.AppendLine("\t\t\tdata = nextData;");
             sw.AppendLine("\t\t\tXlsxDataAsOneKey = nextIndex;");
             sw.AppendLine("\t\t}");

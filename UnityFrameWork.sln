@@ -31,9 +31,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HybridCLR.Runtime", "Hybrid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "spine-unity-editor", "spine-unity-editor.csproj", "{6abd41bc-c579-c7aa-30cc-931b77f2fb19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityWebSocket.Runtime", "UnityWebSocket.Runtime.csproj", "{8420c7c2-994f-5547-cd83-568d963c1488}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork.Editor", "FrameWork.Editor.csproj", "{d3c8f46c-b406-968f-0924-7e219d8250f1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityWebSocket.Runtime", "UnityWebSocket.Runtime.csproj", "{8420c7c2-994f-5547-cd83-568d963c1488}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.NetRpc.CodeGen", "Unity.NetRpc.CodeGen.csproj", "{3f6af491-b289-8c26-1bae-f4f5d5414881}"
 EndProject
@@ -86,10 +86,10 @@ Global
 		{d76774de-817d-fbea-292a-61ab77636c14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6abd41bc-c579-c7aa-30cc-931b77f2fb19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6abd41bc-c579-c7aa-30cc-931b77f2fb19}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8420c7c2-994f-5547-cd83-568d963c1488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8420c7c2-994f-5547-cd83-568d963c1488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{d3c8f46c-b406-968f-0924-7e219d8250f1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8420c7c2-994f-5547-cd83-568d963c1488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8420c7c2-994f-5547-cd83-568d963c1488}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3f6af491-b289-8c26-1bae-f4f5d5414881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3f6af491-b289-8c26-1bae-f4f5d5414881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28851b4c-b8ad-c30a-1ef8-34791960ac62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

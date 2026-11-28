@@ -16,22 +16,58 @@ namespace FrameWork.Net
 {
     public static class GameNet
     {
-        public static Action<object,OpenEventArgs>  OnOpen;
-        public static Action<object,CloseEventArgs>  OnClose;
-        public static Action<object,MessageEventArgs>  OnMessage;
+        public static event Action<object,OpenEventArgs>  OnOpen;
+        public static event Action<object,CloseEventArgs>  OnClose;
+        public static event Action<object,MessageEventArgs>  OnMessage;
         private static Action<object, MessageEventArgs> _cachedOnMessageSource;
         private static Delegate[] _cachedOnMessageHandlers;
-        public static Action<Msg> OnParsedMessage;
-        public static Action<object,ErrorEventArgs>  OnError;
-        public static Action  OnServerClose;
-        public static Action  OnClientClose;
-        public static Action<int, float> OnReconnectScheduled;
-        public static Action OnReconnected;
-        public static Action<string> OnLoginFailed;
+        public static event Action<Msg> OnParsedMessage;
+        public static event Action<object,ErrorEventArgs>  OnError;
+        public static event Action  OnServerClose;
+        public static event Action  OnClientClose;
+        public static event Action<int, float> OnReconnectScheduled;
+        public static event Action OnReconnected;
+        public static event Action<string> OnLoginFailed;
         /// <summary>第一个等待响应的请求开始时触发，用于打开全屏 Loading。</summary>
-        public static Action OnRequestLoadingOpen;
+        public static event Action OnRequestLoadingOpen;
         /// <summary>所有等待响应的请求结束时触发，用于关闭全屏 Loading。</summary>
-        public static Action OnRequestLoadingClose;
+        public static event Action OnRequestLoadingClose;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            ReleaseSocket();
+            OnOpen = null;
+            OnClose = null;
+            OnMessage = null;
+            _cachedOnMessageSource = null;
+            _cachedOnMessageHandlers = null;
+            OnParsedMessage = null;
+            OnError = null;
+            OnServerClose = null;
+            OnClientClose = null;
+            OnReconnectScheduled = null;
+            OnReconnected = null;
+            OnLoginFailed = null;
+            OnRequestLoadingOpen = null;
+            OnRequestLoadingClose = null;
+            PendingRequests.Clear();
+            PendingLatencyRequests.Clear();
+            _pendingLoginUserId = null;
+            _pendingLoginServerId = null;
+            _address = null;
+            _kcpAddress = null;
+            _reconnectVersion = 0;
+            _manualDisconnect = false;
+            _reconnectScheduled = false;
+            _hasConnectedBefore = false;
+            _reconnectAttempt = 0;
+            _connectionWatchVersion = 0;
+            _loginWatchVersion = 0;
+            _loginAwaitingConfirmation = false;
+            _requestLoadingCount = 0;
+            CurrentUserId = null;
+        }
         private static INetTransport _transport;
         private static string _pendingLoginUserId;
         private static string _pendingLoginServerId;
